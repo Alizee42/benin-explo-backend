@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class DevisService {
@@ -58,7 +59,9 @@ public class DevisService {
 
         // utilisateur (optionnel)
         if (dto.getUtilisateurId() != null) {
-            Utilisateur u = utilisateurRepo.findById(dto.getUtilisateurId()).orElse(null);
+            Long utilisateurId = dto.getUtilisateurId();
+            Objects.requireNonNull(utilisateurId);
+            Utilisateur u = utilisateurRepo.findById(utilisateurId).orElse(null);
             d.setUtilisateur(u);
         }
 
@@ -88,10 +91,12 @@ public class DevisService {
     }
 
     public DevisResponseDTO get(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         return repo.findById(id).map(this::toDTO).orElse(null);
     }
 
     public void delete(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         repo.deleteById(id);
     }
 }

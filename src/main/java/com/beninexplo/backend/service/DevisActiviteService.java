@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class DevisActiviteService {
@@ -59,14 +60,18 @@ public class DevisActiviteService {
         da.setOrdre(dto.getOrdre());
 
         if (dto.getDevisId() != null) {
-            Devis devis = devisRepo.findById(dto.getDevisId())
-                    .orElseThrow(() -> new RuntimeException("Devis introuvable : " + dto.getDevisId()));
+            Long devisId = dto.getDevisId();
+            Objects.requireNonNull(devisId);
+            Devis devis = devisRepo.findById(devisId)
+                .orElseThrow(() -> new RuntimeException("Devis introuvable : " + devisId));
             da.setDevis(devis);
         }
 
         if (dto.getActiviteId() != null) {
-            Activite activite = activiteRepo.findById(dto.getActiviteId())
-                    .orElseThrow(() -> new RuntimeException("Activité introuvable : " + dto.getActiviteId()));
+            Long activiteId = dto.getActiviteId();
+            Objects.requireNonNull(activiteId);
+            Activite activite = activiteRepo.findById(activiteId)
+                .orElseThrow(() -> new RuntimeException("Activité introuvable : " + activiteId));
             da.setActivite(activite);
         }
 
@@ -84,6 +89,7 @@ public class DevisActiviteService {
     }
 
     public DevisActiviteDTO get(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         return repo.findById(id)
                 .map(this::toDTO)
                 .orElse(null);
@@ -114,6 +120,7 @@ public class DevisActiviteService {
     }
 
     public void delete(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         if (!repo.existsById(id))
             throw new RuntimeException("DevisActivite introuvable : " + id);
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class ClientDemandeService {
@@ -50,7 +51,9 @@ public class ClientDemandeService {
         c.setMessage(dto.getMessage());
 
         if (dto.getDevisId() != null) {
-            Devis d = devisRepo.findById(dto.getDevisId()).orElse(null);
+            Long devisId = dto.getDevisId();
+            Objects.requireNonNull(devisId);
+            Devis d = devisRepo.findById(devisId).orElse(null);
             c.setDevis(d);
         }
 
@@ -62,6 +65,7 @@ public class ClientDemandeService {
     }
 
     public ClientDemandeDTO get(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         return repo.findById(id).map(this::toDTO).orElse(null);
     }
 
@@ -75,6 +79,7 @@ public class ClientDemandeService {
     }
 
     public void delete(Long id) {
+        Objects.requireNonNull(id, "id ne doit pas être null");
         repo.deleteById(id);
     }
 }
