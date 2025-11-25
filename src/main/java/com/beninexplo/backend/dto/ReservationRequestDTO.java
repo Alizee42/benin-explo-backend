@@ -1,61 +1,52 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import org.springframework.lang.Nullable;
+import java.time.LocalDate;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ReservationRequestDTO {
 
-    @Nullable
-    private Long utilisateurId;
+    /* ---------------- ATTRIBUTS ---------------- */
 
-    @Nullable
-    private Long devisId;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+    private LocalDate dateReservation;
+    private Long circuitId;
 
-    private String dateDebut;
-    private String dateFin;
+    /* ---------------- CONSTRUCTEURS ---------------- */
 
-    private String montantTotal;
+    public ReservationRequestDTO() {}
 
-	public Long getUtilisateurId() {
-		return utilisateurId;
-	}
+    public ReservationRequestDTO(String nom, String prenom, String email, String telephone,
+                                 LocalDate dateReservation, Long circuitId) {
 
-	public void setUtilisateurId(Long utilisateurId) {
-		this.utilisateurId = utilisateurId;
-	}
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.dateReservation = dateReservation;
+        this.circuitId = circuitId;
+    }
 
-	public Long getDevisId() {
-		return devisId;
-	}
+    /* ---------------- GETTERS & SETTERS ---------------- */
 
-	public void setDevisId(Long devisId) {
-		this.devisId = devisId;
-	}
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-	public String getDateDebut() {
-		return dateDebut;
-	}
+    public String getPrenom() { return prenom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
 
-	public void setDateDebut(String dateDebut) {
-		this.dateDebut = dateDebut;
-	}
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-	public String getDateFin() {
-		return dateFin;
-	}
+    public String getTelephone() { return telephone; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
 
-	public void setDateFin(String dateFin) {
-		this.dateFin = dateFin;
-	}
+    public LocalDate getDateReservation() { return dateReservation; }
+    public void setDateReservation(LocalDate dateReservation) { this.dateReservation = dateReservation; }
 
-	public String getMontantTotal() {
-		return montantTotal;
-	}
-
-	public void setMontantTotal(String montantTotal) {
-		this.montantTotal = montantTotal;
-	}
-    
-    
+    public Long getCircuitId() { return circuitId; }
+    public void setCircuitId(Long circuitId) { this.circuitId = circuitId; }
 }

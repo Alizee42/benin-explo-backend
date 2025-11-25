@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/circuit-activites")
-
+@CrossOrigin(origins = "*")
 public class CircuitActiviteController {
 
     private final CircuitActiviteService service;
@@ -40,5 +40,11 @@ public class CircuitActiviteController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    /* ---- Récupérer toutes les activités d’un circuit ---- */
+    @GetMapping("/circuit/{circuitId}")
+    public List<CircuitActiviteDTO> getByCircuit(@PathVariable Long circuitId) {
+        return service.getByCircuit(circuitId);
     }
 }

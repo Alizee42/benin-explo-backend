@@ -7,12 +7,13 @@ import java.util.List;
 
 public interface CircuitRepository extends JpaRepository<Circuit, Long> {
 
-    // Obtenir uniquement les circuits actifs (pour le site public)
+    // Obtenir uniquement les circuits actifs (pour la partie publique)
     List<Circuit> findByActifTrue();
 
-    // Obtenir tous les circuits d’une zone donnée (utilise la propriété 'idZone' de l'entité Zone)
+    // Obtenir tous les circuits d’une zone donnée
+    // 'idZone' doit correspondre au champ de ton entité Zone (getIdZone)
     List<Circuit> findByZone_IdZone(Long zoneId);
 
-    // Recherche texte (optionnel mais utile)
+    // Recherche texte dans le nom du circuit (utile pour les filtres admin)
     List<Circuit> findByNomContainingIgnoreCase(String nom);
 }

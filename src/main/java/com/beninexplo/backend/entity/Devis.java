@@ -1,149 +1,107 @@
 package com.beninexplo.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "devis")  // ✅ TABLE CORRECTE
 public class Devis {
+
+    /* ----------------------------------------------------
+       🟦 ATTRIBUTS
+    ---------------------------------------------------- */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idDevis;
 
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+
+    @Column(length = 20000)
+    private String message;
+
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Utilisateur utilisateur; // optionnel (client non connecté)
+    @JoinColumn(name = "circuit_id")
+    private Circuit circuit;
 
-    private String formule; // circuit / circuit+transport / tout compris
-
-    private Integer dureeCircuit;       // en jours
-    private LocalDate dateDebutCircuit; 
-    private LocalDate dateFinCircuit;   // optionnel (calculé côté backend)
-
-    private Integer nbAdultes;
-    private Integer nbEnfants;
-    private Integer nbParticipants;      // helpers
-
-    private LocalDateTime dateDemande = LocalDateTime.now();
-    private String statut = "en_attente";
-
-    @Column(length = 2000)
-    private String commentaireInterne;
+    /* ----------------------------------------------------
+       🟩 CONSTRUCTEURS
+    ---------------------------------------------------- */
 
     public Devis() {
+        // Constructeur vide requis par JPA
     }
 
-    public Devis(Long idDevis, Utilisateur utilisateur, String formule, Integer dureeCircuit, LocalDate dateDebutCircuit, LocalDate dateFinCircuit, Integer nbAdultes, Integer nbEnfants, Integer nbParticipants, LocalDateTime dateDemande, String statut, String commentaireInterne) {
+    public Devis(Long idDevis, String nom, String prenom, String email,
+                 String telephone, String message, Circuit circuit) {
         this.idDevis = idDevis;
-        this.utilisateur = utilisateur;
-        this.formule = formule;
-        this.dureeCircuit = dureeCircuit;
-        this.dateDebutCircuit = dateDebutCircuit;
-        this.dateFinCircuit = dateFinCircuit;
-        this.nbAdultes = nbAdultes;
-        this.nbEnfants = nbEnfants;
-        this.nbParticipants = nbParticipants;
-        this.dateDemande = dateDemande;
-        this.statut = statut;
-        this.commentaireInterne = commentaireInterne;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.message = message;
+        this.circuit = circuit;
     }
 
-	public Long getIdDevis() {
-		return idDevis;
-	}
+    /* ----------------------------------------------------
+       🟨 GETTERS & SETTERS
+    ---------------------------------------------------- */
 
-	public void setIdDevis(Long idDevis) {
-		this.idDevis = idDevis;
-	}
+    public Long getIdDevis() {
+        return idDevis;
+    }
 
-	public Utilisateur getUtilisateur() {
-		return utilisateur;
-	}
+    public void setIdDevis(Long idDevis) {
+        this.idDevis = idDevis;
+    }
 
-	public void setUtilisateur(Utilisateur utilisateur) {
-		this.utilisateur = utilisateur;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public String getFormule() {
-		return formule;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setFormule(String formule) {
-		this.formule = formule;
-	}
+    public String getPrenom() {
+        return prenom;
+    }
 
-	public Integer getDureeCircuit() {
-		return dureeCircuit;
-	}
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
 
-	public void setDureeCircuit(Integer dureeCircuit) {
-		this.dureeCircuit = dureeCircuit;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public LocalDate getDateDebutCircuit() {
-		return dateDebutCircuit;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setDateDebutCircuit(LocalDate dateDebutCircuit) {
-		this.dateDebutCircuit = dateDebutCircuit;
-	}
+    public String getTelephone() {
+        return telephone;
+    }
 
-	public LocalDate getDateFinCircuit() {
-		return dateFinCircuit;
-	}
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
 
-	public void setDateFinCircuit(LocalDate dateFinCircuit) {
-		this.dateFinCircuit = dateFinCircuit;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	public Integer getNbAdultes() {
-		return nbAdultes;
-	}
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-	public void setNbAdultes(Integer nbAdultes) {
-		this.nbAdultes = nbAdultes;
-	}
+    public Circuit getCircuit() {
+        return circuit;
+    }
 
-	public Integer getNbEnfants() {
-		return nbEnfants;
-	}
-
-	public void setNbEnfants(Integer nbEnfants) {
-		this.nbEnfants = nbEnfants;
-	}
-
-	public Integer getNbParticipants() {
-		return nbParticipants;
-	}
-
-	public void setNbParticipants(Integer nbParticipants) {
-		this.nbParticipants = nbParticipants;
-	}
-
-	public LocalDateTime getDateDemande() {
-		return dateDemande;
-	}
-
-	public void setDateDemande(LocalDateTime dateDemande) {
-		this.dateDemande = dateDemande;
-	}
-
-	public String getStatut() {
-		return statut;
-	}
-
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
-
-	public String getCommentaireInterne() {
-		return commentaireInterne;
-	}
-
-	public void setCommentaireInterne(String commentaireInterne) {
-		this.commentaireInterne = commentaireInterne;
-	}
-
- 
+    public void setCircuit(Circuit circuit) {
+        this.circuit = circuit;
+    }
 }

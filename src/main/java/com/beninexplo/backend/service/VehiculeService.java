@@ -3,77 +3,74 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.VehiculeDTO;
 import com.beninexplo.backend.entity.Vehicule;
 import com.beninexplo.backend.repository.VehiculeRepository;
-import com.beninexplo.backend.repository.ZoneRepository;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class VehiculeService {
 
-    private final VehiculeRepository repo;
-    private final ZoneRepository zoneRepo;
+    @Autowired
+    private VehiculeRepository vehiculeRepository;
 
-    public VehiculeService(VehiculeRepository repo, ZoneRepository zoneRepo) {
-        this.repo = repo;
-        this.zoneRepo = zoneRepo;
+    /* ----------------------
+       CONVERT ENTITY → DTO
+    ----------------------- */
+    public VehiculeDTO toDTO(Vehicule v) {
+        return new VehiculeDTO(
+                v.getId(),
+                v.getMarque(),
+                v.getModele(),
+                v.getMatricule(),
+                v.getAnnee(),
+                v.isDisponible()
+        );
     }
 
-    private VehiculeDTO toDTO(Vehicule v) {
-        VehiculeDTO dto = new VehiculeDTO();
+    /* ----------------------
+       CRUD LOGIQUE
+    ----------------------- */
 
-        dto.setId(v.getIdVehicule());
-        dto.setModele(v.getModele());
-        dto.setType(v.getType());
-
-        if (v.getPrixParJour() != null)
-            dto.setPrixParJour(v.getPrixParJour().toString());
-
-        dto.setActif(v.isActif());
-
-        if (v.getZone() != null)
-            dto.setZoneId(v.getZone().getIdZone());
-
-        return dto;
-    }
-
-    private Vehicule fromDTO(VehiculeDTO dto) {
+    public VehiculeDTO create(VehiculeDTO dto) {
         Vehicule v = new Vehicule();
-
-        v.setIdVehicule(dto.getId());
+        v.setMarque(dto.getMarque());
         v.setModele(dto.getModele());
-        v.setType(dto.getType());
+        v.setMatricule(dto.getMatricule());
+        v.setAnnee(dto.getAnnee());
+        v.setDisponible(dto.isDisponible());
 
-        if (dto.getPrixParJour() != null)
-            v.setPrixParJour(new BigDecimal(dto.getPrixParJour()));
-
-        if (dto.getZoneId() != null)
-            v.setZone(zoneRepo.findById(dto.getZoneId()).orElse(null));
-
-        return v;
+        vehiculeRepository.save(v);
+        return toDTO(v);
     }
 
     public List<VehiculeDTO> getAll() {
-        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+        return vehiculeRepository.findAll()
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public VehiculeDTO get(Long id) {
-        return repo.findById(id).map(this::toDTO).orElse(null);
-    }
-
-    public VehiculeDTO create(VehiculeDTO dto) {
-        return toDTO(repo.save(fromDTO(dto)));
+    public VehiculeDTO getById(Long id) {
+        Vehicule v = vehiculeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Véhicule introuvable"));
+        return toDTO(v);
     }
 
     public VehiculeDTO update(Long id, VehiculeDTO dto) {
-        dto.setId(id);
-        return toDTO(repo.save(fromDTO(dto)));
+        Vehicule v = vehiculeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Véhicule introuvable"));
+
+        v.setMarque(dto.getMarque());
+        v.setModele(dto.getModele());
+        v.setMatricule(dto.getMatricule());
+        v.setAnnee(dto.getAnnee());
+        v.setDisponible(dto.isDisponible());
+
+        vehiculeRepository.save(v);
+        return toDTO(v);
     }
 
     public void delete(Long id) {
-        repo.deleteById(id);
+        vehiculeRepository.deleteById(id);
     }
 }

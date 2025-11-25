@@ -3,6 +3,7 @@ package com.beninexplo.backend.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "categories_activites")
 public class CategorieActivite {
 
     @Id
@@ -11,11 +12,13 @@ public class CategorieActivite {
 
     private String nom;
 
-    @Column(length = 2000)
+    @Column(length = 5000)
     private String description;
 
-    public CategorieActivite() {
-    }
+    // ------------------------------------------------
+    // CONSTRUCTEURS
+    // ------------------------------------------------
+    public CategorieActivite() {}
 
     public CategorieActivite(Long idCategorie, String nom, String description) {
         this.idCategorie = idCategorie;
@@ -23,28 +26,16 @@ public class CategorieActivite {
         this.description = description;
     }
 
-	public Long getIdCategorie() {
-		return idCategorie;
-	}
+    // ------------------------------------------------
+    // GETTERS / SETTERS
+    // ------------------------------------------------
 
-	public void setIdCategorie(Long idCategorie) {
-		this.idCategorie = idCategorie;
-	}
+    public Long getIdCategorie() { return idCategorie; }
+    public void setIdCategorie(Long idCategorie) { this.idCategorie = idCategorie; }
 
-	public String getNom() {
-		return nom;
-	}
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

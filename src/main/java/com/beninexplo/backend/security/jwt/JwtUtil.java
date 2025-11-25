@@ -1,8 +1,7 @@
 package com.beninexplo.backend.security.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -12,40 +11,66 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "supersecretkeysupersecretkeysupersecretkey123";
-    private final long EXPIRATION = 86400000; // 24h
+    // Clé secrète (générée, longue, correcte)
+    private static final String SECRET_KEY = 
+            "6D597133743677397A24432646294A404E635266556A586E3272357538782F41";
 
+    // Durée de validité du token : 24h
+    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000;
+
+    /* ----------------------------------------------------
+       🟦 EXTRACTION DE LA CLÉ SIGNATURE
+    ---------------------------------------------------- */
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        byte[] bytes = Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(bytes);
     }
 
-    // Génération du token
-    public String generateToken(String email) {
+    /* ----------------------------------------------------
+       🟩 GÉNERER UN TOKEN (email + role)
+    ---------------------------------------------------- */
+    public String generateToken(String email, String role) {
+
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role)                  // Rôle ajouté au token
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Lecture du CLAIM "subject" = email
+    /* ----------------------------------------------------
+       🟧 EXTRAIRE L'EMAIL DEPUIS LE TOKEN
+    ---------------------------------------------------- */
     public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // Vérification expiration
-    private boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
+    /* ----------------------------------------------------
+       🟪 EXTRAIRE LE RÔLE DEPUIS LE TOKEN
+    ---------------------------------------------------- */
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
-    // Validité totale
-    public boolean isTokenValid(String token, String email) {
-        return email.equals(extractEmail(token)) && !isTokenExpired(token);
+    /* ----------------------------------------------------
+       🟥 VALIDER UN TOKEN
+    ---------------------------------------------------- */
+    public boolean validateToken(String token) {
+        try {
+            extractAllClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
-    // Extraction de tous les claims
+    /* ----------------------------------------------------
+       🟦 EXTRACTION DES CLAIMS
+    ---------------------------------------------------- */
     private Claims extractAllClaims(String token) {
+
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()

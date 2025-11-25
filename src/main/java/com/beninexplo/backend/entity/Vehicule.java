@@ -1,84 +1,53 @@
 package com.beninexplo.backend.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
+@Table(name = "vehicules")
 public class Vehicule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idVehicule;
+    private Long id;
 
+    private String marque;
     private String modele;
-    private String type; // 4x4, minibus, moto...
+    private String matricule;
+    private int annee;
+    private boolean disponible;
 
-    private BigDecimal prixParJour;
+    /* ----------------------
+       CONSTRUCTEURS
+    ----------------------- */
+    public Vehicule() {}
 
-    private boolean actif = true;
-
-    @ManyToOne
-    @JoinColumn(name = "zone_id")
-    private Zone zone;
-
-    public Vehicule() {
-    }
-
-    public Vehicule(Long idVehicule, String modele, String type, BigDecimal prixParJour, boolean actif, Zone zone) {
-        this.idVehicule = idVehicule;
+    public Vehicule(Long id, String marque, String modele, String matricule, int annee, boolean disponible) {
+        this.id = id;
+        this.marque = marque;
         this.modele = modele;
-        this.type = type;
-        this.prixParJour = prixParJour;
-        this.actif = actif;
-        this.zone = zone;
+        this.matricule = matricule;
+        this.annee = annee;
+        this.disponible = disponible;
     }
 
-	public Long getIdVehicule() {
-		return idVehicule;
-	}
+    /* ----------------------
+       GETTERS & SETTERS
+    ----------------------- */
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-	public void setIdVehicule(Long idVehicule) {
-		this.idVehicule = idVehicule;
-	}
+    public String getMarque() { return marque; }
+    public void setMarque(String marque) { this.marque = marque; }
 
-	public String getModele() {
-		return modele;
-	}
+    public String getModele() { return modele; }
+    public void setModele(String modele) { this.modele = modele; }
 
-	public void setModele(String modele) {
-		this.modele = modele;
-	}
+    public String getMatricule() { return matricule; }
+    public void setMatricule(String matricule) { this.matricule = matricule; }
 
-	public String getType() {
-		return type;
-	}
+    public int getAnnee() { return annee; }
+    public void setAnnee(int annee) { this.annee = annee; }
 
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public BigDecimal getPrixParJour() {
-		return prixParJour;
-	}
-
-	public void setPrixParJour(BigDecimal prixParJour) {
-		this.prixParJour = prixParJour;
-	}
-
-	public boolean isActif() {
-		return actif;
-	}
-
-	public void setActif(boolean actif) {
-		this.actif = actif;
-	}
-
-	public Zone getZone() {
-		return zone;
-	}
-
-	public void setZone(Zone zone) {
-		this.zone = zone;
-	}
-    
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
 }

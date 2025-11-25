@@ -5,53 +5,83 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class DevisRequestDTO {
 
-    private Long utilisateurId; // optionnel : null si visiteur non connecté
+    /* ----------------------------------------------------
+       🟦 ATTRIBUTS
+    ---------------------------------------------------- */
 
-    private String formule;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+    private String message;
+    private Long circuitId;
 
-    private Integer dureeCircuit;
+    /* ----------------------------------------------------
+       🟩 CONSTRUCTEURS
+    ---------------------------------------------------- */
 
-    private String dateDebutCircuit; // format yyyy-MM-dd
+    public DevisRequestDTO() {
+    }
 
-    private Integer nbAdultes;
-    private Integer nbEnfants;
-	public Long getUtilisateurId() {
-		return utilisateurId;
-	}
-	public void setUtilisateurId(Long utilisateurId) {
-		this.utilisateurId = utilisateurId;
-	}
-	public String getFormule() {
-		return formule;
-	}
-	public void setFormule(String formule) {
-		this.formule = formule;
-	}
-	public Integer getDureeCircuit() {
-		return dureeCircuit;
-	}
-	public void setDureeCircuit(Integer dureeCircuit) {
-		this.dureeCircuit = dureeCircuit;
-	}
-	public String getDateDebutCircuit() {
-		return dateDebutCircuit;
-	}
-	public void setDateDebutCircuit(String dateDebutCircuit) {
-		this.dateDebutCircuit = dateDebutCircuit;
-	}
-	public Integer getNbAdultes() {
-		return nbAdultes;
-	}
-	public void setNbAdultes(Integer nbAdultes) {
-		this.nbAdultes = nbAdultes;
-	}
-	public Integer getNbEnfants() {
-		return nbEnfants;
-	}
-	public void setNbEnfants(Integer nbEnfants) {
-		this.nbEnfants = nbEnfants;
-	}
-    
-    
-    
+    public DevisRequestDTO(String nom, String prenom, String email,
+                           String telephone, String message, Long circuitId) {
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.message = message;
+        this.circuitId = circuitId;
+    }
+
+    /* ----------------------------------------------------
+       🟨 GETTERS & SETTERS
+    ---------------------------------------------------- */
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public String getPrenom() {
+        return prenom;
+    }
+
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Long getCircuitId() {
+        return circuitId;
+    }
+
+    public void setCircuitId(Long circuitId) {
+        this.circuitId = circuitId;
+    }
 }

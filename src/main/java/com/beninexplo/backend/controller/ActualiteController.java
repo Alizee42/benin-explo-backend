@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/actualites")
+@RequestMapping("/admin/actualites")
+@CrossOrigin("*")
 public class ActualiteController {
 
     private final ActualiteService service;

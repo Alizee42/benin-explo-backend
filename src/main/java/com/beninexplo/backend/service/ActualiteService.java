@@ -2,12 +2,14 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ActualiteDTO;
 import com.beninexplo.backend.entity.Actualite;
+import com.beninexplo.backend.entity.Media;
+import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.repository.ActualiteRepository;
 import com.beninexplo.backend.repository.MediaRepository;
 import com.beninexplo.backend.repository.UtilisateurRepository;
 
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,46 +20,50 @@ public class ActualiteService {
     private final MediaRepository mediaRepo;
     private final UtilisateurRepository utilisateurRepo;
 
-    public ActualiteService(
-            ActualiteRepository repo,
-            MediaRepository mediaRepo,
-            UtilisateurRepository utilisateurRepo
-    ) {
+    public ActualiteService(ActualiteRepository repo,
+                            MediaRepository mediaRepo,
+                            UtilisateurRepository utilisateurRepo) {
         this.repo = repo;
         this.mediaRepo = mediaRepo;
         this.utilisateurRepo = utilisateurRepo;
     }
 
+    // ---------------------- DTO MAPPER ----------------------
+
     private ActualiteDTO toDTO(Actualite a) {
-        ActualiteDTO dto = new ActualiteDTO();
-        dto.setId(a.getIdActualite());
-        dto.setTitre(a.getTitre());
-        dto.setContenu(a.getContenu());
-        dto.setDatePublication(a.getDatePublication().toString());
-
-        if (a.getImagePrincipale() != null)
-            dto.setImagePrincipaleId(a.getImagePrincipale().getIdMedia());
-
-        if (a.getAuteur() != null)
-            dto.setAuteurId(a.getAuteur().getIdUtilisateur());
-
-        return dto;
+        return new ActualiteDTO(
+                a.getIdActualite(),
+                a.getTitre(),
+                a.getContenu(),
+                a.getDatePublication() != null ? a.getDatePublication().toString() : null,
+                a.getImagePrincipale() != null ? a.getImagePrincipale().getIdMedia() : null,
+                a.getAuteur() != null ? a.getAuteur().getId() : null
+        );
     }
 
-    private Actualite fromDTO(ActualiteDTO dto) {
-        Actualite a = new Actualite();
-        a.setIdActualite(dto.getId());
+    private void fillEntity(Actualite a, ActualiteDTO dto) {
+
         a.setTitre(dto.getTitre());
         a.setContenu(dto.getContenu());
 
-        if (dto.getImagePrincipaleId() != null)
-            a.setImagePrincipale(mediaRepo.findById(dto.getImagePrincipaleId()).orElse(null));
+        if (dto.getDatePublication() == null) {
+            a.setDatePublication(LocalDateTime.now());
+        } else {
+            a.setDatePublication(LocalDateTime.parse(dto.getDatePublication()));
+        }
 
-        if (dto.getAuteurId() != null)
-            a.setAuteur(utilisateurRepo.findById(dto.getAuteurId()).orElse(null));
+        if (dto.getImagePrincipaleId() != null) {
+            Media media = mediaRepo.findById(dto.getImagePrincipaleId()).orElse(null);
+            a.setImagePrincipale(media);
+        }
 
-        return a;
+        if (dto.getAuteurId() != null) {
+            Utilisateur auteur = utilisateurRepo.findById(dto.getAuteurId()).orElse(null);
+            a.setAuteur(auteur);
+        }
     }
+
+    // ---------------------- CRUD ----------------------
 
     public List<ActualiteDTO> getAll() {
         return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -68,13 +74,17 @@ public class ActualiteService {
     }
 
     public ActualiteDTO create(ActualiteDTO dto) {
-        Actualite a = fromDTO(dto);
+        Actualite a = new Actualite();
+        fillEntity(a, dto);
         return toDTO(repo.save(a));
     }
 
     public ActualiteDTO update(Long id, ActualiteDTO dto) {
-        dto.setId(id);
-        return toDTO(repo.save(fromDTO(dto)));
+        Actualite existing = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Actualité introuvable"));
+
+        fillEntity(existing, dto);
+        return toDTO(repo.save(existing));
     }
 
     public void delete(Long id) {

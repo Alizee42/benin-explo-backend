@@ -2,42 +2,42 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.VehiculeDTO;
 import com.beninexplo.backend.service.VehiculeService;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/vehicules")
+@RequestMapping("/admin/vehicules")
+@CrossOrigin("*")
 public class VehiculeController {
 
-    private final VehiculeService service;
+    @Autowired
+    private VehiculeService vehiculeService;
 
-    public VehiculeController(VehiculeService service) {
-        this.service = service;
+    @PostMapping
+    public VehiculeDTO create(@RequestBody VehiculeDTO dto) {
+        return vehiculeService.create(dto);
     }
 
     @GetMapping
     public List<VehiculeDTO> getAll() {
-        return service.getAll();
+        return vehiculeService.getAll();
     }
 
     @GetMapping("/{id}")
-    public VehiculeDTO get(@PathVariable Long id) {
-        return service.get(id);
-    }
-
-    @PostMapping
-    public VehiculeDTO create(@RequestBody VehiculeDTO dto) {
-        return service.create(dto);
+    public VehiculeDTO getById(@PathVariable Long id) {
+        return vehiculeService.getById(id);
     }
 
     @PutMapping("/{id}")
     public VehiculeDTO update(@PathVariable Long id, @RequestBody VehiculeDTO dto) {
-        return service.update(id, dto);
+        return vehiculeService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public String delete(@PathVariable Long id) {
+        vehiculeService.delete(id);
+        return "Véhicule supprimé avec succès.";
     }
 }

@@ -19,32 +19,22 @@ public class ParametresSiteService {
     }
 
     private ParametresSiteDTO toDTO(ParametresSite p) {
-        ParametresSiteDTO dto = new ParametresSiteDTO();
-        dto.setId(p.getIdParametres());
-        dto.setNomAgence(p.getNomAgence());
-        dto.setMessageAccueil(p.getMessageAccueil());
-        dto.setEmailContact(p.getEmailContact());
-        dto.setTelephoneContact(p.getTelephoneContact());
-        dto.setAdresseAgence(p.getAdresseAgence());
-        dto.setCouleurPrimaire(p.getCouleurPrimaire());
-        dto.setCouleurSecondaire(p.getCouleurSecondaire());
-        dto.setUrlFacebook(p.getUrlFacebook());
-        dto.setUrlInstagram(p.getUrlInstagram());
-        return dto;
+        return new ParametresSiteDTO(
+                p.getIdParametres(),
+                p.getEmailContact(),
+                p.getTelephoneContact(),
+                p.getAdresseAgence()
+        );
     }
 
     private ParametresSite fromDTO(ParametresSiteDTO dto) {
         ParametresSite p = new ParametresSite();
+
         p.setIdParametres(dto.getId());
-        p.setNomAgence(dto.getNomAgence());
-        p.setMessageAccueil(dto.getMessageAccueil());
         p.setEmailContact(dto.getEmailContact());
         p.setTelephoneContact(dto.getTelephoneContact());
         p.setAdresseAgence(dto.getAdresseAgence());
-        p.setCouleurPrimaire(dto.getCouleurPrimaire());
-        p.setCouleurSecondaire(dto.getCouleurSecondaire());
-        p.setUrlFacebook(dto.getUrlFacebook());
-        p.setUrlInstagram(dto.getUrlInstagram());
+
         return p;
     }
 
@@ -56,16 +46,8 @@ public class ParametresSiteService {
         return repo.findById(id).map(this::toDTO).orElse(null);
     }
 
-    public ParametresSiteDTO create(ParametresSiteDTO dto) {
-        return toDTO(repo.save(fromDTO(dto)));
-    }
-
-    public ParametresSiteDTO update(Long id, ParametresSiteDTO dto) {
-        dto.setId(id);
-        return toDTO(repo.save(fromDTO(dto)));
-    }
-
-    public void delete(Long id) {
-        repo.deleteById(id);
+    public ParametresSiteDTO saveOrUpdate(ParametresSiteDTO dto) {
+        ParametresSite saved = repo.save(fromDTO(dto));
+        return toDTO(saved);
     }
 }

@@ -4,98 +4,67 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+
+@Table(name = "tombola_participants")
 public class TombolaParticipant {
+
+    /* ----------------------------------------------------
+       🟦 ATTRIBUTS
+    ---------------------------------------------------- */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idParticipant;
+    private Long id;
+
+    // Lien direct avec l'utilisateur du site
+    @ManyToOne
+    @JoinColumn(name = "utilisateur_id", nullable = false)
+    private Utilisateur utilisateur;
+
+    // Informations stockées pour la tombola (sécurité / historique)
+    @Column(nullable = false)
+    private String email;
 
     private String nom;
     private String prenom;
-    private String email;
-    private String telephone;
 
-    private LocalDateTime dateParticipation = LocalDateTime.now();
+    private LocalDateTime dateInscription;
 
-    private String statut = "valide";  
-    private String codeUnique;         // généré automatiquement
+    /* ----------------------------------------------------
+       🟩 CONSTRUCTEURS
+    ---------------------------------------------------- */
 
-    public TombolaParticipant() {
-    }
+    public TombolaParticipant() {}
 
-    public TombolaParticipant(Long idParticipant, String nom, String prenom, String email, String telephone, LocalDateTime dateParticipation, String statut, String codeUnique) {
-        this.idParticipant = idParticipant;
+    public TombolaParticipant(Long id, Utilisateur utilisateur, String email,
+                              String nom, String prenom, LocalDateTime dateInscription) {
+        this.id = id;
+        this.utilisateur = utilisateur;
+        this.email = email;
         this.nom = nom;
         this.prenom = prenom;
-        this.email = email;
-        this.telephone = telephone;
-        this.dateParticipation = dateParticipation;
-        this.statut = statut;
-        this.codeUnique = codeUnique;
+        this.dateInscription = dateInscription;
     }
 
-	public Long getIdParticipant() {
-		return idParticipant;
-	}
+    /* ----------------------------------------------------
+       🟨 GETTERS & SETTERS
+    ---------------------------------------------------- */
 
-	public void setIdParticipant(Long idParticipant) {
-		this.idParticipant = idParticipant;
-	}
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-	public String getNom() {
-		return nom;
-	}
+    public Utilisateur getUtilisateur() { return utilisateur; }
+    public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-	public String getPrenom() {
-		return prenom;
-	}
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
-	}
+    public String getPrenom() { return prenom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
 
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getTelephone() {
-		return telephone;
-	}
-
-	public void setTelephone(String telephone) {
-		this.telephone = telephone;
-	}
-
-	public LocalDateTime getDateParticipation() {
-		return dateParticipation;
-	}
-
-	public void setDateParticipation(LocalDateTime dateParticipation) {
-		this.dateParticipation = dateParticipation;
-	}
-
-	public String getStatut() {
-		return statut;
-	}
-
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
-
-	public String getCodeUnique() {
-		return codeUnique;
-	}
-
-	public void setCodeUnique(String codeUnique) {
-		this.codeUnique = codeUnique;
-	}
-    
+    public LocalDateTime getDateInscription() { return dateInscription; }
+    public void setDateInscription(LocalDateTime dateInscription) { this.dateInscription = dateInscription; }
 }

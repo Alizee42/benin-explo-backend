@@ -1,110 +1,66 @@
 package com.beninexplo.backend.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "reservations")
+
 public class Reservation {
+
+    /* ---------------- ATTRIBUTS ---------------- */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idReservation;
 
-    @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Utilisateur utilisateur;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+
+    private LocalDate dateReservation;
 
     @ManyToOne
-    @JoinColumn(name = "devis_id")
-    private Devis devis;
+    @JoinColumn(name = "circuit_id")
+    private Circuit circuit;
 
-    private LocalDate dateDebut;
-    private LocalDate dateFin;
+    /* ---------------- CONSTRUCTEURS ---------------- */
 
-    private BigDecimal montantTotal;
+    public Reservation() {}
 
-    private String statut = "en_attente"; // en_attente / confirmé / payé / annulé
+    public Reservation(Long idReservation, String nom, String prenom, String email,
+                       String telephone, LocalDate dateReservation, Circuit circuit) {
 
-    private LocalDateTime dateCreation = LocalDateTime.now();
-
-    public Reservation() {
-    }
-
-    public Reservation(Long idReservation, Utilisateur utilisateur, Devis devis, LocalDate dateDebut, LocalDate dateFin, BigDecimal montantTotal, String statut, LocalDateTime dateCreation) {
         this.idReservation = idReservation;
-        this.utilisateur = utilisateur;
-        this.devis = devis;
-        this.dateDebut = dateDebut;
-        this.dateFin = dateFin;
-        this.montantTotal = montantTotal;
-        this.statut = statut;
-        this.dateCreation = dateCreation;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.dateReservation = dateReservation;
+        this.circuit = circuit;
     }
 
-	public Long getIdReservation() {
-		return idReservation;
-	}
+    /* ---------------- GETTERS & SETTERS ---------------- */
 
-	public void setIdReservation(Long idReservation) {
-		this.idReservation = idReservation;
-	}
+    public Long getIdReservation() { return idReservation; }
+    public void setIdReservation(Long idReservation) { this.idReservation = idReservation; }
 
-	public Utilisateur getUtilisateur() {
-		return utilisateur;
-	}
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-	public void setUtilisateur(Utilisateur utilisateur) {
-		this.utilisateur = utilisateur;
-	}
+    public String getPrenom() { return prenom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
 
-	public Devis getDevis() {
-		return devis;
-	}
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-	public void setDevis(Devis devis) {
-		this.devis = devis;
-	}
+    public String getTelephone() { return telephone; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
 
-	public LocalDate getDateDebut() {
-		return dateDebut;
-	}
+    public LocalDate getDateReservation() { return dateReservation; }
+    public void setDateReservation(LocalDate dateReservation) { this.dateReservation = dateReservation; }
 
-	public void setDateDebut(LocalDate dateDebut) {
-		this.dateDebut = dateDebut;
-	}
-
-	public LocalDate getDateFin() {
-		return dateFin;
-	}
-
-	public void setDateFin(LocalDate dateFin) {
-		this.dateFin = dateFin;
-	}
-
-	public BigDecimal getMontantTotal() {
-		return montantTotal;
-	}
-
-	public void setMontantTotal(BigDecimal montantTotal) {
-		this.montantTotal = montantTotal;
-	}
-
-	public String getStatut() {
-		return statut;
-	}
-
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
-
-	public LocalDateTime getDateCreation() {
-		return dateCreation;
-	}
-
-	public void setDateCreation(LocalDateTime dateCreation) {
-		this.dateCreation = dateCreation;
-	}
-    
+    public Circuit getCircuit() { return circuit; }
+    public void setCircuit(Circuit circuit) { this.circuit = circuit; }
 }

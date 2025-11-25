@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/activites")
+@CrossOrigin(origins = "*") // à adapter selon ton front
 public class ActiviteController {
 
     private final ActiviteService service;

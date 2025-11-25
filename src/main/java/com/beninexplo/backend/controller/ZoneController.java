@@ -2,43 +2,42 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ZoneDTO;
 import com.beninexplo.backend.service.ZoneService;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/zones")
-
+@RequestMapping("/admin/zones")
+@CrossOrigin("*")
 public class ZoneController {
 
-    private final ZoneService service;
+    @Autowired
+    private ZoneService zoneService;
 
-    public ZoneController(ZoneService service) {
-        this.service = service;
+    @PostMapping
+    public ZoneDTO create(@RequestBody ZoneDTO dto) {
+        return zoneService.createZone(dto);
     }
 
     @GetMapping
     public List<ZoneDTO> getAll() {
-        return service.getAll();
+        return zoneService.getAllZones();
     }
 
     @GetMapping("/{id}")
-    public ZoneDTO get(@PathVariable Long id) {
-        return service.get(id);
-    }
-
-    @PostMapping
-    public ZoneDTO create(@RequestBody ZoneDTO dto) {
-        return service.create(dto);
+    public ZoneDTO getById(@PathVariable Long id) {
+        return zoneService.getZoneById(id);
     }
 
     @PutMapping("/{id}")
     public ZoneDTO update(@PathVariable Long id, @RequestBody ZoneDTO dto) {
-        return service.update(id, dto);
+        return zoneService.updateZone(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public String delete(@PathVariable Long id) {
+        zoneService.deleteZone(id);
+        return "Zone supprimée avec succès.";
     }
 }

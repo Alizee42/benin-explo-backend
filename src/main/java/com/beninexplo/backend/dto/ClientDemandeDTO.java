@@ -6,71 +6,80 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 public class ClientDemandeDTO {
 
     private Long id;
-
-    private Long devisId;
-
     private String nom;
     private String prenom;
     private String email;
     private String telephone;
-
     private String message;
 
-	public Long getId() {
-		return id;
-	}
+    private Long circuitId;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public ClientDemandeDTO() {}
 
-	public Long getDevisId() {
-		return devisId;
-	}
+    public ClientDemandeDTO(Long id, String nom, String prenom, String email, String telephone,
+                            String message, Long circuitId) {
+        this.id = id;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.message = message;
+        this.circuitId = circuitId;
+    }
 
-	public void setDevisId(Long devisId) {
-		this.devisId = devisId;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getNom() {
-		return nom;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public String getPrenom() {
-		return prenom;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
-	}
+    public String getPrenom() {
+        return prenom;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getTelephone() {
-		return telephone;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setTelephone(String telephone) {
-		this.telephone = telephone;
-	}
+    public String getTelephone() {
+        return telephone;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
-    
-    
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Long getCircuitId() {
+        return circuitId;
+    }
+
+    public void setCircuitId(Long circuitId) {
+        this.circuitId = circuitId;
+    }
 }

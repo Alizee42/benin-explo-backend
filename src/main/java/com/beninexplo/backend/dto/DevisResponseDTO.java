@@ -5,111 +5,93 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class DevisResponseDTO {
 
+    /* ----------------------------------------------------
+       🟦 ATTRIBUTS
+    ---------------------------------------------------- */
+
     private Long id;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+    private String message;
+    private Long circuitId;
 
-    private String formule;
-    private Integer dureeCircuit;
+    /* ----------------------------------------------------
+       🟩 CONSTRUCTEURS
+    ---------------------------------------------------- */
 
-    private String dateDebutCircuit;
-    private String dateFinCircuit;
+    public DevisResponseDTO() {
+    }
 
-    private Integer nbAdultes;
-    private Integer nbEnfants;
-    private Integer nbParticipants;
+    public DevisResponseDTO(Long id, String nom, String prenom, String email,
+                            String telephone, String message, Long circuitId) {
+        this.id = id;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.message = message;
+        this.circuitId = circuitId;
+    }
 
-    private String statut;
-    private String dateDemande;
+    /* ----------------------------------------------------
+       🟨 GETTERS & SETTERS
+    ---------------------------------------------------- */
 
-    private Long utilisateurId;
+    public Long getId() {
+        return id;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public String getFormule() {
-		return formule;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setFormule(String formule) {
-		this.formule = formule;
-	}
+    public String getPrenom() {
+        return prenom;
+    }
 
-	public Integer getDureeCircuit() {
-		return dureeCircuit;
-	}
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
 
-	public void setDureeCircuit(Integer dureeCircuit) {
-		this.dureeCircuit = dureeCircuit;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getDateDebutCircuit() {
-		return dateDebutCircuit;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setDateDebutCircuit(String dateDebutCircuit) {
-		this.dateDebutCircuit = dateDebutCircuit;
-	}
+    public String getTelephone() {
+        return telephone;
+    }
 
-	public String getDateFinCircuit() {
-		return dateFinCircuit;
-	}
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
 
-	public void setDateFinCircuit(String dateFinCircuit) {
-		this.dateFinCircuit = dateFinCircuit;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	public Integer getNbAdultes() {
-		return nbAdultes;
-	}
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-	public void setNbAdultes(Integer nbAdultes) {
-		this.nbAdultes = nbAdultes;
-	}
+    public Long getCircuitId() {
+        return circuitId;
+    }
 
-	public Integer getNbEnfants() {
-		return nbEnfants;
-	}
-
-	public void setNbEnfants(Integer nbEnfants) {
-		this.nbEnfants = nbEnfants;
-	}
-
-	public Integer getNbParticipants() {
-		return nbParticipants;
-	}
-
-	public void setNbParticipants(Integer nbParticipants) {
-		this.nbParticipants = nbParticipants;
-	}
-
-	public String getStatut() {
-		return statut;
-	}
-
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
-
-	public String getDateDemande() {
-		return dateDemande;
-	}
-
-	public void setDateDemande(String dateDemande) {
-		this.dateDemande = dateDemande;
-	}
-
-	public Long getUtilisateurId() {
-		return utilisateurId;
-	}
-
-	public void setUtilisateurId(Long utilisateurId) {
-		this.utilisateurId = utilisateurId;
-	}
-    
-    
-    
+    public void setCircuitId(Long circuitId) {
+        this.circuitId = circuitId;
+    }
 }

@@ -3,11 +3,15 @@ package com.beninexplo.backend.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "devis_activites")
 public class DevisActivite {
 
+    /* ----------------------------------------------------
+       🟦 ATTRIBUTS
+    ---------------------------------------------------- */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idDevisActivite;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "devis_id")
@@ -17,48 +21,32 @@ public class DevisActivite {
     @JoinColumn(name = "activite_id")
     private Activite activite;
 
-    private Integer ordre; // ordre du programme
+    private Integer quantite;
 
-    public DevisActivite() {
-    }
+    /* ----------------------------------------------------
+       🟩 CONSTRUCTEURS
+    ---------------------------------------------------- */
+    public DevisActivite() {}
 
-    public DevisActivite(Long idDevisActivite, Devis devis, Activite activite, Integer ordre) {
-        this.idDevisActivite = idDevisActivite;
+    public DevisActivite(Long id, Devis devis, Activite activite, Integer quantite) {
+        this.id = id;
         this.devis = devis;
         this.activite = activite;
-        this.ordre = ordre;
+        this.quantite = quantite;
     }
 
-	public Long getIdDevisActivite() {
-		return idDevisActivite;
-	}
+    /* ----------------------------------------------------
+       🟨 GETTERS & SETTERS
+    ---------------------------------------------------- */
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-	public void setIdDevisActivite(Long idDevisActivite) {
-		this.idDevisActivite = idDevisActivite;
-	}
+    public Devis getDevis() { return devis; }
+    public void setDevis(Devis devis) { this.devis = devis; }
 
-	public Devis getDevis() {
-		return devis;
-	}
+    public Activite getActivite() { return activite; }
+    public void setActivite(Activite activite) { this.activite = activite; }
 
-	public void setDevis(Devis devis) {
-		this.devis = devis;
-	}
-
-	public Activite getActivite() {
-		return activite;
-	}
-
-	public void setActivite(Activite activite) {
-		this.activite = activite;
-	}
-
-	public Integer getOrdre() {
-		return ordre;
-	}
-
-	public void setOrdre(Integer ordre) {
-		this.ordre = ordre;
-	}
-    
+    public Integer getQuantite() { return quantite; }
+    public void setQuantite(Integer quantite) { this.quantite = quantite; }
 }

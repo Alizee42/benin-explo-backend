@@ -2,85 +2,62 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.DevisRequestDTO;
 import com.beninexplo.backend.dto.DevisResponseDTO;
+import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Devis;
-import com.beninexplo.backend.entity.Utilisateur;
+import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.DevisRepository;
-import com.beninexplo.backend.repository.UtilisateurRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 @Service
 public class DevisService {
 
     private final DevisRepository repo;
-    private final UtilisateurRepository utilisateurRepo;
+    private final CircuitRepository circuitRepo;
 
-    public DevisService(DevisRepository repo, UtilisateurRepository utilisateurRepo) {
+    public DevisService(DevisRepository repo, CircuitRepository circuitRepo) {
         this.repo = repo;
-        this.utilisateurRepo = utilisateurRepo;
+        this.circuitRepo = circuitRepo;
     }
 
-    // Convert Entity → DTO
     private DevisResponseDTO toDTO(Devis d) {
-        DevisResponseDTO dto = new DevisResponseDTO();
+        Long circuitId = (d.getCircuit() != null) ? d.getCircuit().getIdCircuit() : null;
 
-        dto.setId(d.getIdDevis());
-        dto.setFormule(d.getFormule());
-        dto.setDureeCircuit(d.getDureeCircuit());
-
-        if (d.getDateDebutCircuit() != null)
-            dto.setDateDebutCircuit(d.getDateDebutCircuit().toString());
-
-        if (d.getDateFinCircuit() != null)
-            dto.setDateFinCircuit(d.getDateFinCircuit().toString());
-
-        dto.setNbAdultes(d.getNbAdultes());
-        dto.setNbEnfants(d.getNbEnfants());
-        dto.setNbParticipants(d.getNbParticipants());
-
-        dto.setStatut(d.getStatut());
-        dto.setDateDemande(d.getDateDemande().toString());
-
-        if (d.getUtilisateur() != null)
-            dto.setUtilisateurId(d.getUtilisateur().getIdUtilisateur());
-
-        return dto;
+        return new DevisResponseDTO(
+                d.getIdDevis(),
+                d.getNom(),
+                d.getPrenom(),
+                d.getEmail(),
+                d.getTelephone(),
+                d.getMessage(),
+                circuitId
+        );
     }
 
-    // Création d’un devis
-    public DevisResponseDTO create(DevisRequestDTO dto) {
+    private Devis fromDTO(DevisRequestDTO dto) {
 
         Devis d = new Devis();
+        d.setNom(dto.getNom());
+        d.setPrenom(dto.getPrenom());
+        d.setEmail(dto.getEmail());
+        d.setTelephone(dto.getTelephone());
+        d.setMessage(dto.getMessage());
 
-        // utilisateur (optionnel)
-        if (dto.getUtilisateurId() != null) {
-            Long utilisateurId = dto.getUtilisateurId();
-            Objects.requireNonNull(utilisateurId);
-            Utilisateur u = utilisateurRepo.findById(utilisateurId).orElse(null);
-            d.setUtilisateur(u);
+        if (dto.getCircuitId() != null) {
+            Circuit circuit = circuitRepo.findById(dto.getCircuitId())
+                    .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
+            d.setCircuit(circuit);
         }
 
-        d.setFormule(dto.getFormule());
-        d.setDureeCircuit(dto.getDureeCircuit());
-        d.setDateDebutCircuit(LocalDate.parse(dto.getDateDebutCircuit()));
+        return d;
+    }
 
-        // date de fin calculée automatiquement
-        d.setDateFinCircuit(
-                d.getDateDebutCircuit().plusDays(d.getDureeCircuit())
-        );
-
-        d.setNbAdultes(dto.getNbAdultes());
-        d.setNbEnfants(dto.getNbEnfants());
-        d.setNbParticipants(dto.getNbAdultes() + dto.getNbEnfants());
-
-        repo.save(d);
-
-        return toDTO(d);
+    public DevisResponseDTO create(DevisRequestDTO dto) {
+        Devis saved = repo.save(fromDTO(dto));
+        return toDTO(saved);
     }
 
     public List<DevisResponseDTO> getAll() {
@@ -90,13 +67,7 @@ public class DevisService {
                 .collect(Collectors.toList());
     }
 
-    public DevisResponseDTO get(Long id) {
-        Objects.requireNonNull(id, "id ne doit pas être null");
-        return repo.findById(id).map(this::toDTO).orElse(null);
-    }
-
     public void delete(Long id) {
-        Objects.requireNonNull(id, "id ne doit pas être null");
         repo.deleteById(id);
     }
 }

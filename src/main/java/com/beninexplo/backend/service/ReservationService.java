@@ -2,116 +2,66 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ReservationRequestDTO;
 import com.beninexplo.backend.dto.ReservationResponseDTO;
+import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Reservation;
-import com.beninexplo.backend.entity.Utilisateur;
-import com.beninexplo.backend.entity.Devis;
+import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.ReservationRepository;
-import com.beninexplo.backend.repository.UtilisateurRepository;
-import com.beninexplo.backend.repository.DevisRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 @Service
 public class ReservationService {
 
     private final ReservationRepository repo;
-    private final UtilisateurRepository utilisateurRepo;
-    private final DevisRepository devisRepo;
+    private final CircuitRepository circuitRepo;
 
-    public ReservationService(
-            ReservationRepository repo,
-            UtilisateurRepository utilisateurRepo,
-            DevisRepository devisRepo
-    ) {
+    public ReservationService(ReservationRepository repo, CircuitRepository circuitRepo) {
         this.repo = repo;
-        this.utilisateurRepo = utilisateurRepo;
-        this.devisRepo = devisRepo;
+        this.circuitRepo = circuitRepo;
     }
 
     private ReservationResponseDTO toDTO(Reservation r) {
-        ReservationResponseDTO dto = new ReservationResponseDTO();
-
-        dto.setId(r.getIdReservation());
-
-        if (r.getUtilisateur() != null) {
-            Long userId = r.getUtilisateur().getIdUtilisateur();
-            dto.setUtilisateurId(userId);
-        }
-
-        if (r.getDevis() != null) {
-            Long devisId = r.getDevis().getIdDevis();
-            dto.setDevisId(devisId);
-        }
-
-        if (r.getDateDebut() != null)
-            dto.setDateDebut(r.getDateDebut().toString());
-
-        if (r.getDateFin() != null)
-            dto.setDateFin(r.getDateFin().toString());
-
-        if (r.getMontantTotal() != null)
-            dto.setMontantTotal(r.getMontantTotal().toString());
-
-        dto.setStatut(r.getStatut());
-        dto.setDateCreation(r.getDateCreation().toString());
-
-        return dto;
+        return new ReservationResponseDTO(
+                r.getIdReservation(),
+                r.getNom(),
+                r.getPrenom(),
+                r.getEmail(),
+                r.getTelephone(),
+                r.getDateReservation(),
+                r.getCircuit().getIdCircuit()
+        );
     }
 
-    public ReservationResponseDTO create(ReservationRequestDTO dto) {
+    private Reservation fromDTO(ReservationRequestDTO dto) {
 
         Reservation r = new Reservation();
 
-        // Utilisateur lié
-        if (dto.getUtilisateurId() != null) {
-            Long utilisateurId = dto.getUtilisateurId();
-            Objects.requireNonNull(utilisateurId);
-            Utilisateur u = utilisateurRepo.findById(utilisateurId).orElse(null);
-            r.setUtilisateur(u);
-        }
+        r.setNom(dto.getNom());
+        r.setPrenom(dto.getPrenom());
+        r.setEmail(dto.getEmail());
+        r.setTelephone(dto.getTelephone());
+        r.setDateReservation(dto.getDateReservation());
 
-        // Devis lié
-        if (dto.getDevisId() != null) {
-            Long devisId = dto.getDevisId();
-            Objects.requireNonNull(devisId);
-            Devis d = devisRepo.findById(devisId).orElse(null);
-            r.setDevis(d);
-        }
+        Circuit c = circuitRepo.findById(dto.getCircuitId())
+                .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
+        r.setCircuit(c);
 
-        // Dates
-        r.setDateDebut(LocalDate.parse(dto.getDateDebut()));
-        r.setDateFin(LocalDate.parse(dto.getDateFin()));
+        return r;
+    }
 
-        // Montant
-        if (dto.getMontantTotal() != null) {
-            r.setMontantTotal(new BigDecimal(dto.getMontantTotal()));
-        }
-
-        repo.save(r);
-
-        return toDTO(r);
+    public ReservationResponseDTO create(ReservationRequestDTO dto) {
+        Reservation saved = repo.save(fromDTO(dto));
+        return toDTO(saved);
     }
 
     public List<ReservationResponseDTO> getAll() {
-        return repo.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    public ReservationResponseDTO get(Long id) {
-        Objects.requireNonNull(id, "id ne doit pas être null");
-        return repo.findById(id).map(this::toDTO).orElse(null);
+        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public void delete(Long id) {
-        Objects.requireNonNull(id, "id ne doit pas être null");
         repo.deleteById(id);
     }
 }

@@ -2,43 +2,55 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.TombolaParticipantDTO;
 import com.beninexplo.backend.service.TombolaParticipantService;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
-@RequestMapping("/api/tombola")
-
+@RequestMapping("/tombola")
+@CrossOrigin("*")
 public class TombolaParticipantController {
 
-    private final TombolaParticipantService service;
+    @Autowired
+    private TombolaParticipantService tombolaParticipantService;
 
-    public TombolaParticipantController(TombolaParticipantService service) {
-        this.service = service;
+    /* ----------------------------------------------------
+       🟦 INSCRIPTION À LA TOMBOLA
+       Input :
+       {
+         "email": "exemple@mail.com",
+         "nom": "Nom",
+         "prenom": "Prenom"
+       }
+
+       - Crée un utilisateur si nécessaire
+       - Ajoute le rôle PARTICIPANT si existant
+       - Enregistre la participation
+    ---------------------------------------------------- */
+    @PostMapping("/inscription")
+    public TombolaParticipantDTO inscriptionTombola(@RequestBody InscriptionTombolaRequest request) {
+        return tombolaParticipantService.inscrireParticipant(
+                request.getEmail(),
+                request.getNom(),
+                request.getPrenom()
+        );
     }
 
-    @GetMapping
-    public List<TombolaParticipantDTO> getAll() {
-        return service.getAll();
-    }
+    /* ----------------------------------------------------
+       🟩 DTO interne pour la requête
+       (permet d’avoir une entrée claire sans créer un autre fichier)
+    ---------------------------------------------------- */
+    public static class InscriptionTombolaRequest {
+        private String email;
+        private String nom;
+        private String prenom;
 
-    @GetMapping("/{id}")
-    public TombolaParticipantDTO get(@PathVariable Long id) {
-        return service.get(id);
-    }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
 
-    @PostMapping
-    public TombolaParticipantDTO create(@RequestBody TombolaParticipantDTO dto) {
-        return service.create(dto);
-    }
+        public String getNom() { return nom; }
+        public void setNom(String nom) { this.nom = nom; }
 
-    @PutMapping("/{id}")
-    public TombolaParticipantDTO update(@PathVariable Long id, @RequestBody TombolaParticipantDTO dto) {
-        return service.update(id, dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+        public String getPrenom() { return prenom; }
+        public void setPrenom(String prenom) { this.prenom = prenom; }
     }
 }

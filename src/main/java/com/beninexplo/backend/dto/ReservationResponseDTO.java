@@ -1,70 +1,56 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import java.time.LocalDate;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ReservationResponseDTO {
 
+    /* ---------------- ATTRIBUTS ---------------- */
+
     private Long id;
+    private String nom;
+    private String prenom;
+    private String email;
+    private String telephone;
+    private LocalDate dateReservation;
+    private Long circuitId;
 
-    private Long utilisateurId;
-    private Long devisId;
+    /* ---------------- CONSTRUCTEURS ---------------- */
 
-    private String dateDebut;
-    private String dateFin;
+    public ReservationResponseDTO() {}
 
-    private String montantTotal;
+    public ReservationResponseDTO(Long id, String nom, String prenom, String email,
+                                  String telephone, LocalDate dateReservation, Long circuitId) {
+        this.id = id;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.dateReservation = dateReservation;
+        this.circuitId = circuitId;
+    }
 
-    private String statut;
-    private String dateCreation;
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public Long getUtilisateurId() {
-		return utilisateurId;
-	}
-	public void setUtilisateurId(Long utilisateurId) {
-		this.utilisateurId = utilisateurId;
-	}
-	public Long getDevisId() {
-		return devisId;
-	}
-	public void setDevisId(Long devisId) {
-		this.devisId = devisId;
-	}
-	public String getDateDebut() {
-		return dateDebut;
-	}
-	public void setDateDebut(String dateDebut) {
-		this.dateDebut = dateDebut;
-	}
-	public String getDateFin() {
-		return dateFin;
-	}
-	public void setDateFin(String dateFin) {
-		this.dateFin = dateFin;
-	}
-	public String getMontantTotal() {
-		return montantTotal;
-	}
-	public void setMontantTotal(String montantTotal) {
-		this.montantTotal = montantTotal;
-	}
-	public String getStatut() {
-		return statut;
-	}
-	public void setStatut(String statut) {
-		this.statut = statut;
-	}
-	public String getDateCreation() {
-		return dateCreation;
-	}
-	public void setDateCreation(String dateCreation) {
-		this.dateCreation = dateCreation;
-	}
-    
-    
+    /* ---------------- GETTERS & SETTERS ---------------- */
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
+
+    public String getPrenom() { return prenom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getTelephone() { return telephone; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
+
+    public LocalDate getDateReservation() { return dateReservation; }
+    public void setDateReservation(LocalDate dateReservation) { this.dateReservation = dateReservation; }
+
+    public Long getCircuitId() { return circuitId; }
+    public void setCircuitId(Long circuitId) { this.circuitId = circuitId; }
 }

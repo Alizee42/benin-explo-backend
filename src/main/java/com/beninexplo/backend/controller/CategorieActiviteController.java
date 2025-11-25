@@ -2,14 +2,13 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.CategorieActiviteDTO;
 import com.beninexplo.backend.service.CategorieActiviteService;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories-activites")
-
+@CrossOrigin(origins = "*")
 public class CategorieActiviteController {
 
     private final CategorieActiviteService service;

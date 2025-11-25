@@ -3,14 +3,14 @@ package com.beninexplo.backend.controller;
 import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.service.CircuitService;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/circuits")
+@CrossOrigin(origins = "*")
 public class CircuitController {
 
     private final CircuitService service;
@@ -19,30 +19,27 @@ public class CircuitController {
         this.service = service;
     }
 
-    // GET ALL
+    // ---------------------------------------
+    // CRUD
+    // ---------------------------------------
+
     @GetMapping
-    public ResponseEntity<List<CircuitDTO>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public List<CircuitDTO> getAll() {
+        return service.getAll();
     }
 
-    // GET ONE
     @GetMapping("/{id}")
     public ResponseEntity<CircuitDTO> get(@PathVariable Long id) {
-        CircuitDTO dto = service.get(id);
-        if (dto == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(dto);
+        CircuitDTO dto = service.getById(id);
+        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
-    // CREATE
     @PostMapping
     public ResponseEntity<CircuitDTO> create(@RequestBody CircuitDTO dto) {
         CircuitDTO created = service.create(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<CircuitDTO> update(@PathVariable Long id, @RequestBody CircuitDTO dto) {
         try {
@@ -53,14 +50,28 @@ public class CircuitController {
         }
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        try {
-            service.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ---------------------------------------
+    // FILTRES & RECHERCHES
+    // ---------------------------------------
+
+    @GetMapping("/actifs")
+    public List<CircuitDTO> getActifs() {
+        return service.getActifs();
+    }
+
+    @GetMapping("/zone/{zoneId}")
+    public List<CircuitDTO> getByZone(@PathVariable Long zoneId) {
+        return service.getByZone(zoneId);
+    }
+
+    @GetMapping("/search")
+    public List<CircuitDTO> search(@RequestParam String nom) {
+        return service.searchByNom(nom);
     }
 }

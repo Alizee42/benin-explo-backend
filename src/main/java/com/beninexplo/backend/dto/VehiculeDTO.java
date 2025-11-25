@@ -6,61 +6,44 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 public class VehiculeDTO {
 
     private Long id;
+    private String marque;
     private String modele;
-    private String type;
-    private String prixParJour;
+    private String matricule;
+    private int annee;
+    private boolean disponible;
 
-    private boolean actif;
+    /* ----------------------
+       CONSTRUCTEURS
+    ----------------------- */
+    public VehiculeDTO() {}
 
-    private Long zoneId;
+    public VehiculeDTO(Long id, String marque, String modele, String matricule, int annee, boolean disponible) {
+        this.id = id;
+        this.marque = marque;
+        this.modele = modele;
+        this.matricule = matricule;
+        this.annee = annee;
+        this.disponible = disponible;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    /* ----------------------
+       GETTERS & SETTERS
+    ----------------------- */
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public String getMarque() { return marque; }
+    public void setMarque(String marque) { this.marque = marque; }
 
-	public String getModele() {
-		return modele;
-	}
+    public String getModele() { return modele; }
+    public void setModele(String modele) { this.modele = modele; }
 
-	public void setModele(String modele) {
-		this.modele = modele;
-	}
+    public String getMatricule() { return matricule; }
+    public void setMatricule(String matricule) { this.matricule = matricule; }
 
-	public String getType() {
-		return type;
-	}
+    public int getAnnee() { return annee; }
+    public void setAnnee(int annee) { this.annee = annee; }
 
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getPrixParJour() {
-		return prixParJour;
-	}
-
-	public void setPrixParJour(String prixParJour) {
-		this.prixParJour = prixParJour;
-	}
-
-	public boolean isActif() {
-		return actif;
-	}
-
-	public void setActif(boolean actif) {
-		this.actif = actif;
-	}
-
-	public Long getZoneId() {
-		return zoneId;
-	}
-
-	public void setZoneId(Long zoneId) {
-		this.zoneId = zoneId;
-	}
-    
-    
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
 }

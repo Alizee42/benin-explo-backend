@@ -1,64 +1,41 @@
 package com.beninexplo.backend.controller;
 
-import com.beninexplo.backend.dto.LoginRequestDTO;
-import com.beninexplo.backend.dto.LoginResponseDTO;
-import com.beninexplo.backend.dto.UtilisateurCreateDTO;
-import com.beninexplo.backend.dto.UtilisateurDTO;
-import com.beninexplo.backend.security.jwt.JwtUtil;
+import com.beninexplo.backend.dto.*;
 import com.beninexplo.backend.service.UtilisateurService;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
+@CrossOrigin("*")
 public class AuthController {
 
-    private final UtilisateurService utilisateurService;
-    private final JwtUtil jwtUtil;
+    @Autowired
+    private UtilisateurService utilisateurService;
 
-    public AuthController(UtilisateurService utilisateurService, JwtUtil jwtUtil) {
-        this.utilisateurService = utilisateurService;
-        this.jwtUtil = jwtUtil;
-    }
-
-    /**
-     * Inscription d’un utilisateur (register)
-     */
+    /* ----------------------------------------------------
+       🟦 REGISTER → créer un compte USER
+    ---------------------------------------------------- */
     @PostMapping("/register")
-    public ResponseEntity<UtilisateurDTO> register(@RequestBody UtilisateurCreateDTO dto) {
-        UtilisateurDTO created = utilisateurService.create(dto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public UtilisateurDTO register(@RequestBody UtilisateurCreateDTO dto) {
+        return utilisateurService.createUser(dto);
     }
 
-    /**
-     * Connexion (login) avec JWT
-     */
+    /* ----------------------------------------------------
+       🟩 LOGIN → renvoyer JWT + infos utilisateur
+    ---------------------------------------------------- */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO dto) {
+        return utilisateurService.login(dto);
+    }
 
-        UtilisateurDTO utilisateur = utilisateurService.authenticate(
-                request.getEmail(),
-                request.getMotDePasse()
-        );
-
-        LoginResponseDTO response = new LoginResponseDTO();
-
-        if (utilisateur == null) {
-            response.setSuccess(false);
-            response.setMessage("Email ou mot de passe incorrect.");
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        // Génération du JWT
-        String token = jwtUtil.generateToken(utilisateur.getEmail());
-
-        response.setSuccess(true);
-        response.setMessage("Connexion réussie.");
-        response.setUtilisateur(utilisateur);
-        response.setToken(token);
-
-        return ResponseEntity.ok(response);
+    /* ----------------------------------------------------
+       🟧 INSCRIPTION TOMBOLA
+       → crée automatiquement un compte PARTICIPANT si email inconnu
+       → ou ajoute le rôle PARTICIPANT si déjà inscrit
+    ---------------------------------------------------- */
+    @PostMapping("/tombola")
+    public UtilisateurDTO inscriptionTombola(@RequestBody LoginRequestDTO dto) {
+        return utilisateurService.createParticipantAuto(dto.getEmail());
     }
 }

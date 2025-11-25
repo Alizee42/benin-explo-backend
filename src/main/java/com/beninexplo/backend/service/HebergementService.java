@@ -3,11 +3,9 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.HebergementDTO;
 import com.beninexplo.backend.entity.Hebergement;
 import com.beninexplo.backend.repository.HebergementRepository;
-import com.beninexplo.backend.repository.ZoneRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,30 +13,20 @@ import java.util.stream.Collectors;
 public class HebergementService {
 
     private final HebergementRepository repo;
-    private final ZoneRepository zoneRepo;
 
-    public HebergementService(HebergementRepository repo, ZoneRepository zoneRepo) {
+    public HebergementService(HebergementRepository repo) {
         this.repo = repo;
-        this.zoneRepo = zoneRepo;
     }
 
     private HebergementDTO toDTO(Hebergement h) {
-        HebergementDTO dto = new HebergementDTO();
-
-        dto.setId(h.getIdHebergement());
-        dto.setNom(h.getNom());
-        dto.setType(h.getType());
-        dto.setDescription(h.getDescription());
-
-        if (h.getPrixParNuit() != null)
-            dto.setPrixParNuit(h.getPrixParNuit().toString());
-
-        dto.setActif(h.isActif());
-
-        if (h.getZone() != null)
-            dto.setZoneId(h.getZone().getIdZone());
-
-        return dto;
+        return new HebergementDTO(
+                h.getIdHebergement(),
+                h.getNom(),
+                h.getType(),
+                h.getLocalisation(),
+                h.getDescription(),
+                h.getPrixParNuit()
+        );
     }
 
     private Hebergement fromDTO(HebergementDTO dto) {
@@ -47,13 +35,9 @@ public class HebergementService {
         h.setIdHebergement(dto.getId());
         h.setNom(dto.getNom());
         h.setType(dto.getType());
+        h.setLocalisation(dto.getLocalisation());
         h.setDescription(dto.getDescription());
-
-        if (dto.getPrixParNuit() != null)
-            h.setPrixParNuit(new BigDecimal(dto.getPrixParNuit()));
-
-        if (dto.getZoneId() != null)
-            h.setZone(zoneRepo.findById(dto.getZoneId()).orElse(null));
+        h.setPrixParNuit(dto.getPrixParNuit());
 
         return h;
     }
@@ -67,12 +51,21 @@ public class HebergementService {
     }
 
     public HebergementDTO create(HebergementDTO dto) {
-        return toDTO(repo.save(fromDTO(dto)));
+        Hebergement saved = repo.save(fromDTO(dto));
+        return toDTO(saved);
     }
 
     public HebergementDTO update(Long id, HebergementDTO dto) {
-        dto.setId(id);
-        return toDTO(repo.save(fromDTO(dto)));
+        Hebergement existing = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hébergement non trouvé"));
+
+        existing.setNom(dto.getNom());
+        existing.setType(dto.getType());
+        existing.setLocalisation(dto.getLocalisation());
+        existing.setDescription(dto.getDescription());
+        existing.setPrixParNuit(dto.getPrixParNuit());
+
+        return toDTO(repo.save(existing));
     }
 
     public void delete(Long id) {

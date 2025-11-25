@@ -3,6 +3,7 @@ package com.beninexplo.backend.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "zones")
 public class Zone {
 
     @Id
@@ -10,12 +11,12 @@ public class Zone {
     private Long idZone;
 
     private String nom;
-
-    @Column(length = 2000)
     private String description;
 
-    public Zone() {
-    }
+    /* ----------------------
+       CONSTRUCTEURS
+    ----------------------- */
+    public Zone() {}
 
     public Zone(Long idZone, String nom, String description) {
         this.idZone = idZone;
@@ -23,28 +24,16 @@ public class Zone {
         this.description = description;
     }
 
-	public Long getIdZone() {
-		return idZone;
-	}
+    /* ----------------------
+       GETTERS & SETTERS
+    ----------------------- */
 
-	public void setIdZone(Long idZone) {
-		this.idZone = idZone;
-	}
+    public Long getIdZone() { return idZone; }
+    public void setIdZone(Long idZone) { this.idZone = idZone; }
 
-	public String getNom() {
-		return nom;
-	}
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

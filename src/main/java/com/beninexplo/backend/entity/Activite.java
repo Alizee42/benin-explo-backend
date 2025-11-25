@@ -3,6 +3,7 @@ package com.beninexplo.backend.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "activites")
 public class Activite {
 
     @Id
@@ -16,16 +17,17 @@ public class Activite {
 
     private String ville;
 
-    private Integer dureeInterne;          // durée indicative interne
-    private Integer distanceDepuisCotonou; // km
-    private Integer poids;                 // 1 proche / 2 moyen / 3 loin
+    // Durée interne de l'activité (en minutes, heures, etc. selon ton choix)
+    private Integer dureeInterne;
+
+    // Distance depuis Cotonou (en km)
+    private Integer distanceDepuisCotonou;
+
+    // Poids / importance pour le tri ou la mise en avant
+    private Integer poids;
+
+    // Niveau de difficulté (facile, moyen, difficile, etc.)
     private String difficulte;
-
-    private boolean actif = true;
-
-    @ManyToOne
-    @JoinColumn(name = "categorie_id")
-    private CategorieActivite categorie;
 
     @ManyToOne
     @JoinColumn(name = "zone_id")
@@ -35,10 +37,23 @@ public class Activite {
     @JoinColumn(name = "image_principale_id")
     private Media imagePrincipale;
 
+    // ----------------------------------------------------
+    // CONSTRUCTEURS
+    // ----------------------------------------------------
+
     public Activite() {
     }
 
-    public Activite(Long idActivite, String nom, String description, String ville, Integer dureeInterne, Integer distanceDepuisCotonou, Integer poids, String difficulte, boolean actif, CategorieActivite categorie, Zone zone, Media imagePrincipale) {
+    public Activite(Long idActivite,
+                    String nom,
+                    String description,
+                    String ville,
+                    Integer dureeInterne,
+                    Integer distanceDepuisCotonou,
+                    Integer poids,
+                    String difficulte,
+                    Zone zone,
+                    Media imagePrincipale) {
         this.idActivite = idActivite;
         this.nom = nom;
         this.description = description;
@@ -47,107 +62,92 @@ public class Activite {
         this.distanceDepuisCotonou = distanceDepuisCotonou;
         this.poids = poids;
         this.difficulte = difficulte;
-        this.actif = actif;
-        this.categorie = categorie;
         this.zone = zone;
         this.imagePrincipale = imagePrincipale;
     }
 
-	public Long getIdActivite() {
-		return idActivite;
-	}
+    // ----------------------------------------------------
+    // GETTERS / SETTERS
+    // ----------------------------------------------------
 
-	public void setIdActivite(Long idActivite) {
-		this.idActivite = idActivite;
-	}
+    public Long getIdActivite() {
+        return idActivite;
+    }
 
-	public String getNom() {
-		return nom;
-	}
+    public void setIdActivite(Long idActivite) {
+        this.idActivite = idActivite;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getVille() {
-		return ville;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setVille(String ville) {
-		this.ville = ville;
-	}
+    public String getVille() {
+        return ville;
+    }
 
-	public Integer getDureeInterne() {
-		return dureeInterne;
-	}
+    public void setVille(String ville) {
+        this.ville = ville;
+    }
 
-	public void setDureeInterne(Integer dureeInterne) {
-		this.dureeInterne = dureeInterne;
-	}
+    public Integer getDureeInterne() {
+        return dureeInterne;
+    }
 
-	public Integer getDistanceDepuisCotonou() {
-		return distanceDepuisCotonou;
-	}
+    public void setDureeInterne(Integer dureeInterne) {
+        this.dureeInterne = dureeInterne;
+    }
 
-	public void setDistanceDepuisCotonou(Integer distanceDepuisCotonou) {
-		this.distanceDepuisCotonou = distanceDepuisCotonou;
-	}
+    public Integer getDistanceDepuisCotonou() {
+        return distanceDepuisCotonou;
+    }
 
-	public Integer getPoids() {
-		return poids;
-	}
+    public void setDistanceDepuisCotonou(Integer distanceDepuisCotonou) {
+        this.distanceDepuisCotonou = distanceDepuisCotonou;
+    }
 
-	public void setPoids(Integer poids) {
-		this.poids = poids;
-	}
+    public Integer getPoids() {
+        return poids;
+    }
 
-	public String getDifficulte() {
-		return difficulte;
-	}
+    public void setPoids(Integer poids) {
+        this.poids = poids;
+    }
 
-	public void setDifficulte(String difficulte) {
-		this.difficulte = difficulte;
-	}
+    public String getDifficulte() {
+        return difficulte;
+    }
 
-	public boolean isActif() {
-		return actif;
-	}
+    public void setDifficulte(String difficulte) {
+        this.difficulte = difficulte;
+    }
 
-	public void setActif(boolean actif) {
-		this.actif = actif;
-	}
+    public Zone getZone() {
+        return zone;
+    }
 
-	public CategorieActivite getCategorie() {
-		return categorie;
-	}
+    public void setZone(Zone zone) {
+        this.zone = zone;
+    }
 
-	public void setCategorie(CategorieActivite categorie) {
-		this.categorie = categorie;
-	}
+    public Media getImagePrincipale() {
+        return imagePrincipale;
+    }
 
-	public Zone getZone() {
-		return zone;
-	}
-
-	public void setZone(Zone zone) {
-		this.zone = zone;
-	}
-
-	public Media getImagePrincipale() {
-		return imagePrincipale;
-	}
-
-	public void setImagePrincipale(Media imagePrincipale) {
-		this.imagePrincipale = imagePrincipale;
-	}
-    
-    
+    public void setImagePrincipale(Media imagePrincipale) {
+        this.imagePrincipale = imagePrincipale;
+    }
 }
+
