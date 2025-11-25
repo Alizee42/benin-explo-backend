@@ -1,8 +1,8 @@
 package com.beninexplo.backend.dto;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-@Data
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class CircuitActiviteDTO {
 
     private Long id;
@@ -12,4 +12,37 @@ public class CircuitActiviteDTO {
 
     private Integer ordre;
     private Integer jourIndicatif;
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public Long getCircuitId() {
+		return circuitId;
+	}
+	public void setCircuitId(Long circuitId) {
+		this.circuitId = circuitId;
+	}
+	public Long getActiviteId() {
+		return activiteId;
+	}
+	public void setActiviteId(Long activiteId) {
+		this.activiteId = activiteId;
+	}
+	public Integer getOrdre() {
+		return ordre;
+	}
+	public void setOrdre(Integer ordre) {
+		this.ordre = ordre;
+	}
+	public Integer getJourIndicatif() {
+		return jourIndicatif;
+	}
+	public void setJourIndicatif(Integer jourIndicatif) {
+		this.jourIndicatif = jourIndicatif;
+	}
+    
+    
+    
 }
