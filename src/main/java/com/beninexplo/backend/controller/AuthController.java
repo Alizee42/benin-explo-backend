@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("*")
 public class AuthController {
 
     @Autowired
@@ -26,7 +25,10 @@ public class AuthController {
     ---------------------------------------------------- */
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginRequestDTO dto) {
-        return utilisateurService.login(dto);
+        System.out.println("🚀 Requête LOGIN reçue pour: " + dto.getEmail());
+        LoginResponseDTO response = utilisateurService.login(dto);
+        System.out.println("✅ LOGIN réussi pour: " + dto.getEmail());
+        return response;
     }
 
     /* ----------------------------------------------------

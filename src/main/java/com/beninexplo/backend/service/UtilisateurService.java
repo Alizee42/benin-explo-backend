@@ -49,15 +49,25 @@ public class UtilisateurService {
        🟩 2) LOGIN (EMAIL + MOT DE PASSE)
     ---------------------------------------------------- */
     public LoginResponseDTO login(LoginRequestDTO dto) {
+        System.out.println("🔐 Tentative de connexion pour email: '" + dto.getEmail() + "'");
 
         Utilisateur user = utilisateurRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
 
+        System.out.println("👤 Utilisateur trouvé: " + user.getEmail() + " avec rôle: " + user.getRole());
+        System.out.println("🔑 Mot de passe saisi: '" + dto.getMotDePasse() + "'");
+        System.out.println("🔒 Mot de passe stocké: '" + user.getMotDePasse() + "'");
+
         if (!passwordEncoder.matches(dto.getMotDePasse(), user.getMotDePasse())) {
+            System.out.println("❌ Mot de passe incorrect pour: " + dto.getEmail());
             throw new RuntimeException("Mot de passe incorrect.");
         }
 
+        System.out.println("✅ Mot de passe correct, génération du token...");
+
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+
+        System.out.println("🎫 Token généré pour: " + user.getEmail());
 
         return new LoginResponseDTO(
                 token,
