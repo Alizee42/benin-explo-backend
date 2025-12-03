@@ -2,30 +2,29 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.entity.Circuit;
-import com.beninexplo.backend.entity.Media;
 import com.beninexplo.backend.entity.Zone;
 import com.beninexplo.backend.repository.CircuitRepository;
-import com.beninexplo.backend.repository.MediaRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class CircuitService {
 
     private final CircuitRepository circuitRepo;
     private final ZoneRepository zoneRepo;
-    private final MediaRepository mediaRepo;
 
     public CircuitService(CircuitRepository circuitRepo,
-                          ZoneRepository zoneRepo,
-                          MediaRepository mediaRepo) {
+                          ZoneRepository zoneRepo) {
         this.circuitRepo = circuitRepo;
         this.zoneRepo = zoneRepo;
-        this.mediaRepo = mediaRepo;
     }
 
     // ---------------------------------------
@@ -38,50 +37,179 @@ public class CircuitService {
         CircuitDTO dto = new CircuitDTO();
 
         dto.setId(c.getIdCircuit());
-        dto.setNom(c.getNom());
+        dto.setTitre(c.getNom()); // Map nom to titre
         dto.setDescription(c.getDescription());
         dto.setDureeIndicative(c.getDureeIndicative());
         dto.setPrixIndicatif(c.getPrixIndicatif());
         dto.setFormuleProposee(c.getFormuleProposee());
-        dto.setNiveau(c.getNiveau());
         dto.setActif(c.isActif());
+
+        // Image principale (URL ou base64) stockée en TEXT
+        dto.setImg(c.getImg());
+
+        // Galerie : stockée en JSON dans l'entité, convertie en List<String>
+        if (c.getGalerie() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<String> gal = mapper.readValue(c.getGalerie(), new TypeReference<List<String>>(){});
+                dto.setGalerie(gal);
+            } catch (JsonProcessingException e) {
+                dto.setGalerie(Collections.emptyList());
+            }
+        } else {
+            dto.setGalerie(Collections.emptyList());
+        }
+
+        // Resume (court chapeau)
+        dto.setResume(c.getResume());
+
+        // Programme
+        if (c.getProgramme() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<String> prog = mapper.readValue(c.getProgramme(), new TypeReference<List<String>>(){});
+                dto.setProgramme(prog);
+            } catch (JsonProcessingException e) {
+                dto.setProgramme(Collections.emptyList());
+            }
+        } else {
+            dto.setProgramme(Collections.emptyList());
+        }
+
+        // Points forts (liste d'objets)
+        if (c.getPointsForts() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<CircuitDTO.PointFort> forts = mapper.readValue(c.getPointsForts(), new TypeReference<List<CircuitDTO.PointFort>>(){});
+                dto.setPointsForts(forts);
+            } catch (JsonProcessingException e) {
+                dto.setPointsForts(Collections.emptyList());
+            }
+        } else {
+            dto.setPointsForts(Collections.emptyList());
+        }
+
+        // Inclus / Non inclus
+        if (c.getInclus() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<String> incl = mapper.readValue(c.getInclus(), new TypeReference<List<String>>(){});
+                dto.setInclus(incl);
+            } catch (JsonProcessingException e) {
+                dto.setInclus(Collections.emptyList());
+            }
+        } else {
+            dto.setInclus(Collections.emptyList());
+        }
+
+        if (c.getNonInclus() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<String> non = mapper.readValue(c.getNonInclus(), new TypeReference<List<String>>(){});
+                dto.setNonInclus(non);
+            } catch (JsonProcessingException e) {
+                dto.setNonInclus(Collections.emptyList());
+            }
+        } else {
+            dto.setNonInclus(Collections.emptyList());
+        }
+
+        // Tourisme / Aventures: non mappés pour l'instant (peuvent être ajoutés au DTO si besoin)
 
         if (c.getZone() != null)
             dto.setZoneId(c.getZone().getIdZone());
 
-        if (c.getImagePrincipale() != null)
-            dto.setImagePrincipaleId(c.getImagePrincipale().getIdMedia());
+        // Pour l'instant, on ne mappe pas les nouveaux champs car l'entité ne les a pas
+        // Ces champs seront gérés plus tard quand l'entité sera mise à jour
 
         return dto;
     }
 
     private void updateEntity(Circuit c, CircuitDTO dto) {
 
-        c.setNom(dto.getNom());
+        c.setNom(dto.getTitre()); // Map titre to nom
         c.setDescription(dto.getDescription());
         c.setDureeIndicative(dto.getDureeIndicative());
         c.setPrixIndicatif(dto.getPrixIndicatif());
         c.setFormuleProposee(dto.getFormuleProposee());
-        c.setNiveau(dto.getNiveau());
         c.setActif(dto.isActif());
+
+        // Image principale
+        c.setImg(dto.getImg());
+
+        // Galerie : sérialiser la liste en JSON
+        if (dto.getGalerie() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setGalerie(mapper.writeValueAsString(dto.getGalerie()));
+            } catch (JsonProcessingException e) {
+                c.setGalerie(null);
+            }
+        } else {
+            c.setGalerie(null);
+        }
+
+        // Resume
+        c.setResume(dto.getResume());
+
+        // Programme
+        if (dto.getProgramme() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setProgramme(mapper.writeValueAsString(dto.getProgramme()));
+            } catch (JsonProcessingException e) {
+                c.setProgramme(null);
+            }
+        } else {
+            c.setProgramme(null);
+        }
+
+        // Points forts
+        if (dto.getPointsForts() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setPointsForts(mapper.writeValueAsString(dto.getPointsForts()));
+            } catch (JsonProcessingException e) {
+                c.setPointsForts(null);
+            }
+        } else {
+            c.setPointsForts(null);
+        }
+
+        // Inclus / NonInclus
+        if (dto.getInclus() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setInclus(mapper.writeValueAsString(dto.getInclus()));
+            } catch (JsonProcessingException e) {
+                c.setInclus(null);
+            }
+        } else {
+            c.setInclus(null);
+        }
+
+        if (dto.getNonInclus() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setNonInclus(mapper.writeValueAsString(dto.getNonInclus()));
+            } catch (JsonProcessingException e) {
+                c.setNonInclus(null);
+            }
+        } else {
+            c.setNonInclus(null);
+        }
 
         // Zone
         if (dto.getZoneId() != null) {
-            Zone z = zoneRepo.findById(dto.getZoneId())
-                    .orElseThrow(() -> new RuntimeException("Zone introuvable !"));
+            Zone z = zoneRepo.findById(dto.getZoneId()).orElse(null);
             c.setZone(z);
+            // Note: Si la zone n'existe pas, on ne plante pas, on la laisse à null
         } else {
             c.setZone(null);
         }
 
-        // Image
-        if (dto.getImagePrincipaleId() != null) {
-            Media img = mediaRepo.findById(dto.getImagePrincipaleId())
-                    .orElseThrow(() -> new RuntimeException("Image introuvable !"));
-            c.setImagePrincipale(img);
-        } else {
-            c.setImagePrincipale(null);
-        }
+        // Pour l'instant, on ignore les nouveaux champs car l'entité ne les supporte pas
+        // Ces champs seront gérés plus tard quand l'entité sera mise à jour
     }
 
     // ---------------------------------------

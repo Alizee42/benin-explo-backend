@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore uploaded/generated images stored at runtime
+src/uploads/

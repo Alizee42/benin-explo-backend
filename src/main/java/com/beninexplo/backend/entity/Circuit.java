@@ -16,11 +16,14 @@ public class Circuit {
     @Column(length = 5000)
     private String description;
 
+    // Court résumé (affiché comme chapeau)
+    @Column(length = 2000)
+    private String resume;
+
     private String dureeIndicative;
     private BigDecimal prixIndicatif;
 
     private String formuleProposee;
-    private String niveau;
 
     private boolean actif = true;
 
@@ -32,13 +35,51 @@ public class Circuit {
     @JoinColumn(name = "image_principale_id")
     private Media imagePrincipale;
 
+    // Image principale (base64 ou URL) stockée en TEXT
+    @Lob
+    @Column(columnDefinition = "text")
+    private String img;
+
+    // Galerie d'images stockée en JSON (TEXT)
+    @Lob
+    @Column(columnDefinition = "text")
+    private String galerie;
+
+    // Programme jour par jour stocké en JSON (TEXT)
+    @Lob
+    @Column(columnDefinition = "text")
+    private String programme;
+
+    // Points forts (liste d'objets) stockée en JSON (TEXT)
+    @Lob
+    @Column(columnDefinition = "text")
+    private String pointsForts;
+
+    // Inclus / non inclus stockés en JSON
+    @Lob
+    @Column(columnDefinition = "text")
+    private String inclus;
+
+    @Lob
+    @Column(columnDefinition = "text")
+    private String nonInclus;
+
+    // Sections tourisme / aventures (listes de chaînes)
+    @Lob
+    @Column(columnDefinition = "text")
+    private String tourisme;
+
+    @Lob
+    @Column(columnDefinition = "text")
+    private String aventures;
+
     // -----------------------------------------
     // CONSTRUCTEURS
     // -----------------------------------------
     public Circuit() {}
 
     public Circuit(Long idCircuit, String nom, String description, String dureeIndicative,
-                   BigDecimal prixIndicatif, String formuleProposee, String niveau,
+                   BigDecimal prixIndicatif, String formuleProposee,
                    boolean actif, Zone zone, Media imagePrincipale) {
         this.idCircuit = idCircuit;
         this.nom = nom;
@@ -46,7 +87,6 @@ public class Circuit {
         this.dureeIndicative = dureeIndicative;
         this.prixIndicatif = prixIndicatif;
         this.formuleProposee = formuleProposee;
-        this.niveau = niveau;
         this.actif = actif;
         this.zone = zone;
         this.imagePrincipale = imagePrincipale;
@@ -73,9 +113,6 @@ public class Circuit {
     public String getFormuleProposee() { return formuleProposee; }
     public void setFormuleProposee(String formuleProposee) { this.formuleProposee = formuleProposee; }
 
-    public String getNiveau() { return niveau; }
-    public void setNiveau(String niveau) { this.niveau = niveau; }
-
     public boolean isActif() { return actif; }
     public void setActif(boolean actif) { this.actif = actif; }
 
@@ -84,4 +121,30 @@ public class Circuit {
 
     public Media getImagePrincipale() { return imagePrincipale; }
     public void setImagePrincipale(Media imagePrincipale) { this.imagePrincipale = imagePrincipale; }
+
+    public String getImg() { return img; }
+    public void setImg(String img) { this.img = img; }
+    public String getGalerie() { return galerie; }
+    public void setGalerie(String galerie) { this.galerie = galerie; }
+
+    public String getProgramme() { return programme; }
+    public void setProgramme(String programme) { this.programme = programme; }
+
+    public String getPointsForts() { return pointsForts; }
+    public void setPointsForts(String pointsForts) { this.pointsForts = pointsForts; }
+
+    public String getInclus() { return inclus; }
+    public void setInclus(String inclus) { this.inclus = inclus; }
+
+    public String getNonInclus() { return nonInclus; }
+    public void setNonInclus(String nonInclus) { this.nonInclus = nonInclus; }
+
+    public String getTourisme() { return tourisme; }
+    public void setTourisme(String tourisme) { this.tourisme = tourisme; }
+
+    public String getAventures() { return aventures; }
+    public void setAventures(String aventures) { this.aventures = aventures; }
+
+    public String getResume() { return resume; }
+    public void setResume(String resume) { this.resume = resume; }
 }

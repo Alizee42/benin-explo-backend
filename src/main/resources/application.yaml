@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+# Application properties
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/benin_explo
@@ -21,8 +22,19 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  # Allow larger multipart uploads (adjust as needed)
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 50MB
+
 logging:
   level:
     org.springframework: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+image:
+  storage:
+    # location must be a filesystem location; use project-level `uploads/` folder
+    location: file:uploads/
