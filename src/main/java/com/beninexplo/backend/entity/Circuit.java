@@ -28,6 +28,10 @@ public class Circuit {
     private boolean actif = true;
 
     @ManyToOne
+    @JoinColumn(name = "ville_id")
+    private Ville ville;
+
+    @ManyToOne
     @JoinColumn(name = "zone_id")
     private Zone zone;
 
@@ -115,6 +119,9 @@ public class Circuit {
 
     public boolean isActif() { return actif; }
     public void setActif(boolean actif) { this.actif = actif; }
+
+    public Ville getVille() { return ville; }
+    public void setVille(Ville ville) { this.ville = ville; }
 
     public Zone getZone() { return zone; }
     public void setZone(Zone zone) { this.zone = zone; }

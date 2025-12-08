@@ -2,22 +2,26 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ZoneDTO;
 import com.beninexplo.backend.service.ZoneService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/zones")
-@CrossOrigin("*")
+@RequestMapping("/api/zones")
+@CrossOrigin(origins = "*")
 public class ZoneController {
 
-    @Autowired
-    private ZoneService zoneService;
+    private final ZoneService zoneService;
+
+    public ZoneController(ZoneService zoneService) {
+        this.zoneService = zoneService;
+    }
 
     @PostMapping
-    public ZoneDTO create(@RequestBody ZoneDTO dto) {
-        return zoneService.createZone(dto);
+    public ResponseEntity<ZoneDTO> create(@RequestBody ZoneDTO dto) {
+        ZoneDTO created = zoneService.createZone(dto);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -26,18 +30,24 @@ public class ZoneController {
     }
 
     @GetMapping("/{id}")
-    public ZoneDTO getById(@PathVariable Long id) {
-        return zoneService.getZoneById(id);
+    public ResponseEntity<ZoneDTO> getById(@PathVariable Long id) {
+        ZoneDTO dto = zoneService.getZoneById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
-    public ZoneDTO update(@PathVariable Long id, @RequestBody ZoneDTO dto) {
-        return zoneService.updateZone(id, dto);
+    public ResponseEntity<ZoneDTO> update(@PathVariable Long id, @RequestBody ZoneDTO dto) {
+        try {
+            ZoneDTO updated = zoneService.updateZone(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         zoneService.deleteZone(id);
-        return "Zone supprimée avec succès.";
+        return ResponseEntity.noContent().build();
     }
 }

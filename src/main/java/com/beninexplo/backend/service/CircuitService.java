@@ -2,8 +2,10 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.entity.Circuit;
+import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
 import com.beninexplo.backend.repository.CircuitRepository;
+import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 
 import org.springframework.stereotype.Service;
@@ -19,11 +21,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CircuitService {
 
     private final CircuitRepository circuitRepo;
+    private final VilleRepository villeRepo;
     private final ZoneRepository zoneRepo;
 
     public CircuitService(CircuitRepository circuitRepo,
+                          VilleRepository villeRepo,
                           ZoneRepository zoneRepo) {
         this.circuitRepo = circuitRepo;
+        this.villeRepo = villeRepo;
         this.zoneRepo = zoneRepo;
     }
 
@@ -43,6 +48,13 @@ public class CircuitService {
         dto.setPrixIndicatif(c.getPrixIndicatif());
         dto.setFormuleProposee(c.getFormuleProposee());
         dto.setActif(c.isActif());
+
+        // Ville (remplace localisation)
+        if (c.getVille() != null) {
+            dto.setVilleId(c.getVille().getIdVille());
+            dto.setVilleNom(c.getVille().getNom());
+            dto.setLocalisation(c.getVille().getNom()); // Pour compatibilité temporaire
+        }
 
         // Image principale (URL ou base64) stockée en TEXT
         dto.setImg(c.getImg());
@@ -133,6 +145,12 @@ public class CircuitService {
         c.setPrixIndicatif(dto.getPrixIndicatif());
         c.setFormuleProposee(dto.getFormuleProposee());
         c.setActif(dto.isActif());
+
+        // Ville (remplace localisation)
+        if (dto.getVilleId() != null) {
+            Ville ville = villeRepo.findById(dto.getVilleId()).orElse(null);
+            c.setVille(ville);
+        }
 
         // Image principale
         c.setImg(dto.getImg());

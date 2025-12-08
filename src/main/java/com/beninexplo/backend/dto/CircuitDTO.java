@@ -21,6 +21,8 @@ public class CircuitDTO {
     private boolean actif;
 
     private Long zoneId;
+    private Long villeId;
+    private String villeNom;
     private List<Long> activiteIds;
     private String img; // Image principale (hero image)
     private List<String> galerie; // Galerie d'images (3-10 images)
@@ -61,6 +63,12 @@ public class CircuitDTO {
 
     public Long getZoneId() { return zoneId; }
     public void setZoneId(Long zoneId) { this.zoneId = zoneId; }
+
+    public Long getVilleId() { return villeId; }
+    public void setVilleId(Long villeId) { this.villeId = villeId; }
+
+    public String getVilleNom() { return villeNom; }
+    public void setVilleNom(String villeNom) { this.villeNom = villeNom; }
 
     public List<Long> getActiviteIds() { return activiteIds; }
     public void setActiviteIds(List<Long> activiteIds) { this.activiteIds = activiteIds; }
