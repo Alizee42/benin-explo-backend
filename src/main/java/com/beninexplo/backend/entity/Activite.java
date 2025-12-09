@@ -17,11 +17,13 @@ public class Activite {
 
     private String ville;
 
+    @ManyToOne
+    @JoinColumn(name = "ville_id")
+    private Ville villeEntity;
+
     // Durée interne de l'activité (en minutes, heures, etc. selon ton choix)
     private Integer dureeInterne;
 
-    // Distance depuis Cotonou (en km)
-    private Integer distanceDepuisCotonou;
 
     // Poids / importance pour le tri ou la mise en avant
     private Integer poids;
@@ -49,7 +51,6 @@ public class Activite {
                     String description,
                     String ville,
                     Integer dureeInterne,
-                    Integer distanceDepuisCotonou,
                     Integer poids,
                     String difficulte,
                     Zone zone,
@@ -59,7 +60,6 @@ public class Activite {
         this.description = description;
         this.ville = ville;
         this.dureeInterne = dureeInterne;
-        this.distanceDepuisCotonou = distanceDepuisCotonou;
         this.poids = poids;
         this.difficulte = difficulte;
         this.zone = zone;
@@ -109,15 +109,6 @@ public class Activite {
     public void setDureeInterne(Integer dureeInterne) {
         this.dureeInterne = dureeInterne;
     }
-
-    public Integer getDistanceDepuisCotonou() {
-        return distanceDepuisCotonou;
-    }
-
-    public void setDistanceDepuisCotonou(Integer distanceDepuisCotonou) {
-        this.distanceDepuisCotonou = distanceDepuisCotonou;
-    }
-
     public Integer getPoids() {
         return poids;
     }
@@ -140,6 +131,14 @@ public class Activite {
 
     public void setZone(Zone zone) {
         this.zone = zone;
+    }
+
+    public Ville getVilleEntity() {
+        return villeEntity;
+    }
+
+    public void setVilleEntity(Ville villeEntity) {
+        this.villeEntity = villeEntity;
     }
 
     public Media getImagePrincipale() {

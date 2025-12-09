@@ -79,10 +79,20 @@ public class CircuitService {
         if (c.getProgramme() != null) {
             ObjectMapper mapper = new ObjectMapper();
             try {
-                List<String> prog = mapper.readValue(c.getProgramme(), new TypeReference<List<String>>(){});
-                dto.setProgramme(prog);
-            } catch (JsonProcessingException e) {
-                dto.setProgramme(Collections.emptyList());
+                // Try to read as list of ProgrammeDay objects
+                List<CircuitDTO.ProgrammeDay> progDays = mapper.readValue(c.getProgramme(), new TypeReference<List<CircuitDTO.ProgrammeDay>>(){});
+                dto.setProgramme(progDays);
+            } catch (JsonProcessingException e1) {
+                try {
+                    // Fallback: try to read as List<String> and convert to ProgrammeDay
+                    List<String> prog = mapper.readValue(c.getProgramme(), new TypeReference<List<String>>(){});
+                    List<CircuitDTO.ProgrammeDay> conv = prog.stream()
+                            .map(s -> new CircuitDTO.ProgrammeDay(null, s, null, null, null))
+                            .collect(Collectors.toList());
+                    dto.setProgramme(conv);
+                } catch (JsonProcessingException e2) {
+                    dto.setProgramme(Collections.emptyList());
+                }
             }
         } else {
             dto.setProgramme(Collections.emptyList());
@@ -127,7 +137,18 @@ public class CircuitService {
         }
 
         // Tourisme / Aventures: non mappés pour l'instant (peuvent être ajoutés au DTO si besoin)
-
+        // Map aventures if present
+        if (c.getAventures() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                List<String> av = mapper.readValue(c.getAventures(), new TypeReference<List<String>>(){});
+                dto.setAventures(av);
+            } catch (JsonProcessingException e) {
+                dto.setAventures(Collections.emptyList());
+            }
+        } else {
+            dto.setAventures(Collections.emptyList());
+        }
         if (c.getZone() != null)
             dto.setZoneId(c.getZone().getIdZone());
 
@@ -180,6 +201,18 @@ public class CircuitService {
             }
         } else {
             c.setProgramme(null);
+        }
+
+        // Aventures
+        if (dto.getAventures() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                c.setAventures(mapper.writeValueAsString(dto.getAventures()));
+            } catch (JsonProcessingException e) {
+                c.setAventures(null);
+            }
+        } else {
+            c.setAventures(null);
         }
 
         // Points forts

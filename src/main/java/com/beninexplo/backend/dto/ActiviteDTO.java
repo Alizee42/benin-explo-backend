@@ -9,14 +9,15 @@ public class ActiviteDTO {
     private String nom;
     private String description;
     private String ville;
+    private Long villeId;
 
     private Integer dureeInterne;
-    private Integer distanceDepuisCotonou;
     private Integer poids;
     private String difficulte;
 
     private Long zoneId;
     private Long imagePrincipaleId;
+    private String imagePrincipaleUrl;
 
     // ----------------------------------------------------
     // CONSTRUCTEURS
@@ -30,21 +31,21 @@ public class ActiviteDTO {
                        String description,
                        String ville,
                        Integer dureeInterne,
-                       Integer distanceDepuisCotonou,
                        Integer poids,
                        String difficulte,
                        Long zoneId,
-                       Long imagePrincipaleId) {
+                       Long imagePrincipaleId,
+                       String imagePrincipaleUrl) {
         this.id = id;
         this.nom = nom;
         this.description = description;
         this.ville = ville;
         this.dureeInterne = dureeInterne;
-        this.distanceDepuisCotonou = distanceDepuisCotonou;
         this.poids = poids;
         this.difficulte = difficulte;
         this.zoneId = zoneId;
         this.imagePrincipaleId = imagePrincipaleId;
+        this.imagePrincipaleUrl = imagePrincipaleUrl;
     }
 
     // ----------------------------------------------------
@@ -83,6 +84,9 @@ public class ActiviteDTO {
         this.ville = ville;
     }
 
+    public Long getVilleId() { return villeId; }
+    public void setVilleId(Long villeId) { this.villeId = villeId; }
+
     public Integer getDureeInterne() {
         return dureeInterne;
     }
@@ -90,15 +94,6 @@ public class ActiviteDTO {
     public void setDureeInterne(Integer dureeInterne) {
         this.dureeInterne = dureeInterne;
     }
-
-    public Integer getDistanceDepuisCotonou() {
-        return distanceDepuisCotonou;
-    }
-
-    public void setDistanceDepuisCotonou(Integer distanceDepuisCotonou) {
-        this.distanceDepuisCotonou = distanceDepuisCotonou;
-    }
-
     public Integer getPoids() {
         return poids;
     }
@@ -130,4 +125,7 @@ public class ActiviteDTO {
     public void setImagePrincipaleId(Long imagePrincipaleId) {
         this.imagePrincipaleId = imagePrincipaleId;
     }
+
+    public String getImagePrincipaleUrl() { return imagePrincipaleUrl; }
+    public void setImagePrincipaleUrl(String imagePrincipaleUrl) { this.imagePrincipaleUrl = imagePrincipaleUrl; }
 }

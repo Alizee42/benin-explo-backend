@@ -26,7 +26,8 @@ public class CircuitDTO {
     private List<Long> activiteIds;
     private String img; // Image principale (hero image)
     private List<String> galerie; // Galerie d'images (3-10 images)
-    private List<String> programme; // Programme jour par jour
+    private List<ProgrammeDay> programme; // Programme jour par jour (peut être chaîne ou objet)
+    private List<String> aventures; // Liste d'aventures / activités (nouveau champ)
     private List<PointFort> pointsForts; // Points forts avec icône
     private List<String> inclus; // Ce qui est inclus
     private List<String> nonInclus; // Ce qui n'est pas inclus
@@ -79,8 +80,11 @@ public class CircuitDTO {
     public List<String> getGalerie() { return galerie; }
     public void setGalerie(List<String> galerie) { this.galerie = galerie; }
 
-    public List<String> getProgramme() { return programme; }
-    public void setProgramme(List<String> programme) { this.programme = programme; }
+    public List<ProgrammeDay> getProgramme() { return programme; }
+    public void setProgramme(List<ProgrammeDay> programme) { this.programme = programme; }
+
+    public List<String> getAventures() { return aventures; }
+    public void setAventures(List<String> aventures) { this.aventures = aventures; }
 
     public List<PointFort> getPointsForts() { return pointsForts; }
     public void setPointsForts(List<PointFort> pointsForts) { this.pointsForts = pointsForts; }
@@ -113,5 +117,40 @@ public class CircuitDTO {
 
         public String getDesc() { return desc; }
         public void setDesc(String desc) { this.desc = desc; }
+    }
+
+    // Classe interne pour représenter une journée du programme
+    public static class ProgrammeDay {
+        private Integer day; // numéro du jour (optionnel)
+        private String description;
+        private String approxTime;
+        private List<String> mealsIncluded;
+        private List<Integer> activities;
+
+        public ProgrammeDay() {}
+
+        public ProgrammeDay(Integer day, String description, String approxTime,
+                            List<String> mealsIncluded, List<Integer> activities) {
+            this.day = day;
+            this.description = description;
+            this.approxTime = approxTime;
+            this.mealsIncluded = mealsIncluded;
+            this.activities = activities;
+        }
+
+        public Integer getDay() { return day; }
+        public void setDay(Integer day) { this.day = day; }
+
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+
+        public String getApproxTime() { return approxTime; }
+        public void setApproxTime(String approxTime) { this.approxTime = approxTime; }
+
+        public List<String> getMealsIncluded() { return mealsIncluded; }
+        public void setMealsIncluded(List<String> mealsIncluded) { this.mealsIncluded = mealsIncluded; }
+
+        public List<Integer> getActivities() { return activities; }
+        public void setActivities(List<Integer> activities) { this.activities = activities; }
     }
 }

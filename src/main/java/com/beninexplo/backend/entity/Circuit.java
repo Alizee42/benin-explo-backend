@@ -40,40 +40,32 @@ public class Circuit {
     private Media imagePrincipale;
 
     // Image principale (base64 ou URL) stockée en TEXT
-    @Lob
     @Column(columnDefinition = "text")
     private String img;
 
     // Galerie d'images stockée en JSON (TEXT)
-    @Lob
     @Column(columnDefinition = "text")
     private String galerie;
 
     // Programme jour par jour stocké en JSON (TEXT)
-    @Lob
     @Column(columnDefinition = "text")
     private String programme;
 
     // Points forts (liste d'objets) stockée en JSON (TEXT)
-    @Lob
     @Column(columnDefinition = "text")
     private String pointsForts;
 
     // Inclus / non inclus stockés en JSON
-    @Lob
     @Column(columnDefinition = "text")
     private String inclus;
 
-    @Lob
     @Column(columnDefinition = "text")
     private String nonInclus;
 
     // Sections tourisme / aventures (listes de chaînes)
-    @Lob
     @Column(columnDefinition = "text")
     private String tourisme;
 
-    @Lob
     @Column(columnDefinition = "text")
     private String aventures;
 
