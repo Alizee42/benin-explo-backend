@@ -85,11 +85,11 @@ public class ActiviteService {
         entity.setVille(dto.getVille());
         // attempt to resolve Ville entity from dto.villeId or dto.ville
         Ville ville = null;
-        if (dto.getVilleId() != null) {
+        if (dto.getVilleId() != null && dto.getVilleId() > 0) {
             ville = villeRepo.findById(dto.getVilleId()).orElse(null);
         } else if (dto.getVille() != null && !dto.getVille().trim().isEmpty()) {
-            // try to find by name ignoring case
-            ville = villeRepo.findByNomIgnoreCase(dto.getVille().trim()).orElse(null);
+            // try to find by name exact match
+            ville = villeRepo.findByNom(dto.getVille().trim()).orElse(null);
         }
         if (ville != null) {
             entity.setVilleEntity(ville);
@@ -105,12 +105,14 @@ public class ActiviteService {
         entity.setDifficulte(dto.getDifficulte());
 
         // zone is either already set from ville resolution above, or explicit zoneId in DTO overrides
-        if (dto.getZoneId() != null) {
+        if (dto.getZoneId() != null && dto.getZoneId() > 0) {
             Zone zone = zoneRepo.findById(dto.getZoneId()).orElse(null);
-            entity.setZone(zone);
+            if (zone != null) {
+                entity.setZone(zone);
+            }
         }
 
-        if (dto.getImagePrincipaleId() != null) {
+        if (dto.getImagePrincipaleId() != null && dto.getImagePrincipaleId() > 0) {
             Media media = mediaRepo.findById(dto.getImagePrincipaleId()).orElse(null);
             entity.setImagePrincipale(media);
         } else {

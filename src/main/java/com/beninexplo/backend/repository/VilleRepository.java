@@ -14,4 +14,6 @@ public interface VilleRepository extends JpaRepository<Ville, Long> {
     List<Ville> findAllByOrderByNomAsc();
 
     java.util.Optional<Ville> findByNomIgnoreCase(String nom);
+
+    java.util.Optional<Ville> findByNom(String nom);
 }
