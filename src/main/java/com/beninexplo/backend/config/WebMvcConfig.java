@@ -17,6 +17,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // Map /images/** to the filesystem location configured (expects file:...)
         registry.addResourceHandler("/images/**")
                 .addResourceLocations(imageStorageLocation);
+
+        // Map /uploads/** to the uploads directory
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
     }
 
     @Override

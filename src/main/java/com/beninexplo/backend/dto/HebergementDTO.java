@@ -1,8 +1,11 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class HebergementDTO {
 
     /* ----------------------------------------------------
@@ -12,8 +15,10 @@ public class HebergementDTO {
     private String nom;
     private String type;
     private String localisation;
+    private String quartier;
     private String description;
     private double prixParNuit;
+    private List<String> imageUrls;
 
     /* ----------------------------------------------------
        🟩 CONSTRUCTEURS
@@ -21,13 +26,15 @@ public class HebergementDTO {
     public HebergementDTO() {}
 
     public HebergementDTO(Long id, String nom, String type, String localisation,
-                          String description, double prixParNuit) {
+                          String quartier, String description, double prixParNuit, List<String> imageUrls) {
         this.id = id;
         this.nom = nom;
         this.type = type;
         this.localisation = localisation;
+        this.quartier = quartier;
         this.description = description;
         this.prixParNuit = prixParNuit;
+        this.imageUrls = imageUrls;
     }
 
     /* ----------------------------------------------------
@@ -45,9 +52,15 @@ public class HebergementDTO {
     public String getLocalisation() { return localisation; }
     public void setLocalisation(String localisation) { this.localisation = localisation; }
 
+    public String getQuartier() { return quartier; }
+    public void setQuartier(String quartier) { this.quartier = quartier; }
+
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
     public double getPrixParNuit() { return prixParNuit; }
     public void setPrixParNuit(double prixParNuit) { this.prixParNuit = prixParNuit; }
+
+    public List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 }

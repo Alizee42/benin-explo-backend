@@ -1,10 +1,12 @@
 package com.beninexplo.backend.controller;
 
-import com.beninexplo.backend.dto.HebergementDTO;
-import com.beninexplo.backend.service.HebergementService;
+
 
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import com.beninexplo.backend.dto.HebergementDTO;
+import com.beninexplo.backend.service.HebergementService;
 
 import java.util.List;
 
@@ -32,7 +34,25 @@ public class HebergementController {
 
     @PostMapping
     public ResponseEntity<HebergementDTO> create(@RequestBody HebergementDTO dto) {
-        return new ResponseEntity<>(service.create(dto), HttpStatus.CREATED);
+        try {
+            System.out.println("[HebergementController#create] DTO reçu pour création : id=" + dto.getId()
+                    + ", nom=" + dto.getNom()
+                    + ", type=" + dto.getType()
+                    + ", localisation=" + dto.getLocalisation()
+                    + ", quartier=" + dto.getQuartier()
+                    + ", prixParNuit=" + dto.getPrixParNuit());
+
+            // Ignorer tout ID éventuellement envoyé par le client pour une création
+            dto.setId(null);
+            System.out.println("[HebergementController#create] ID du DTO forcé à null avant service.create");
+
+            HebergementDTO created = service.create(dto);
+            System.out.println("[HebergementController#create] Création réussie, id généré=" + created.getId());
+            return new ResponseEntity<>(created, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}")
