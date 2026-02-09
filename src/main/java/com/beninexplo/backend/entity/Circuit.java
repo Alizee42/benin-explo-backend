@@ -27,13 +27,10 @@ public class Circuit {
 
     private boolean actif = true;
 
-    @ManyToOne
-    @JoinColumn(name = "ville_id")
+    // Ville principale du circuit (source unique de la localisation)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ville_id", nullable = false)
     private Ville ville;
-
-    @ManyToOne
-    @JoinColumn(name = "zone_id")
-    private Zone zone;
 
     @ManyToOne
     @JoinColumn(name = "image_principale_id")
@@ -76,7 +73,7 @@ public class Circuit {
 
     public Circuit(Long idCircuit, String nom, String description, String dureeIndicative,
                    BigDecimal prixIndicatif, String formuleProposee,
-                   boolean actif, Zone zone, Media imagePrincipale) {
+                   boolean actif, Ville ville, Media imagePrincipale) {
         this.idCircuit = idCircuit;
         this.nom = nom;
         this.description = description;
@@ -84,8 +81,38 @@ public class Circuit {
         this.prixIndicatif = prixIndicatif;
         this.formuleProposee = formuleProposee;
         this.actif = actif;
-        this.zone = zone;
+        this.ville = ville;
         this.imagePrincipale = imagePrincipale;
+    }
+    
+    // -----------------------------------------
+    // MÉTHODES UTILITAIRES
+    // -----------------------------------------
+    
+    /**
+     * Récupère la zone du circuit via sa ville principale
+     */
+    public Zone getZone() {
+        return ville != null ? ville.getZone() : null;
+    }
+    
+    /**
+     * Récupère le nom de la zone
+     */
+    public String getZoneNom() {
+        Zone z = getZone();
+        return z != null ? z.getNom() : null;
+    }
+    
+    /**
+     * Validation avant insertion/mise à jour
+     */
+    @PrePersist
+    @PreUpdate
+    private void validate() {
+        if (ville == null) {
+            throw new IllegalStateException("Un circuit doit être associé à une ville");
+        }
     }
 
     // -----------------------------------------
@@ -114,9 +141,6 @@ public class Circuit {
 
     public Ville getVille() { return ville; }
     public void setVille(Ville ville) { this.ville = ville; }
-
-    public Zone getZone() { return zone; }
-    public void setZone(Zone zone) { this.zone = zone; }
 
     public Media getImagePrincipale() { return imagePrincipale; }
     public void setImagePrincipale(Media imagePrincipale) { this.imagePrincipale = imagePrincipale; }

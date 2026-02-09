@@ -21,6 +21,7 @@ public class CircuitDTO {
     private boolean actif;
 
     private Long zoneId;
+    private String zoneNom;
     private Long villeId;
     private String villeNom;
     private List<Long> activiteIds;
@@ -64,6 +65,9 @@ public class CircuitDTO {
 
     public Long getZoneId() { return zoneId; }
     public void setZoneId(Long zoneId) { this.zoneId = zoneId; }
+
+    public String getZoneNom() { return zoneNom; }
+    public void setZoneNom(String zoneNom) { this.zoneNom = zoneNom; }
 
     public Long getVilleId() { return villeId; }
     public void setVilleId(Long villeId) { this.villeId = villeId; }

@@ -49,11 +49,18 @@ public class CircuitService {
         dto.setFormuleProposee(c.getFormuleProposee());
         dto.setActif(c.isActif());
 
-        // Ville (remplace localisation)
+        // Ville et Zone (via ville.getZone())
         if (c.getVille() != null) {
             dto.setVilleId(c.getVille().getIdVille());
             dto.setVilleNom(c.getVille().getNom());
             dto.setLocalisation(c.getVille().getNom()); // Pour compatibilité temporaire
+            
+            // Zone via ville
+            Zone zone = c.getVille().getZone();
+            if (zone != null) {
+                dto.setZoneId(zone.getIdZone());
+                dto.setZoneNom(zone.getNom());
+            }
         }
 
         // Image principale (URL ou base64) stockée en TEXT
@@ -250,14 +257,8 @@ public class CircuitService {
             c.setNonInclus(null);
         }
 
-        // Zone
-        if (dto.getZoneId() != null) {
-            Zone z = zoneRepo.findById(dto.getZoneId()).orElse(null);
-            c.setZone(z);
-            // Note: Si la zone n'existe pas, on ne plante pas, on la laisse à null
-        } else {
-            c.setZone(null);
-        }
+        // Note: Zone est maintenant accessible via c.getVille().getZone()
+        // Pas besoin de le stocker directement sur Circuit
 
         // Pour l'instant, on ignore les nouveaux champs car l'entité ne les supporte pas
         // Ces champs seront gérés plus tard quand l'entité sera mise à jour
@@ -311,7 +312,7 @@ public class CircuitService {
     }
 
     public List<CircuitDTO> getByZone(Long zoneId) {
-        return circuitRepo.findByZone_IdZone(zoneId)
+        return circuitRepo.findByVille_Zone_IdZone(zoneId)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());

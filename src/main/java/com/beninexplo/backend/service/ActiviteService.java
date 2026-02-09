@@ -38,37 +38,32 @@ public class ActiviteService {
     private ActiviteDTO toDTO(Activite entity) {
         if (entity == null) return null;
 
-        Long zoneId = (entity.getZone() != null)
-            ? entity.getZone().getIdZone()
-            : null;
-
-        Long imagePrincipaleId = (entity.getImagePrincipale() != null)
-                ? entity.getImagePrincipale().getIdMedia()
-                : null;
-
         ActiviteDTO dto = new ActiviteDTO();
         dto.setId(entity.getIdActivite());
         dto.setNom(entity.getNom());
         dto.setDescription(entity.getDescription());
-        // prefer the linked Ville entity name if present
-        if (entity.getVilleEntity() != null) {
-            dto.setVille(entity.getVilleEntity().getNom());
-            dto.setVilleId(entity.getVilleEntity().getIdVille());
-        } else {
-            dto.setVille(entity.getVille());
-            dto.setVilleId(null);
+        
+        // Localisation via Ville (source unique)
+        if (entity.getVille() != null) {
+            dto.setVilleId(entity.getVille().getIdVille());
+            dto.setVilleNom(entity.getVille().getNom());
+            
+            // Zone via ville.getZone()
+            Zone zone = entity.getVille().getZone();
+            if (zone != null) {
+                dto.setZoneId(zone.getIdZone());
+                dto.setZoneNom(zone.getNom());
+            }
         }
+        
         dto.setDureeInterne(entity.getDureeInterne());
         dto.setPoids(entity.getPoids());
         dto.setDifficulte(entity.getDifficulte());
-        dto.setZoneId(zoneId);
-        dto.setImagePrincipaleId(imagePrincipaleId);
-        // also include the media URL when available to avoid extra round-trips from frontend
-        if (imagePrincipaleId != null) {
-            String url = mediaRepo.findById(imagePrincipaleId).map(m -> m.getUrl()).orElse(null);
-            dto.setImagePrincipaleUrl(url);
-        } else {
-            dto.setImagePrincipaleUrl(null);
+        
+        // Image principale
+        if (entity.getImagePrincipale() != null) {
+            dto.setImagePrincipaleId(entity.getImagePrincipale().getIdMedia());
+            dto.setImagePrincipaleUrl(entity.getImagePrincipale().getUrl());
         }
 
         return dto;
@@ -78,40 +73,25 @@ public class ActiviteService {
     // MAPPER DTO -> ENTITY
     // ----------------------------------------------------
     private Activite fromDTO(ActiviteDTO dto, Activite entity) {
-
         entity.setNom(dto.getNom());
         entity.setDescription(dto.getDescription());
-        // keep the textual ville for backwards compatibility
-        entity.setVille(dto.getVille());
-        // attempt to resolve Ville entity from dto.villeId or dto.ville
-        Ville ville = null;
+        
+        // Résoudre la Ville (OBLIGATOIRE)
         if (dto.getVilleId() != null && dto.getVilleId() > 0) {
-            ville = villeRepo.findById(dto.getVilleId()).orElse(null);
-        } else if (dto.getVille() != null && !dto.getVille().trim().isEmpty()) {
-            // try to find by name exact match
-            ville = villeRepo.findByNom(dto.getVille().trim()).orElse(null);
-        }
-        if (ville != null) {
-            entity.setVilleEntity(ville);
-            // if ville has a zone, propagate it to activite.zone
-            if (ville.getZone() != null) {
-                entity.setZone(ville.getZone());
-            }
+            Ville ville = villeRepo.findById(dto.getVilleId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Ville introuvable avec l'ID : " + dto.getVilleId()
+                ));
+            entity.setVille(ville);
         } else {
-            entity.setVilleEntity(null);
+            throw new IllegalArgumentException("Une activité doit être associée à une ville (villeId requis)");
         }
+        
         entity.setDureeInterne(dto.getDureeInterne());
         entity.setPoids(dto.getPoids());
         entity.setDifficulte(dto.getDifficulte());
 
-        // zone is either already set from ville resolution above, or explicit zoneId in DTO overrides
-        if (dto.getZoneId() != null && dto.getZoneId() > 0) {
-            Zone zone = zoneRepo.findById(dto.getZoneId()).orElse(null);
-            if (zone != null) {
-                entity.setZone(zone);
-            }
-        }
-
+        // Image principale (optionnel)
         if (dto.getImagePrincipaleId() != null && dto.getImagePrincipaleId() > 0) {
             Media media = mediaRepo.findById(dto.getImagePrincipaleId()).orElse(null);
             entity.setImagePrincipale(media);

@@ -15,25 +15,19 @@ public class Activite {
     @Column(length = 5000)
     private String description;
 
-    private String ville;
-
-    @ManyToOne
-    @JoinColumn(name = "ville_id")
-    private Ville villeEntity;
+    // Relation avec Ville (source unique de vérité pour la localisation)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "ville_id", nullable = false)
+    private Ville ville;
 
     // Durée interne de l'activité (en minutes, heures, etc. selon ton choix)
     private Integer dureeInterne;
-
 
     // Poids / importance pour le tri ou la mise en avant
     private Integer poids;
 
     // Niveau de difficulté (facile, moyen, difficile, etc.)
     private String difficulte;
-
-    @ManyToOne
-    @JoinColumn(name = "zone_id")
-    private Zone zone;
 
     @ManyToOne
     @JoinColumn(name = "image_principale_id")
@@ -49,11 +43,10 @@ public class Activite {
     public Activite(Long idActivite,
                     String nom,
                     String description,
-                    String ville,
+                    Ville ville,
                     Integer dureeInterne,
                     Integer poids,
                     String difficulte,
-                    Zone zone,
                     Media imagePrincipale) {
         this.idActivite = idActivite;
         this.nom = nom;
@@ -62,8 +55,36 @@ public class Activite {
         this.dureeInterne = dureeInterne;
         this.poids = poids;
         this.difficulte = difficulte;
-        this.zone = zone;
         this.imagePrincipale = imagePrincipale;
+    }
+    
+    // ----------------------------------------------------
+    // MÉTHODES UTILITAIRES
+    // ----------------------------------------------------
+    
+    /**
+     * Récupère la zone de l'activité via sa ville
+     */
+    public Zone getZone() {
+        return ville != null ? ville.getZone() : null;
+    }
+    
+    /**
+     * Récupère le nom de la ville
+     */
+    public String getVilleNom() {
+        return ville != null ? ville.getNom() : null;
+    }
+    
+    /**
+     * Validation avant insertion/mise à jour
+     */
+    @PrePersist
+    @PreUpdate
+    private void validate() {
+        if (ville == null) {
+            throw new IllegalStateException("Une activité doit être associée à une ville");
+        }
     }
 
     // ----------------------------------------------------
@@ -94,11 +115,11 @@ public class Activite {
         this.description = description;
     }
 
-    public String getVille() {
+    public Ville getVille() {
         return ville;
     }
 
-    public void setVille(String ville) {
+    public void setVille(Ville ville) {
         this.ville = ville;
     }
 
@@ -123,22 +144,6 @@ public class Activite {
 
     public void setDifficulte(String difficulte) {
         this.difficulte = difficulte;
-    }
-
-    public Zone getZone() {
-        return zone;
-    }
-
-    public void setZone(Zone zone) {
-        this.zone = zone;
-    }
-
-    public Ville getVilleEntity() {
-        return villeEntity;
-    }
-
-    public void setVilleEntity(Ville villeEntity) {
-        this.villeEntity = villeEntity;
     }
 
     public Media getImagePrincipale() {
