@@ -2,12 +2,16 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.*;
 import com.beninexplo.backend.service.UtilisateurService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UtilisateurService utilisateurService;
@@ -25,9 +29,9 @@ public class AuthController {
     ---------------------------------------------------- */
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginRequestDTO dto) {
-        System.out.println("🚀 Requête LOGIN reçue pour: " + dto.getEmail());
+        log.info("Requête de connexion reçue pour: {}", dto.getEmail());
         LoginResponseDTO response = utilisateurService.login(dto);
-        System.out.println("✅ LOGIN réussi pour: " + dto.getEmail());
+        log.info("Connexion réussie pour: {}", dto.getEmail());
         return response;
     }
 

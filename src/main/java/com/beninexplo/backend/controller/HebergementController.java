@@ -2,6 +2,8 @@ package com.beninexplo.backend.controller;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +16,8 @@ import java.util.List;
 @RequestMapping("/api/hebergements")
 @CrossOrigin(origins = "*")
 public class HebergementController {
+
+    private static final Logger log = LoggerFactory.getLogger(HebergementController.class);
 
     private final HebergementService service;
 
@@ -35,22 +39,17 @@ public class HebergementController {
     @PostMapping
     public ResponseEntity<HebergementDTO> create(@RequestBody HebergementDTO dto) {
         try {
-            System.out.println("[HebergementController#create] DTO reçu pour création : id=" + dto.getId()
-                    + ", nom=" + dto.getNom()
-                    + ", type=" + dto.getType()
-                    + ", localisation=" + dto.getLocalisation()
-                    + ", quartier=" + dto.getQuartier()
-                    + ", prixParNuit=" + dto.getPrixParNuit());
+            log.debug("Création hébergement: nom={}, type={}, localisation={}", 
+                dto.getNom(), dto.getType(), dto.getLocalisation());
 
             // Ignorer tout ID éventuellement envoyé par le client pour une création
             dto.setId(null);
-            System.out.println("[HebergementController#create] ID du DTO forcé à null avant service.create");
 
             HebergementDTO created = service.create(dto);
-            System.out.println("[HebergementController#create] Création réussie, id généré=" + created.getId());
+            log.info("✅ Hébergement créé, ID: {}", created.getId());
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("❌ Erreur lors de la création de l'hébergement", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

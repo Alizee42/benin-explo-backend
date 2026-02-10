@@ -4,6 +4,8 @@ import com.beninexplo.backend.dto.*;
 import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.repository.UtilisateurRepository;
 import com.beninexplo.backend.security.jwt.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.util.Optional;
 
 @Service
 public class UtilisateurService {
+
+    private static final Logger log = LoggerFactory.getLogger(UtilisateurService.class);
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
@@ -49,25 +53,23 @@ public class UtilisateurService {
        🟩 2) LOGIN (EMAIL + MOT DE PASSE)
     ---------------------------------------------------- */
     public LoginResponseDTO login(LoginRequestDTO dto) {
-        System.out.println("🔐 Tentative de connexion pour email: '" + dto.getEmail() + "'");
+        log.info("Tentative de connexion pour email: {}", dto.getEmail());
 
         Utilisateur user = utilisateurRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
 
-        System.out.println("👤 Utilisateur trouvé: " + user.getEmail() + " avec rôle: " + user.getRole());
-        System.out.println("🔑 Mot de passe saisi: '" + dto.getMotDePasse() + "'");
-        System.out.println("🔒 Mot de passe stocké: '" + user.getMotDePasse() + "'");
+        log.debug("Utilisateur trouvé: {} avec rôle: {}", user.getEmail(), user.getRole());
 
         if (!passwordEncoder.matches(dto.getMotDePasse(), user.getMotDePasse())) {
-            System.out.println("❌ Mot de passe incorrect pour: " + dto.getEmail());
+            log.warn("Échec d'authentification pour: {}", dto.getEmail());
             throw new RuntimeException("Mot de passe incorrect.");
         }
 
-        System.out.println("✅ Mot de passe correct, génération du token...");
+        log.debug("Authentification réussie pour: {}", user.getEmail());
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
-        System.out.println("🎫 Token généré pour: " + user.getEmail());
+        log.info("Token JWT généré pour: {}", user.getEmail());
 
         return new LoginResponseDTO(
                 token,

@@ -4,6 +4,8 @@ import com.beninexplo.backend.dto.HebergementDTO;
 import com.beninexplo.backend.entity.Hebergement;
 import com.beninexplo.backend.repository.HebergementRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class HebergementService {
+
+    private static final Logger log = LoggerFactory.getLogger(HebergementService.class);
 
     private final HebergementRepository repo;
 
@@ -35,15 +39,13 @@ public class HebergementService {
     private Hebergement fromDTO(HebergementDTO dto) {
         Hebergement h = new Hebergement();
 
-        System.out.println("[HebergementService#fromDTO] DTO en entrée : id=" + dto.getId());
+        log.debug("Conversion DTO en entité, ID du DTO: {}", dto.getId());
 
         // Si l'ID est null ou 0, on le laisse à null pour indiquer une nouvelle entité
         if (dto.getId() != null && dto.getId() > 0) {
             h.setIdHebergement(dto.getId());
-            System.out.println("[HebergementService#fromDTO] ID copié vers entité : " + dto.getId());
         } else {
             h.setIdHebergement(null);
-            System.out.println("[HebergementService#fromDTO] ID du DTO null ou <=0, entité.idHebergement=null");
         }
         h.setNom(dto.getNom());
         h.setType(dto.getType());
@@ -65,20 +67,17 @@ public class HebergementService {
     }
 
     public HebergementDTO create(HebergementDTO dto) {
-        System.out.println("[HebergementService#create] DTO initial pour création : id=" + dto.getId());
+        log.debug("Création hébergement, ID initial du DTO: {}", dto.getId());
 
         // On force systématiquement l'ID du DTO à null pour une création
         dto.setId(null);
-        System.out.println("[HebergementService#create] ID du DTO après setId(null) : " + dto.getId());
 
         // Construction de l'entité à partir du DTO en s'assurant que l'ID est bien null
         Hebergement h = fromDTO(dto);
-        System.out.println("[HebergementService#create] Entité construite avant forçage id : idHebergement=" + h.getIdHebergement());
         h.setIdHebergement(null);
-        System.out.println("[HebergementService#create] Entité après forçage idHebergement=null");
 
         Hebergement saved = repo.save(h);
-        System.out.println("[HebergementService#create] Entité sauvegardée, idHebergement généré=" + saved.getIdHebergement());
+        log.info("✅ Hébergement créé avec succès, ID: {}", saved.getIdHebergement());
         return toDTO(saved);
     }
 

@@ -1,5 +1,7 @@
 package com.beninexplo.backend.config;
 
+import com.beninexplo.backend.security.jwt.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -22,8 +25,8 @@ import java.util.Arrays;
 @Configuration
 public class SecurityConfig {
 
-    // @Autowired
-    // private JwtAuthFilter jwtAuthFilter;
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
 
     /* ----------------------------------------------------
        🟦 FILTER CHAIN (règles de sécurité)
@@ -51,8 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/tombola/**").hasRole("PARTICIPANT")
 
                         .anyRequest().permitAll()
-                );
-                // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
