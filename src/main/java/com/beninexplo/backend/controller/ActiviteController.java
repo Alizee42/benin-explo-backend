@@ -41,4 +41,26 @@ public class ActiviteController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
+    // ---------------------------------------
+    // ENDPOINTS OPTIMISÉS POUR FORMULAIRES
+    // ---------------------------------------
+
+    /**
+     * Récupère toutes les activités d'une zone
+     * Optimisé pour le formulaire de création de circuit
+     */
+    @GetMapping("/zone/{zoneId}")
+    public List<ActiviteDTO> getByZone(@PathVariable Long zoneId) {
+        return service.getByZone(zoneId);
+    }
+
+    /**
+     * Récupère toutes les activités d'une ville
+     * Plus précis que le filtrage par zone
+     */
+    @GetMapping("/ville/{villeId}")
+    public List<ActiviteDTO> getByVille(@PathVariable Long villeId) {
+        return service.getByVille(villeId);
+    }
 }

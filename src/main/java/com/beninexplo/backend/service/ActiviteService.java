@@ -139,4 +139,30 @@ public class ActiviteService {
     public void delete(Long id) {
         activiteRepo.deleteById(id);
     }
+
+    // ----------------------------------------------------
+    // FILTRES OPTIMISÉS POUR FORMULAIRES
+    // ----------------------------------------------------
+    
+    /**
+     * Récupère toutes les activités d'une zone donnée
+     * Optimisé pour le formulaire de création de circuit
+     */
+    public List<ActiviteDTO> getByZone(Long zoneId) {
+        return activiteRepo.findByVille_Zone_IdZone(zoneId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Récupère toutes les activités d'une ville donnée
+     * Encore plus précis que le filtrage par zone
+     */
+    public List<ActiviteDTO> getByVille(Long villeId) {
+        return activiteRepo.findByVille_IdVille(villeId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 }
