@@ -94,7 +94,7 @@ public class CircuitService {
                     // Fallback: try to read as List<String> and convert to ProgrammeDay
                     List<String> prog = mapper.readValue(c.getProgramme(), new TypeReference<List<String>>(){});
                     List<CircuitDTO.ProgrammeDay> conv = prog.stream()
-                            .map(s -> new CircuitDTO.ProgrammeDay(null, s, null, null, null))
+                            .map(s -> new CircuitDTO.ProgrammeDay(null, null, s, null, null, null))
                             .collect(Collectors.toList());
                     dto.setProgramme(conv);
                 } catch (JsonProcessingException e2) {

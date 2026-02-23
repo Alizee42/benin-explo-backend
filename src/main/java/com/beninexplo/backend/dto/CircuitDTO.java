@@ -126,6 +126,7 @@ public class CircuitDTO {
     // Classe interne pour représenter une journée du programme
     public static class ProgrammeDay {
         private Integer day; // numéro du jour (optionnel)
+        private String title;
         private String description;
         private String approxTime;
         private List<String> mealsIncluded;
@@ -133,9 +134,10 @@ public class CircuitDTO {
 
         public ProgrammeDay() {}
 
-        public ProgrammeDay(Integer day, String description, String approxTime,
+        public ProgrammeDay(Integer day, String title, String description, String approxTime,
                             List<String> mealsIncluded, List<Integer> activities) {
             this.day = day;
+            this.title = title;
             this.description = description;
             this.approxTime = approxTime;
             this.mealsIncluded = mealsIncluded;
@@ -144,6 +146,9 @@ public class CircuitDTO {
 
         public Integer getDay() { return day; }
         public void setDay(Integer day) { this.day = day; }
+
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
