@@ -38,3 +38,9 @@ image:
   storage:
     # location must be a filesystem location; use project-level `uploads/` folder
     location: file:uploads/
+
+reservation:
+  notifications:
+    mail:
+      enabled: ${RESERVATION_MAIL_ENABLED:false}
+      from: ${RESERVATION_MAIL_FROM:no-reply@beninexplo.com}

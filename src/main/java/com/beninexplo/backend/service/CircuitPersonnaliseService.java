@@ -92,6 +92,38 @@ public class CircuitPersonnaliseService {
                 // Activités
                 if (jourDto.getActiviteIds() != null && !jourDto.getActiviteIds().isEmpty()) {
                     List<Activite> activites = activiteRepository.findAllById(jourDto.getActiviteIds());
+                    if (activites.size() != jourDto.getActiviteIds().size()) {
+                        throw new RuntimeException("Une ou plusieurs activites sont introuvables pour le jour " + jourDto.getNumeroJour());
+                    }
+
+                    // Validation serveur: coherence activite <-> ville/zone du jour.
+                    for (Activite activite : activites) {
+                        Ville activiteVille = activite.getVille();
+                        if (activiteVille == null) {
+                            throw new RuntimeException(
+                                "L'activite '" + activite.getNom() + "' n'est associee a aucune ville."
+                            );
+                        }
+
+                        if (jour.getVille() != null
+                                && (activiteVille.getIdVille() == null
+                                || !activiteVille.getIdVille().equals(jour.getVille().getIdVille()))) {
+                            throw new RuntimeException(
+                                "L'activite '" + activite.getNom() + "' n'appartient pas a la ville selectionnee pour le jour " + jourDto.getNumeroJour()
+                            );
+                        }
+
+                        if (jour.getZone() != null) {
+                            Zone activiteZone = activiteVille.getZone();
+                            if (activiteZone == null || activiteZone.getIdZone() == null
+                                    || !activiteZone.getIdZone().equals(jour.getZone().getIdZone())) {
+                                throw new RuntimeException(
+                                    "L'activite '" + activite.getNom() + "' n'appartient pas a la zone selectionnee pour le jour " + jourDto.getNumeroJour()
+                                );
+                            }
+                        }
+                    }
+
                     jour.setActivites(activites);
                 }
                 
