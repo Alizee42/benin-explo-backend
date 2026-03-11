@@ -2,8 +2,8 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ParametresSiteDTO;
 import com.beninexplo.backend.entity.ParametresSite;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ParametresSiteRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,24 +18,22 @@ public class ParametresSiteService {
         this.repo = repo;
     }
 
-    private ParametresSiteDTO toDTO(ParametresSite p) {
+    private ParametresSiteDTO toDTO(ParametresSite parametresSite) {
         return new ParametresSiteDTO(
-                p.getIdParametres(),
-                p.getEmailContact(),
-                p.getTelephoneContact(),
-                p.getAdresseAgence()
+                parametresSite.getIdParametres(),
+                parametresSite.getEmailContact(),
+                parametresSite.getTelephoneContact(),
+                parametresSite.getAdresseAgence()
         );
     }
 
     private ParametresSite fromDTO(ParametresSiteDTO dto) {
-        ParametresSite p = new ParametresSite();
-
-        p.setIdParametres(dto.getId());
-        p.setEmailContact(dto.getEmailContact());
-        p.setTelephoneContact(dto.getTelephoneContact());
-        p.setAdresseAgence(dto.getAdresseAgence());
-
-        return p;
+        ParametresSite parametresSite = new ParametresSite();
+        parametresSite.setIdParametres(dto.getId());
+        parametresSite.setEmailContact(dto.getEmailContact());
+        parametresSite.setTelephoneContact(dto.getTelephoneContact());
+        parametresSite.setAdresseAgence(dto.getAdresseAgence());
+        return parametresSite;
     }
 
     public List<ParametresSiteDTO> getAll() {
@@ -43,11 +41,12 @@ public class ParametresSiteService {
     }
 
     public ParametresSiteDTO get(Long id) {
-        return repo.findById(id).map(this::toDTO).orElse(null);
+        return repo.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Parametres du site introuvables."));
     }
 
     public ParametresSiteDTO saveOrUpdate(ParametresSiteDTO dto) {
-        ParametresSite saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 }

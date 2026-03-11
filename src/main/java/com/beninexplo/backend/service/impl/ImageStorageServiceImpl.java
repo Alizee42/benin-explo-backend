@@ -1,5 +1,6 @@
 package com.beninexplo.backend.service.impl;
 
+import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.service.ImageStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,56 +11,54 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
 public class ImageStorageServiceImpl implements ImageStorageService {
 
     @Value("${image.storage.location}")
-    private String storageLocation; // expects a value like file:src/uploads/
+    private String storageLocation;
 
     private Path getBasePath() {
-        String loc = storageLocation;
-        if (loc.startsWith("file:")) {
-            loc = loc.substring(5);
+        String location = storageLocation;
+        if (location.startsWith("file:")) {
+            location = location.substring(5);
         }
-        return Paths.get(loc).toAbsolutePath().normalize();
+        return Paths.get(location).toAbsolutePath().normalize();
     }
 
     @Override
-    public String store(MultipartFile file, String folder) throws Exception {
+    public String store(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
+            throw new BadRequestException("Le fichier image est obligatoire.");
         }
 
-        // basic MIME check
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("Only image files are allowed");
+            throw new BadRequestException("Seuls les fichiers image sont autorises.");
         }
 
-        // limit size to 10MB
         if (file.getSize() > 10 * 1024 * 1024) {
-            throw new IllegalArgumentException("File too large (max 10MB)");
+            throw new BadRequestException("Le fichier image depasse la taille maximale de 10 Mo.");
         }
 
         String original = StringUtils.cleanPath(file.getOriginalFilename());
-        String ext = "";
-        int idx = original.lastIndexOf('.');
-        if (idx >= 0) {
-            ext = original.substring(idx);
+        String extension = "";
+        int separator = original.lastIndexOf('.');
+        if (separator >= 0) {
+            extension = original.substring(separator);
         }
 
-        String filename = UUID.randomUUID().toString() + ext;
-
+        String filename = UUID.randomUUID() + extension;
         Path folderPath = getBasePath().resolve(folder == null || folder.isBlank() ? "" : folder).normalize();
+
         try {
             Files.createDirectories(folderPath);
-            Path target = folderPath.resolve(filename);
-            Files.copy(file.getInputStream(), target);
+            Files.copy(file.getInputStream(), folderPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
             return filename;
         } catch (IOException e) {
-            throw new IOException("Failed to store file", e);
+            throw new IllegalStateException("Impossible de sauvegarder l'image.", e);
         }
     }
 }

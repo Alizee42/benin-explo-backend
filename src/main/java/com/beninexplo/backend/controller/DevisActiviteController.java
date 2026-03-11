@@ -2,15 +2,21 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.DevisActiviteDTO;
 import com.beninexplo.backend.service.DevisActiviteService;
-
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/devis-activites")
-@CrossOrigin(origins = "*")
 public class DevisActiviteController {
 
     private final DevisActiviteService service;
@@ -20,8 +26,8 @@ public class DevisActiviteController {
     }
 
     @PostMapping
-    public ResponseEntity<DevisActiviteDTO> create(@RequestBody DevisActiviteDTO dto) {
-        return new ResponseEntity<>(service.create(dto), HttpStatus.CREATED);
+    public ResponseEntity<DevisActiviteDTO> create(@Valid @RequestBody DevisActiviteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @GetMapping("/devis/{devisId}")

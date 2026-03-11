@@ -1,6 +1,8 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class DevisActiviteDTO {
@@ -9,8 +11,17 @@ public class DevisActiviteDTO {
        🟦 ATTRIBUTS
     ---------------------------------------------------- */
     private Long id;
+
+    @NotNull(message = "Le devis est obligatoire.")
+    @Positive(message = "Le devis doit etre un identifiant positif.")
     private Long devisId;
+
+    @NotNull(message = "L'activite est obligatoire.")
+    @Positive(message = "L'activite doit etre un identifiant positif.")
     private Long activiteId;
+
+    @NotNull(message = "La quantite est obligatoire.")
+    @Positive(message = "La quantite doit etre superieure a zero.")
     private Integer quantite;
 
     /* ----------------------------------------------------

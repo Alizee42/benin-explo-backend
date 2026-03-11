@@ -2,28 +2,46 @@ package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HebergementDTO {
 
-    /* ----------------------------------------------------
-       🟦 ATTRIBUTS
-    ---------------------------------------------------- */
     private Long id;
-    private String nom;
-    private String type;
-    private String localisation;
-    private String quartier;
-    private String description;
-    private double prixParNuit;
-    private List<String> imageUrls;
 
-    /* ----------------------------------------------------
-       🟩 CONSTRUCTEURS
-    ---------------------------------------------------- */
-    public HebergementDTO() {}
+    @NotBlank(message = "Le nom de l'hebergement est obligatoire.")
+    @Size(max = 255, message = "Le nom de l'hebergement ne doit pas depasser 255 caracteres.")
+    private String nom;
+
+    @NotBlank(message = "Le type d'hebergement est obligatoire.")
+    @Size(max = 100, message = "Le type d'hebergement ne doit pas depasser 100 caracteres.")
+    private String type;
+
+    @NotBlank(message = "La localisation est obligatoire.")
+    @Size(max = 255, message = "La localisation ne doit pas depasser 255 caracteres.")
+    private String localisation;
+
+    @Size(max = 255, message = "Le quartier ne doit pas depasser 255 caracteres.")
+    private String quartier;
+
+    @NotBlank(message = "La description de l'hebergement est obligatoire.")
+    @Size(max = 5000, message = "La description de l'hebergement ne doit pas depasser 5000 caracteres.")
+    private String description;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Le prix par nuit doit etre superieur a zero.")
+    private double prixParNuit;
+
+    @Size(max = 20, message = "La liste d'images ne doit pas contenir plus de 20 elements.")
+    private List<@NotBlank(message = "Une URL d'image ne peut pas etre vide.")
+            @Size(max = 1000, message = "Une URL d'image ne doit pas depasser 1000 caracteres.") String> imageUrls;
+
+    public HebergementDTO() {
+    }
 
     public HebergementDTO(Long id, String nom, String type, String localisation,
                           String quartier, String description, double prixParNuit, List<String> imageUrls) {
@@ -37,9 +55,6 @@ public class HebergementDTO {
         this.imageUrls = imageUrls;
     }
 
-    /* ----------------------------------------------------
-       🟨 GETTERS & SETTERS
-    ---------------------------------------------------- */
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

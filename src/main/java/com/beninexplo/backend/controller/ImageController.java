@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -27,26 +26,17 @@ public class ImageController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file,
-                                    @RequestParam(value = "folder", required = false) String folder) {
-        try {
-            log.debug("Upload image: nom={}, taille={} octets, folder={}", 
+    public ResponseEntity<Map<String, String>> upload(@RequestParam("file") MultipartFile file,
+                                                      @RequestParam(value = "folder", required = false) String folder) {
+        log.debug("Upload image: nom={}, taille={} octets, folder={}",
                 file.getOriginalFilename(), file.getSize(), folder);
 
-            String filename = storageService.store(file, folder == null ? "" : folder);
-            String urlFolder = (folder == null || folder.isBlank()) ? "" : folder + "/";
-            String url = "/images/" + urlFolder + filename;
-            Map<String, String> body = new HashMap<>();
-            body.put("filename", filename);
-            body.put("url", url);
-            
-            log.info("✅ Image uploadée: {}", url);
-            return ResponseEntity.status(HttpStatus.CREATED).body(body);
-        } catch (Exception e) {
-            log.error("❌ Erreur lors de l'upload d'image", e);
-            Map<String, String> err = new HashMap<>();
-            err.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-        }
+        String normalizedFolder = folder == null ? "" : folder.trim();
+        String filename = storageService.store(file, normalizedFolder);
+        String urlFolder = normalizedFolder.isBlank() ? "" : normalizedFolder + "/";
+        String url = "/images/" + urlFolder + filename;
+
+        log.info("Image uploadee: {}", url);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("filename", filename, "url", url));
     }
 }

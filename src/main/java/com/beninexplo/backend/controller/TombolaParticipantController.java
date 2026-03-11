@@ -2,32 +2,27 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.TombolaParticipantDTO;
 import com.beninexplo.backend.service.TombolaParticipantService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tombola")
-@CrossOrigin("*")
 public class TombolaParticipantController {
 
-    @Autowired
-    private TombolaParticipantService tombolaParticipantService;
+    private final TombolaParticipantService tombolaParticipantService;
 
-    /* ----------------------------------------------------
-       🟦 INSCRIPTION À LA TOMBOLA
-       Input :
-       {
-         "email": "exemple@mail.com",
-         "nom": "Nom",
-         "prenom": "Prenom"
-       }
+    public TombolaParticipantController(TombolaParticipantService tombolaParticipantService) {
+        this.tombolaParticipantService = tombolaParticipantService;
+    }
 
-       - Crée un utilisateur si nécessaire
-       - Ajoute le rôle PARTICIPANT si existant
-       - Enregistre la participation
-    ---------------------------------------------------- */
     @PostMapping("/inscription")
-    public TombolaParticipantDTO inscriptionTombola(@RequestBody InscriptionTombolaRequest request) {
+    public TombolaParticipantDTO inscriptionTombola(@Valid @RequestBody InscriptionTombolaRequest request) {
         return tombolaParticipantService.inscrireParticipant(
                 request.getEmail(),
                 request.getNom(),
@@ -35,22 +30,42 @@ public class TombolaParticipantController {
         );
     }
 
-    /* ----------------------------------------------------
-       🟩 DTO interne pour la requête
-       (permet d’avoir une entrée claire sans créer un autre fichier)
-    ---------------------------------------------------- */
     public static class InscriptionTombolaRequest {
+        @NotBlank(message = "L'email est obligatoire.")
+        @Email(message = "L'email doit etre valide.")
+        @Size(max = 150, message = "L'email ne doit pas depasser 150 caracteres.")
         private String email;
+
+        @NotBlank(message = "Le nom est obligatoire.")
+        @Size(max = 100, message = "Le nom ne doit pas depasser 100 caracteres.")
         private String nom;
+
+        @NotBlank(message = "Le prenom est obligatoire.")
+        @Size(max = 100, message = "Le prenom ne doit pas depasser 100 caracteres.")
         private String prenom;
 
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
+        public String getEmail() {
+            return email;
+        }
 
-        public String getNom() { return nom; }
-        public void setNom(String nom) { this.nom = nom; }
+        public void setEmail(String email) {
+            this.email = email;
+        }
 
-        public String getPrenom() { return prenom; }
-        public void setPrenom(String prenom) { this.prenom = prenom; }
+        public String getNom() {
+            return nom;
+        }
+
+        public void setNom(String nom) {
+            this.nom = nom;
+        }
+
+        public String getPrenom() {
+            return prenom;
+        }
+
+        public void setPrenom(String prenom) {
+            this.prenom = prenom;
+        }
     }
 }

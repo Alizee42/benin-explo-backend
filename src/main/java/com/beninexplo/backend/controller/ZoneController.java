@@ -2,14 +2,22 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ZoneDTO;
 import com.beninexplo.backend.service.ZoneService;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/zones")
-@CrossOrigin(origins = "*")
 public class ZoneController {
 
     private final ZoneService zoneService;
@@ -19,7 +27,7 @@ public class ZoneController {
     }
 
     @PostMapping
-    public ResponseEntity<ZoneDTO> create(@RequestBody ZoneDTO dto) {
+    public ResponseEntity<ZoneDTO> create(@Valid @RequestBody ZoneDTO dto) {
         ZoneDTO created = zoneService.createZone(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
@@ -31,18 +39,13 @@ public class ZoneController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ZoneDTO> getById(@PathVariable Long id) {
-        ZoneDTO dto = zoneService.getZoneById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(zoneService.getZoneById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ZoneDTO> update(@PathVariable Long id, @RequestBody ZoneDTO dto) {
-        try {
-            ZoneDTO updated = zoneService.updateZone(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ZoneDTO> update(@PathVariable Long id, @Valid @RequestBody ZoneDTO dto) {
+        ZoneDTO updated = zoneService.updateZone(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

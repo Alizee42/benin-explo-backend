@@ -4,18 +4,19 @@ import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.exception.BadRequestException;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
-
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.Collections;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CircuitService {
@@ -23,6 +24,7 @@ public class CircuitService {
     private final CircuitRepository circuitRepo;
     private final VilleRepository villeRepo;
     private final ZoneRepository zoneRepo;
+    private final ObjectMapper objectMapper;
 
     public CircuitService(CircuitRepository circuitRepo,
                           VilleRepository villeRepo,
@@ -30,298 +32,158 @@ public class CircuitService {
         this.circuitRepo = circuitRepo;
         this.villeRepo = villeRepo;
         this.zoneRepo = zoneRepo;
+        this.objectMapper = new ObjectMapper();
     }
 
-    // ---------------------------------------
-    // DTO MAPPING
-    // ---------------------------------------
-
-    private CircuitDTO toDTO(Circuit c) {
-        if (c == null) return null;
-
+    private CircuitDTO toDTO(Circuit circuit) {
         CircuitDTO dto = new CircuitDTO();
+        dto.setId(circuit.getIdCircuit());
+        dto.setTitre(circuit.getNom());
+        dto.setDescription(circuit.getDescription());
+        dto.setResume(circuit.getResume());
+        dto.setDureeIndicative(circuit.getDureeIndicative());
+        dto.setPrixIndicatif(circuit.getPrixIndicatif());
+        dto.setFormuleProposee(circuit.getFormuleProposee());
+        dto.setActif(circuit.isActif());
+        dto.setImg(circuit.getImg());
+        dto.setGalerie(readStringList(circuit.getGalerie()));
+        dto.setProgramme(readProgramme(circuit.getProgramme()));
+        dto.setPointsForts(readPointForts(circuit.getPointsForts()));
+        dto.setInclus(readStringList(circuit.getInclus()));
+        dto.setNonInclus(readStringList(circuit.getNonInclus()));
+        dto.setAventures(readStringList(circuit.getAventures()));
 
-        dto.setId(c.getIdCircuit());
-        dto.setTitre(c.getNom()); // Map nom to titre
-        dto.setDescription(c.getDescription());
-        dto.setDureeIndicative(c.getDureeIndicative());
-        dto.setPrixIndicatif(c.getPrixIndicatif());
-        dto.setFormuleProposee(c.getFormuleProposee());
-        dto.setActif(c.isActif());
+        if (circuit.getVille() != null) {
+            dto.setVilleId(circuit.getVille().getIdVille());
+            dto.setVilleNom(circuit.getVille().getNom());
+            dto.setLocalisation(circuit.getVille().getNom());
 
-        // Ville et Zone (via ville.getZone())
-        if (c.getVille() != null) {
-            dto.setVilleId(c.getVille().getIdVille());
-            dto.setVilleNom(c.getVille().getNom());
-            dto.setLocalisation(c.getVille().getNom()); // Pour compatibilité temporaire
-            
-            // Zone via ville
-            Zone zone = c.getVille().getZone();
+            Zone zone = circuit.getVille().getZone();
             if (zone != null) {
                 dto.setZoneId(zone.getIdZone());
                 dto.setZoneNom(zone.getNom());
             }
+        } else if (circuit.getZone() != null) {
+            dto.setZoneId(circuit.getZone().getIdZone());
+            dto.setZoneNom(circuit.getZone().getNom());
         }
-
-        // Image principale (URL ou base64) stockée en TEXT
-        dto.setImg(c.getImg());
-
-        // Galerie : stockée en JSON dans l'entité, convertie en List<String>
-        if (c.getGalerie() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                List<String> gal = mapper.readValue(c.getGalerie(), new TypeReference<List<String>>(){});
-                dto.setGalerie(gal);
-            } catch (JsonProcessingException e) {
-                dto.setGalerie(Collections.emptyList());
-            }
-        } else {
-            dto.setGalerie(Collections.emptyList());
-        }
-
-        // Resume (court chapeau)
-        dto.setResume(c.getResume());
-
-        // Programme
-        if (c.getProgramme() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Try to read as list of ProgrammeDay objects
-                List<CircuitDTO.ProgrammeDay> progDays = mapper.readValue(c.getProgramme(), new TypeReference<List<CircuitDTO.ProgrammeDay>>(){});
-                dto.setProgramme(progDays);
-            } catch (JsonProcessingException e1) {
-                try {
-                    // Fallback: try to read as List<String> and convert to ProgrammeDay
-                    List<String> prog = mapper.readValue(c.getProgramme(), new TypeReference<List<String>>(){});
-                    List<CircuitDTO.ProgrammeDay> conv = prog.stream()
-                            .map(s -> new CircuitDTO.ProgrammeDay(null, null, s, null, null, null))
-                            .collect(Collectors.toList());
-                    dto.setProgramme(conv);
-                } catch (JsonProcessingException e2) {
-                    dto.setProgramme(Collections.emptyList());
-                }
-            }
-        } else {
-            dto.setProgramme(Collections.emptyList());
-        }
-
-        // Points forts (liste d'objets)
-        if (c.getPointsForts() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                List<CircuitDTO.PointFort> forts = mapper.readValue(c.getPointsForts(), new TypeReference<List<CircuitDTO.PointFort>>(){});
-                dto.setPointsForts(forts);
-            } catch (JsonProcessingException e) {
-                dto.setPointsForts(Collections.emptyList());
-            }
-        } else {
-            dto.setPointsForts(Collections.emptyList());
-        }
-
-        // Inclus / Non inclus
-        if (c.getInclus() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                List<String> incl = mapper.readValue(c.getInclus(), new TypeReference<List<String>>(){});
-                dto.setInclus(incl);
-            } catch (JsonProcessingException e) {
-                dto.setInclus(Collections.emptyList());
-            }
-        } else {
-            dto.setInclus(Collections.emptyList());
-        }
-
-        if (c.getNonInclus() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                List<String> non = mapper.readValue(c.getNonInclus(), new TypeReference<List<String>>(){});
-                dto.setNonInclus(non);
-            } catch (JsonProcessingException e) {
-                dto.setNonInclus(Collections.emptyList());
-            }
-        } else {
-            dto.setNonInclus(Collections.emptyList());
-        }
-
-        // Tourisme / Aventures: non mappés pour l'instant (peuvent être ajoutés au DTO si besoin)
-        // Map aventures if present
-        if (c.getAventures() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                List<String> av = mapper.readValue(c.getAventures(), new TypeReference<List<String>>(){});
-                dto.setAventures(av);
-            } catch (JsonProcessingException e) {
-                dto.setAventures(Collections.emptyList());
-            }
-        } else {
-            dto.setAventures(Collections.emptyList());
-        }
-        if (c.getZone() != null)
-            dto.setZoneId(c.getZone().getIdZone());
-
-        // Pour l'instant, on ne mappe pas les nouveaux champs car l'entité ne les a pas
-        // Ces champs seront gérés plus tard quand l'entité sera mise à jour
 
         return dto;
     }
 
-    private void updateEntity(Circuit c, CircuitDTO dto) {
-
-        c.setNom(dto.getTitre()); // Map titre to nom
-        c.setDescription(dto.getDescription());
-        c.setDureeIndicative(dto.getDureeIndicative());
-        c.setPrixIndicatif(dto.getPrixIndicatif());
-        c.setFormuleProposee(dto.getFormuleProposee());
-        c.setActif(dto.isActif());
-
-        // Ville (remplace localisation)
-        if (dto.getVilleId() != null) {
-            Ville ville = villeRepo.findById(dto.getVilleId()).orElse(null);
-            c.setVille(ville);
+    private void updateEntity(Circuit circuit, CircuitDTO dto) {
+        if (dto.getVilleId() == null) {
+            throw new BadRequestException("La ville principale du circuit est obligatoire.");
         }
 
-        // Image principale
-        c.setImg(dto.getImg());
+        Ville ville = villeRepo.findById(dto.getVilleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ville introuvable."));
 
-        // Galerie : sérialiser la liste en JSON
-        if (dto.getGalerie() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setGalerie(mapper.writeValueAsString(dto.getGalerie()));
-            } catch (JsonProcessingException e) {
-                c.setGalerie(null);
-            }
-        } else {
-            c.setGalerie(null);
-        }
-
-        // Resume
-        c.setResume(dto.getResume());
-
-        // Programme
-        if (dto.getProgramme() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setProgramme(mapper.writeValueAsString(dto.getProgramme()));
-            } catch (JsonProcessingException e) {
-                c.setProgramme(null);
-            }
-        } else {
-            c.setProgramme(null);
-        }
-
-        // Aventures
-        if (dto.getAventures() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setAventures(mapper.writeValueAsString(dto.getAventures()));
-            } catch (JsonProcessingException e) {
-                c.setAventures(null);
-            }
-        } else {
-            c.setAventures(null);
-        }
-
-        // Points forts
-        if (dto.getPointsForts() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setPointsForts(mapper.writeValueAsString(dto.getPointsForts()));
-            } catch (JsonProcessingException e) {
-                c.setPointsForts(null);
-            }
-        } else {
-            c.setPointsForts(null);
-        }
-
-        // Inclus / NonInclus
-        if (dto.getInclus() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setInclus(mapper.writeValueAsString(dto.getInclus()));
-            } catch (JsonProcessingException e) {
-                c.setInclus(null);
-            }
-        } else {
-            c.setInclus(null);
-        }
-
-        if (dto.getNonInclus() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                c.setNonInclus(mapper.writeValueAsString(dto.getNonInclus()));
-            } catch (JsonProcessingException e) {
-                c.setNonInclus(null);
-            }
-        } else {
-            c.setNonInclus(null);
-        }
-
-        // Note: Zone est maintenant accessible via c.getVille().getZone()
-        // Pas besoin de le stocker directement sur Circuit
-
-        // Pour l'instant, on ignore les nouveaux champs car l'entité ne les supporte pas
-        // Ces champs seront gérés plus tard quand l'entité sera mise à jour
+        circuit.setNom(dto.getTitre());
+        circuit.setDescription(dto.getDescription());
+        circuit.setResume(dto.getResume());
+        circuit.setDureeIndicative(dto.getDureeIndicative());
+        circuit.setPrixIndicatif(dto.getPrixIndicatif());
+        circuit.setFormuleProposee(dto.getFormuleProposee());
+        circuit.setActif(dto.isActif());
+        circuit.setVille(ville);
+        circuit.setImg(dto.getImg());
+        circuit.setGalerie(writeJson(dto.getGalerie()));
+        circuit.setProgramme(writeJson(dto.getProgramme()));
+        circuit.setPointsForts(writeJson(dto.getPointsForts()));
+        circuit.setInclus(writeJson(dto.getInclus()));
+        circuit.setNonInclus(writeJson(dto.getNonInclus()));
+        circuit.setAventures(writeJson(dto.getAventures()));
     }
 
-    // ---------------------------------------
-    // CRUD
-    // ---------------------------------------
+    private List<String> readStringList(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() { });
+        } catch (JsonProcessingException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<CircuitDTO.PointFort> readPointForts(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<CircuitDTO.PointFort>>() { });
+        } catch (JsonProcessingException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<CircuitDTO.ProgrammeDay> readProgramme(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<CircuitDTO.ProgrammeDay>>() { });
+        } catch (JsonProcessingException firstError) {
+            try {
+                List<String> rawItems = objectMapper.readValue(json, new TypeReference<List<String>>() { });
+                return rawItems.stream()
+                        .map(item -> new CircuitDTO.ProgrammeDay(null, null, item, null, null, null))
+                        .collect(Collectors.toList());
+            } catch (JsonProcessingException secondError) {
+                return Collections.emptyList();
+            }
+        }
+    }
+
+    private String writeJson(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Impossible de serialiser les donnees du circuit.", e);
+        }
+    }
 
     public List<CircuitDTO> getAll() {
-        return circuitRepo.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return circuitRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public CircuitDTO getById(Long id) {
         return circuitRepo.findById(id)
                 .map(this::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
     }
 
     public CircuitDTO create(CircuitDTO dto) {
         Circuit circuit = new Circuit();
         updateEntity(circuit, dto);
-        circuitRepo.save(circuit);
-        return toDTO(circuit);
+        return toDTO(circuitRepo.save(circuit));
     }
 
     public CircuitDTO update(Long id, CircuitDTO dto) {
         Circuit circuit = circuitRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
         updateEntity(circuit, dto);
-        circuitRepo.save(circuit);
-        return toDTO(circuit);
+        return toDTO(circuitRepo.save(circuit));
     }
 
     public void delete(Long id) {
         circuitRepo.deleteById(id);
     }
 
-    // ---------------------------------------
-    // FILTRES & RECHERCHES
-    // ---------------------------------------
-
     public List<CircuitDTO> getActifs() {
-        return circuitRepo.findByActifTrue()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return circuitRepo.findByActifTrue().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public List<CircuitDTO> getByZone(Long zoneId) {
-        return circuitRepo.findByVille_Zone_IdZone(zoneId)
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        zoneRepo.findById(zoneId).orElseThrow(() -> new ResourceNotFoundException("Zone introuvable."));
+        return circuitRepo.findByVille_Zone_IdZone(zoneId).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public List<CircuitDTO> searchByNom(String nom) {
-        return circuitRepo.findByNomContainingIgnoreCase(nom)
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return circuitRepo.findByNomContainingIgnoreCase(nom).stream().map(this::toDTO).collect(Collectors.toList());
     }
 }

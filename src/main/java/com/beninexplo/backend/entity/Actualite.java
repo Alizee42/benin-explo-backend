@@ -18,6 +18,12 @@ public class Actualite {
 
     private LocalDateTime datePublication;
 
+    @Column(nullable = false)
+    private boolean aLaUne;
+
+    @Column(nullable = false)
+    private boolean publiee = true;
+
     @ManyToOne
     @JoinColumn(name = "image_principale_id")
     private Media imagePrincipale;
@@ -50,6 +56,12 @@ public class Actualite {
 
     public LocalDateTime getDatePublication() { return datePublication; }
     public void setDatePublication(LocalDateTime datePublication) { this.datePublication = datePublication; }
+
+    public boolean isALaUne() { return aLaUne; }
+    public void setALaUne(boolean ALaUne) { this.aLaUne = ALaUne; }
+
+    public boolean isPubliee() { return publiee; }
+    public void setPubliee(boolean publiee) { this.publiee = publiee; }
 
     public Media getImagePrincipale() { return imagePrincipale; }
     public void setImagePrincipale(Media imagePrincipale) { this.imagePrincipale = imagePrincipale; }

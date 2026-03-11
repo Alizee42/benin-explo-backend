@@ -4,9 +4,10 @@ import com.beninexplo.backend.dto.ReservationRequestDTO;
 import com.beninexplo.backend.dto.ReservationResponseDTO;
 import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Reservation;
+import com.beninexplo.backend.exception.BadRequestException;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.ReservationRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,38 +24,38 @@ public class ReservationService {
         this.circuitRepo = circuitRepo;
     }
 
-    private ReservationResponseDTO toDTO(Reservation r) {
+    private ReservationResponseDTO toDTO(Reservation reservation) {
         return new ReservationResponseDTO(
-                r.getIdReservation(),
-                r.getNom(),
-                r.getPrenom(),
-                r.getEmail(),
-                r.getTelephone(),
-                r.getDateReservation(),
-                r.getCircuit().getIdCircuit()
+                reservation.getIdReservation(),
+                reservation.getNom(),
+                reservation.getPrenom(),
+                reservation.getEmail(),
+                reservation.getTelephone(),
+                reservation.getDateReservation(),
+                reservation.getCircuit().getIdCircuit()
         );
     }
 
     private Reservation fromDTO(ReservationRequestDTO dto) {
+        if (dto.getCircuitId() == null) {
+            throw new BadRequestException("Le circuit est obligatoire.");
+        }
 
-        Reservation r = new Reservation();
+        Circuit circuit = circuitRepo.findById(dto.getCircuitId())
+                .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
 
-        r.setNom(dto.getNom());
-        r.setPrenom(dto.getPrenom());
-        r.setEmail(dto.getEmail());
-        r.setTelephone(dto.getTelephone());
-        r.setDateReservation(dto.getDateReservation());
-
-        Circuit c = circuitRepo.findById(dto.getCircuitId())
-                .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
-        r.setCircuit(c);
-
-        return r;
+        Reservation reservation = new Reservation();
+        reservation.setNom(dto.getNom());
+        reservation.setPrenom(dto.getPrenom());
+        reservation.setEmail(dto.getEmail());
+        reservation.setTelephone(dto.getTelephone());
+        reservation.setDateReservation(dto.getDateReservation());
+        reservation.setCircuit(circuit);
+        return reservation;
     }
 
     public ReservationResponseDTO create(ReservationRequestDTO dto) {
-        Reservation saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 
     public List<ReservationResponseDTO> getAll() {

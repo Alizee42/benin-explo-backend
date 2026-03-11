@@ -2,15 +2,22 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.VilleDTO;
 import com.beninexplo.backend.service.VilleService;
-
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/villes")
-@CrossOrigin(origins = "*")
 public class VilleController {
 
     private final VilleService service;
@@ -19,10 +26,6 @@ public class VilleController {
         this.service = service;
     }
 
-    // ---------------------------------------
-    // CRUD
-    // ---------------------------------------
-
     @GetMapping
     public List<VilleDTO> getAll() {
         return service.getAll();
@@ -30,24 +33,17 @@ public class VilleController {
 
     @GetMapping("/{id}")
     public ResponseEntity<VilleDTO> get(@PathVariable Long id) {
-        VilleDTO dto = service.getById(id);
-        return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+        return ResponseEntity.ok(service.getById(id));
     }
 
     @PostMapping
-    public ResponseEntity<VilleDTO> create(@RequestBody VilleDTO dto) {
-        VilleDTO created = service.create(dto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<VilleDTO> create(@Valid @RequestBody VilleDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VilleDTO> update(@PathVariable Long id, @RequestBody VilleDTO dto) {
-        try {
-            VilleDTO updated = service.update(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<VilleDTO> update(@PathVariable Long id, @Valid @RequestBody VilleDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -55,10 +51,6 @@ public class VilleController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
-
-    // ---------------------------------------
-    // FILTRES
-    // ---------------------------------------
 
     @GetMapping("/zone/{zoneId}")
     public List<VilleDTO> getByZone(@PathVariable Long zoneId) {

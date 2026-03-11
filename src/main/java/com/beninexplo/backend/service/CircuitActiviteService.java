@@ -1,9 +1,13 @@
 package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CircuitActiviteDTO;
-import com.beninexplo.backend.entity.*;
-import com.beninexplo.backend.repository.*;
-
+import com.beninexplo.backend.entity.Activite;
+import com.beninexplo.backend.entity.Circuit;
+import com.beninexplo.backend.entity.CircuitActivite;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
+import com.beninexplo.backend.repository.ActiviteRepository;
+import com.beninexplo.backend.repository.CircuitActiviteRepository;
+import com.beninexplo.backend.repository.CircuitRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,81 +20,70 @@ public class CircuitActiviteService {
     private final CircuitRepository circuitRepo;
     private final ActiviteRepository activiteRepo;
 
-    public CircuitActiviteService(
-            CircuitActiviteRepository repo,
-            CircuitRepository circuitRepo,
-            ActiviteRepository activiteRepo
-    ) {
+    public CircuitActiviteService(CircuitActiviteRepository repo,
+                                  CircuitRepository circuitRepo,
+                                  ActiviteRepository activiteRepo) {
         this.repo = repo;
         this.circuitRepo = circuitRepo;
         this.activiteRepo = activiteRepo;
     }
 
-    /* ---------------------- DTO MAPPER ---------------------- */
-
-    private CircuitActiviteDTO toDTO(CircuitActivite ca) {
+    private CircuitActiviteDTO toDTO(CircuitActivite circuitActivite) {
         CircuitActiviteDTO dto = new CircuitActiviteDTO();
-        dto.setId(ca.getIdCircuitActivite());
-        dto.setCircuitId(ca.getCircuit().getIdCircuit());
-        dto.setActiviteId(ca.getActivite().getIdActivite());
-        dto.setOrdre(ca.getOrdre());
-        dto.setJourIndicatif(ca.getJourIndicatif());
+        dto.setId(circuitActivite.getIdCircuitActivite());
+        dto.setCircuitId(circuitActivite.getCircuit().getIdCircuit());
+        dto.setActiviteId(circuitActivite.getActivite().getIdActivite());
+        dto.setOrdre(circuitActivite.getOrdre());
+        dto.setJourIndicatif(circuitActivite.getJourIndicatif());
         return dto;
     }
 
     private CircuitActivite fromDTO(CircuitActiviteDTO dto) {
-        CircuitActivite ca = new CircuitActivite();
-
-        ca.setIdCircuitActivite(dto.getId());
-        ca.setOrdre(dto.getOrdre());
-        ca.setJourIndicatif(dto.getJourIndicatif());
-
-        // Circuit obligatoire
         Circuit circuit = circuitRepo.findById(dto.getCircuitId())
-                .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
-        ca.setCircuit(circuit);
-
-        // Activité obligatoire
+                .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
         Activite activite = activiteRepo.findById(dto.getActiviteId())
-                .orElseThrow(() -> new RuntimeException("Activité non trouvée"));
-        ca.setActivite(activite);
+                .orElseThrow(() -> new ResourceNotFoundException("Activite non trouvee."));
 
-        return ca;
+        CircuitActivite circuitActivite = new CircuitActivite();
+        circuitActivite.setIdCircuitActivite(dto.getId());
+        circuitActivite.setOrdre(dto.getOrdre());
+        circuitActivite.setJourIndicatif(dto.getJourIndicatif());
+        circuitActivite.setCircuit(circuit);
+        circuitActivite.setActivite(activite);
+        return circuitActivite;
     }
-
-    /* ---------------------- CRUD ---------------------- */
 
     public List<CircuitActiviteDTO> getAll() {
         return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public CircuitActiviteDTO get(Long id) {
-        return repo.findById(id).map(this::toDTO).orElse(null);
+        return repo.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Association circuit-activite introuvable."));
     }
 
     public CircuitActiviteDTO create(CircuitActiviteDTO dto) {
-        CircuitActivite saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 
     public CircuitActiviteDTO update(Long id, CircuitActiviteDTO dto) {
-
         CircuitActivite existing = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Association circuit-activité non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Association circuit-activite introuvable."));
 
         existing.setOrdre(dto.getOrdre());
         existing.setJourIndicatif(dto.getJourIndicatif());
 
         if (dto.getCircuitId() != null) {
-            existing.setCircuit(
-                    circuitRepo.findById(dto.getCircuitId())
-                            .orElseThrow(() -> new RuntimeException("Circuit non trouvé")));
+            Circuit circuit = circuitRepo.findById(dto.getCircuitId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
+            existing.setCircuit(circuit);
         }
 
         if (dto.getActiviteId() != null) {
-            existing.setActivite(
-                    activiteRepo.findById(dto.getActiviteId())
-                            .orElseThrow(() -> new RuntimeException("Activité non trouvée")));
+            Activite activite = activiteRepo.findById(dto.getActiviteId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Activite non trouvee."));
+            existing.setActivite(activite);
         }
 
         return toDTO(repo.save(existing));
@@ -100,11 +93,8 @@ public class CircuitActiviteService {
         repo.deleteById(id);
     }
 
-    /* ---------------------- FILTRE ---------------------- */
-
     public List<CircuitActiviteDTO> getByCircuit(Long circuitId) {
-        return repo.findByCircuit_IdCircuitOrderByOrdreAsc(circuitId)
-                .stream()
+        return repo.findByCircuit_IdCircuitOrderByOrdreAsc(circuitId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }

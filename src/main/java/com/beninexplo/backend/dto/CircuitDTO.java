@@ -1,6 +1,13 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -8,34 +15,71 @@ import java.util.List;
 public class CircuitDTO {
 
     private Long id;
+
+    @NotBlank(message = "Le titre du circuit est obligatoire.")
+    @Size(max = 255, message = "Le titre du circuit ne doit pas depasser 255 caracteres.")
     private String titre;
+
+    @Size(max = 2000, message = "Le resume ne doit pas depasser 2000 caracteres.")
     private String resume;
+
+    @NotBlank(message = "La description du circuit est obligatoire.")
+    @Size(max = 5000, message = "La description du circuit ne doit pas depasser 5000 caracteres.")
     private String description;
 
+    @NotBlank(message = "La duree indicative est obligatoire.")
+    @Size(max = 255, message = "La duree indicative ne doit pas depasser 255 caracteres.")
     private String dureeIndicative;
+
+    @NotNull(message = "Le prix indicatif est obligatoire.")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Le prix indicatif doit etre superieur a zero.")
     private BigDecimal prixIndicatif;
 
+    @Size(max = 255, message = "La formule proposee ne doit pas depasser 255 caracteres.")
     private String formuleProposee;
+
     private String localisation;
-
     private boolean actif;
-
     private Long zoneId;
     private String zoneNom;
+
+    @NotNull(message = "La ville principale du circuit est obligatoire.")
+    @Positive(message = "La ville principale du circuit doit etre un identifiant positif.")
     private Long villeId;
+
     private String villeNom;
     private List<Long> activiteIds;
-    private String img; // Image principale (hero image)
-    private List<String> galerie; // Galerie d'images (3-10 images)
-    private List<ProgrammeDay> programme; // Programme jour par jour (peut être chaîne ou objet)
-    private List<String> aventures; // Liste d'aventures / activités (nouveau champ)
-    private List<PointFort> pointsForts; // Points forts avec icône
-    private List<String> inclus; // Ce qui est inclus
-    private List<String> nonInclus; // Ce qui n'est pas inclus
 
-    public CircuitDTO() {}
+    @Size(max = 1000, message = "L'image principale ne doit pas depasser 1000 caracteres.")
+    private String img;
 
-    // GETTERS / SETTERS
+    @Size(max = 20, message = "La galerie ne doit pas contenir plus de 20 images.")
+    private List<@NotBlank(message = "Les URL de galerie ne peuvent pas etre vides.")
+            @Size(max = 1000, message = "Une URL de galerie ne doit pas depasser 1000 caracteres.") String> galerie;
+
+    @Valid
+    @Size(max = 30, message = "Le programme ne doit pas contenir plus de 30 etapes.")
+    private List<ProgrammeDay> programme;
+
+    @Size(max = 30, message = "La liste d'aventures ne doit pas contenir plus de 30 elements.")
+    private List<@NotBlank(message = "Une aventure ne peut pas etre vide.")
+            @Size(max = 255, message = "Une aventure ne doit pas depasser 255 caracteres.") String> aventures;
+
+    @Valid
+    @Size(max = 20, message = "Les points forts ne doivent pas contenir plus de 20 elements.")
+    private List<PointFort> pointsForts;
+
+    @Size(max = 30, message = "La liste des inclus ne doit pas contenir plus de 30 elements.")
+    private List<@NotBlank(message = "Une valeur incluse ne peut pas etre vide.")
+            @Size(max = 255, message = "Une valeur incluse ne doit pas depasser 255 caracteres.") String> inclus;
+
+    @Size(max = 30, message = "La liste des non inclus ne doit pas contenir plus de 30 elements.")
+    private List<@NotBlank(message = "Une valeur non incluse ne peut pas etre vide.")
+            @Size(max = 255, message = "Une valeur non incluse ne doit pas depasser 255 caracteres.") String> nonInclus;
+
+    public CircuitDTO() {
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -99,13 +143,21 @@ public class CircuitDTO {
     public List<String> getNonInclus() { return nonInclus; }
     public void setNonInclus(List<String> nonInclus) { this.nonInclus = nonInclus; }
 
-    // Classe interne pour PointFort
     public static class PointFort {
+        @NotBlank(message = "L'icone d'un point fort est obligatoire.")
+        @Size(max = 100, message = "L'icone d'un point fort ne doit pas depasser 100 caracteres.")
         private String icon;
+
+        @NotBlank(message = "Le titre d'un point fort est obligatoire.")
+        @Size(max = 120, message = "Le titre d'un point fort ne doit pas depasser 120 caracteres.")
         private String title;
+
+        @NotBlank(message = "La description d'un point fort est obligatoire.")
+        @Size(max = 500, message = "La description d'un point fort ne doit pas depasser 500 caracteres.")
         private String desc;
 
-        public PointFort() {}
+        public PointFort() {
+        }
 
         public PointFort(String icon, String title, String desc) {
             this.icon = icon;
@@ -123,16 +175,29 @@ public class CircuitDTO {
         public void setDesc(String desc) { this.desc = desc; }
     }
 
-    // Classe interne pour représenter une journée du programme
     public static class ProgrammeDay {
-        private Integer day; // numéro du jour (optionnel)
-        private String title;
-        private String description;
-        private String approxTime;
-        private List<String> mealsIncluded;
-        private List<Integer> activities;
+        @Positive(message = "Le numero du jour doit etre superieur a zero.")
+        private Integer day;
 
-        public ProgrammeDay() {}
+        @Size(max = 120, message = "Le titre d'etape ne doit pas depasser 120 caracteres.")
+        private String title;
+
+        @NotBlank(message = "La description d'etape est obligatoire.")
+        @Size(max = 2000, message = "La description d'etape ne doit pas depasser 2000 caracteres.")
+        private String description;
+
+        @Size(max = 120, message = "L'horaire indicatif ne doit pas depasser 120 caracteres.")
+        private String approxTime;
+
+        @Size(max = 10, message = "La liste des repas inclus ne doit pas contenir plus de 10 elements.")
+        private List<@NotBlank(message = "Un repas inclus ne peut pas etre vide.")
+                @Size(max = 100, message = "Un repas inclus ne doit pas depasser 100 caracteres.") String> mealsIncluded;
+
+        @Size(max = 20, message = "La liste des activites d'une etape ne doit pas contenir plus de 20 elements.")
+        private List<@Positive(message = "Une activite du programme doit etre un identifiant positif.") Integer> activities;
+
+        public ProgrammeDay() {
+        }
 
         public ProgrammeDay(Integer day, String title, String description, String approxTime,
                             List<String> mealsIncluded, List<Integer> activities) {

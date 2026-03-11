@@ -3,9 +3,9 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.VilleDTO;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,37 +22,28 @@ public class VilleService {
         this.zoneRepo = zoneRepo;
     }
 
-    // ---------------------------------------
-    // DTO MAPPING
-    // ---------------------------------------
-
-    private VilleDTO toDTO(Ville v) {
-        if (v == null) return null;
-
+    private VilleDTO toDTO(Ville ville) {
         VilleDTO dto = new VilleDTO();
-        dto.setId(v.getIdVille());
-        dto.setNom(v.getNom());
-        if (v.getZone() != null) {
-            dto.setZoneId(v.getZone().getIdZone());
-            dto.setZoneNom(v.getZone().getNom());
+        dto.setId(ville.getIdVille());
+        dto.setNom(ville.getNom());
+        if (ville.getZone() != null) {
+            dto.setZoneId(ville.getZone().getIdZone());
+            dto.setZoneNom(ville.getZone().getNom());
         }
         return dto;
     }
 
     private Ville toEntity(VilleDTO dto) {
-        Ville v = new Ville();
-        v.setIdVille(dto.getId());
-        v.setNom(dto.getNom());
+        Ville ville = new Ville();
+        ville.setIdVille(dto.getId());
+        ville.setNom(dto.getNom());
         if (dto.getZoneId() != null) {
-            Zone zone = zoneRepo.findById(dto.getZoneId()).orElse(null);
-            v.setZone(zone);
+            Zone zone = zoneRepo.findById(dto.getZoneId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Zone introuvable."));
+            ville.setZone(zone);
         }
-        return v;
+        return ville;
     }
-
-    // ---------------------------------------
-    // CRUD
-    // ---------------------------------------
 
     public List<VilleDTO> getAll() {
         return villeRepo.findAllByOrderByNomAsc().stream()
@@ -63,37 +54,34 @@ public class VilleService {
     public VilleDTO getById(Long id) {
         return villeRepo.findById(id)
                 .map(this::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Ville introuvable."));
     }
 
     public VilleDTO create(VilleDTO dto) {
         Ville ville = toEntity(dto);
-        ville.setIdVille(null); // Pour création
-        Ville saved = villeRepo.save(ville);
-        return toDTO(saved);
+        ville.setIdVille(null);
+        return toDTO(villeRepo.save(ville));
     }
 
     public VilleDTO update(Long id, VilleDTO dto) {
-        Ville existing = villeRepo.findById(id).orElse(null);
-        if (existing == null) return null;
+        Ville existing = villeRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ville introuvable."));
 
         existing.setNom(dto.getNom());
         if (dto.getZoneId() != null) {
-            Zone zone = zoneRepo.findById(dto.getZoneId()).orElse(null);
+            Zone zone = zoneRepo.findById(dto.getZoneId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Zone introuvable."));
             existing.setZone(zone);
+        } else {
+            existing.setZone(null);
         }
 
-        Ville saved = villeRepo.save(existing);
-        return toDTO(saved);
+        return toDTO(villeRepo.save(existing));
     }
 
     public void delete(Long id) {
         villeRepo.deleteById(id);
     }
-
-    // ---------------------------------------
-    // FILTRES
-    // ---------------------------------------
 
     public List<VilleDTO> getByZone(Long zoneId) {
         return villeRepo.findByZoneIdZone(zoneId).stream()

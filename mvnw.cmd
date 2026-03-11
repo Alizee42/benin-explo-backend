@@ -89,10 +89,21 @@ if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
 }
 
 $MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
-  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
+$m2Item = Get-Item $MAVEN_M2_PATH -ErrorAction SilentlyContinue
+$m2Target = $null
+if ($m2Item -and $null -ne $m2Item.Target) {
+  if ($m2Item.Target -is [array]) {
+    if ($m2Item.Target.Length -gt 0) {
+      $m2Target = $m2Item.Target[0]
+    }
+  } elseif ($m2Item.Target) {
+    $m2Target = $m2Item.Target
+  }
+}
+if ($m2Target) {
+  $MAVEN_WRAPPER_DISTS = "$m2Target/wrapper/dists"
 } else {
-  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
 }
 
 $MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"

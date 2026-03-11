@@ -1,40 +1,71 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ReservationHebergementDTO {
 
-    /* ----------------------------------------------------
-       🟦 ATTRIBUTS
-    ---------------------------------------------------- */
     private Long id;
+
+    @NotNull(message = "L'hebergement est obligatoire.")
+    @Positive(message = "L'hebergement doit etre un identifiant positif.")
     private Long hebergementId;
+
     private String hebergementNom;
+
+    @NotBlank(message = "Le nom du client est obligatoire.")
+    @Size(max = 100, message = "Le nom du client ne doit pas depasser 100 caracteres.")
     private String nomClient;
+
+    @NotBlank(message = "Le prenom du client est obligatoire.")
+    @Size(max = 100, message = "Le prenom du client ne doit pas depasser 100 caracteres.")
     private String prenomClient;
+
+    @NotBlank(message = "L'email du client est obligatoire.")
+    @Email(message = "L'email du client doit etre valide.")
+    @Size(max = 150, message = "L'email du client ne doit pas depasser 150 caracteres.")
     private String emailClient;
+
+    @NotBlank(message = "Le telephone du client est obligatoire.")
+    @Pattern(regexp = "^[0-9+()\\-\\s]{8,20}$", message = "Le telephone du client doit contenir entre 8 et 20 caracteres valides.")
     private String telephoneClient;
+
+    @NotNull(message = "La date d'arrivee est obligatoire.")
     private LocalDate dateArrivee;
+
+    @NotNull(message = "La date de depart est obligatoire.")
     private LocalDate dateDepart;
+
     private int nombreNuits;
+
+    @Positive(message = "Le nombre de personnes doit etre superieur a zero.")
     private int nombrePersonnes;
+
     private double prixTotal;
     private String statut;
+
+    @Size(max = 1000, message = "Les commentaires ne doivent pas depasser 1000 caracteres.")
     private String commentaires;
+
     private LocalDate dateCreation;
 
-    /* ----------------------------------------------------
-       🟩 CONSTRUCTEURS
-    ---------------------------------------------------- */
-    public ReservationHebergementDTO() {}
+    public ReservationHebergementDTO() {
+    }
 
     public ReservationHebergementDTO(Long id, Long hebergementId, String hebergementNom,
-                                   String nomClient, String prenomClient, String emailClient,
-                                   String telephoneClient, LocalDate dateArrivee, LocalDate dateDepart,
-                                   int nombreNuits, int nombrePersonnes, double prixTotal,
-                                   String statut, String commentaires, LocalDate dateCreation) {
+                                     String nomClient, String prenomClient, String emailClient,
+                                     String telephoneClient, LocalDate dateArrivee, LocalDate dateDepart,
+                                     int nombreNuits, int nombrePersonnes, double prixTotal,
+                                     String statut, String commentaires, LocalDate dateCreation) {
         this.id = id;
         this.hebergementId = hebergementId;
         this.hebergementNom = hebergementNom;
@@ -52,9 +83,11 @@ public class ReservationHebergementDTO {
         this.dateCreation = dateCreation;
     }
 
-    /* ----------------------------------------------------
-       🟨 GETTERS & SETTERS
-    ---------------------------------------------------- */
+    @AssertTrue(message = "La date de depart doit etre strictement apres la date d'arrivee.")
+    public boolean isStayPeriodValid() {
+        return dateArrivee == null || dateDepart == null || dateDepart.isAfter(dateArrivee);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

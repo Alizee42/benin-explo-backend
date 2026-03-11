@@ -4,9 +4,9 @@ import com.beninexplo.backend.dto.DevisRequestDTO;
 import com.beninexplo.backend.dto.DevisResponseDTO;
 import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Devis;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.DevisRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,48 +23,42 @@ public class DevisService {
         this.circuitRepo = circuitRepo;
     }
 
-    private DevisResponseDTO toDTO(Devis d) {
-        Long circuitId = (d.getCircuit() != null) ? d.getCircuit().getIdCircuit() : null;
-
+    private DevisResponseDTO toDTO(Devis devis) {
+        Long circuitId = devis.getCircuit() != null ? devis.getCircuit().getIdCircuit() : null;
         return new DevisResponseDTO(
-                d.getIdDevis(),
-                d.getNom(),
-                d.getPrenom(),
-                d.getEmail(),
-                d.getTelephone(),
-                d.getMessage(),
+                devis.getIdDevis(),
+                devis.getNom(),
+                devis.getPrenom(),
+                devis.getEmail(),
+                devis.getTelephone(),
+                devis.getMessage(),
                 circuitId
         );
     }
 
     private Devis fromDTO(DevisRequestDTO dto) {
-
-        Devis d = new Devis();
-        d.setNom(dto.getNom());
-        d.setPrenom(dto.getPrenom());
-        d.setEmail(dto.getEmail());
-        d.setTelephone(dto.getTelephone());
-        d.setMessage(dto.getMessage());
+        Devis devis = new Devis();
+        devis.setNom(dto.getNom());
+        devis.setPrenom(dto.getPrenom());
+        devis.setEmail(dto.getEmail());
+        devis.setTelephone(dto.getTelephone());
+        devis.setMessage(dto.getMessage());
 
         if (dto.getCircuitId() != null) {
             Circuit circuit = circuitRepo.findById(dto.getCircuitId())
-                    .orElseThrow(() -> new RuntimeException("Circuit non trouvé"));
-            d.setCircuit(circuit);
+                    .orElseThrow(() -> new ResourceNotFoundException("Circuit non trouve."));
+            devis.setCircuit(circuit);
         }
 
-        return d;
+        return devis;
     }
 
     public DevisResponseDTO create(DevisRequestDTO dto) {
-        Devis saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 
     public List<DevisResponseDTO> getAll() {
-        return repo.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public void delete(Long id) {

@@ -2,8 +2,8 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.HebergementDTO;
 import com.beninexplo.backend.entity.Hebergement;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.HebergementRepository;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,39 +23,32 @@ public class HebergementService {
         this.repo = repo;
     }
 
-    private HebergementDTO toDTO(Hebergement h) {
+    private HebergementDTO toDTO(Hebergement hebergement) {
         return new HebergementDTO(
-                h.getIdHebergement(),
-                h.getNom(),
-                h.getType(),
-                h.getLocalisation(),
-                h.getQuartier(),
-                h.getDescription(),
-                h.getPrixParNuit(),
-                h.getImageUrls()
+                hebergement.getIdHebergement(),
+                hebergement.getNom(),
+                hebergement.getType(),
+                hebergement.getLocalisation(),
+                hebergement.getQuartier(),
+                hebergement.getDescription(),
+                hebergement.getPrixParNuit(),
+                hebergement.getImageUrls()
         );
     }
 
     private Hebergement fromDTO(HebergementDTO dto) {
-        Hebergement h = new Hebergement();
-
-        log.debug("Conversion DTO en entité, ID du DTO: {}", dto.getId());
-
-        // Si l'ID est null ou 0, on le laisse à null pour indiquer une nouvelle entité
+        Hebergement hebergement = new Hebergement();
         if (dto.getId() != null && dto.getId() > 0) {
-            h.setIdHebergement(dto.getId());
-        } else {
-            h.setIdHebergement(null);
+            hebergement.setIdHebergement(dto.getId());
         }
-        h.setNom(dto.getNom());
-        h.setType(dto.getType());
-        h.setLocalisation(dto.getLocalisation());
-        h.setQuartier(dto.getQuartier());
-        h.setDescription(dto.getDescription());
-        h.setPrixParNuit(dto.getPrixParNuit());
-        h.setImageUrls(dto.getImageUrls() != null ? dto.getImageUrls() : new ArrayList<>());
-
-        return h;
+        hebergement.setNom(dto.getNom());
+        hebergement.setType(dto.getType());
+        hebergement.setLocalisation(dto.getLocalisation());
+        hebergement.setQuartier(dto.getQuartier());
+        hebergement.setDescription(dto.getDescription());
+        hebergement.setPrixParNuit(dto.getPrixParNuit());
+        hebergement.setImageUrls(dto.getImageUrls() != null ? dto.getImageUrls() : new ArrayList<>());
+        return hebergement;
     }
 
     public List<HebergementDTO> getAll() {
@@ -63,27 +56,26 @@ public class HebergementService {
     }
 
     public HebergementDTO get(Long id) {
-        return repo.findById(id).map(this::toDTO).orElse(null);
+        return repo.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve."));
     }
 
     public HebergementDTO create(HebergementDTO dto) {
-        log.debug("Création hébergement, ID initial du DTO: {}", dto.getId());
-
-        // On force systématiquement l'ID du DTO à null pour une création
+        log.debug("Creation hebergement, ID initial du DTO: {}", dto.getId());
         dto.setId(null);
 
-        // Construction de l'entité à partir du DTO en s'assurant que l'ID est bien null
-        Hebergement h = fromDTO(dto);
-        h.setIdHebergement(null);
+        Hebergement hebergement = fromDTO(dto);
+        hebergement.setIdHebergement(null);
+        Hebergement saved = repo.save(hebergement);
 
-        Hebergement saved = repo.save(h);
-        log.info("✅ Hébergement créé avec succès, ID: {}", saved.getIdHebergement());
+        log.info("Hebergement cree avec succes, ID: {}", saved.getIdHebergement());
         return toDTO(saved);
     }
 
     public HebergementDTO update(Long id, HebergementDTO dto) {
         Hebergement existing = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Hébergement non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve."));
 
         existing.setNom(dto.getNom());
         existing.setType(dto.getType());

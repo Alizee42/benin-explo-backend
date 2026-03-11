@@ -4,10 +4,10 @@ import com.beninexplo.backend.dto.DevisActiviteDTO;
 import com.beninexplo.backend.entity.Activite;
 import com.beninexplo.backend.entity.Devis;
 import com.beninexplo.backend.entity.DevisActivite;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActiviteRepository;
-import com.beninexplo.backend.repository.DevisRepository;
 import com.beninexplo.backend.repository.DevisActiviteRepository;
-
+import com.beninexplo.backend.repository.DevisRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,46 +20,43 @@ public class DevisActiviteService {
     private final DevisRepository devisRepo;
     private final ActiviteRepository activiteRepo;
 
-    public DevisActiviteService(DevisActiviteRepository repo, DevisRepository devisRepo, ActiviteRepository activiteRepo) {
+    public DevisActiviteService(DevisActiviteRepository repo,
+                                DevisRepository devisRepo,
+                                ActiviteRepository activiteRepo) {
         this.repo = repo;
         this.devisRepo = devisRepo;
         this.activiteRepo = activiteRepo;
     }
 
-    private DevisActiviteDTO toDTO(DevisActivite da) {
+    private DevisActiviteDTO toDTO(DevisActivite devisActivite) {
         return new DevisActiviteDTO(
-                da.getId(),
-                da.getDevis().getIdDevis(),
-                da.getActivite().getIdActivite(),
-                da.getQuantite()
+                devisActivite.getId(),
+                devisActivite.getDevis().getIdDevis(),
+                devisActivite.getActivite().getIdActivite(),
+                devisActivite.getQuantite()
         );
     }
 
     private DevisActivite fromDTO(DevisActiviteDTO dto) {
-        DevisActivite da = new DevisActivite();
-
-        da.setId(dto.getId());
-        da.setQuantite(dto.getQuantite());
-
         Devis devis = devisRepo.findById(dto.getDevisId())
-                .orElseThrow(() -> new RuntimeException("Devis non trouvé"));
-        da.setDevis(devis);
-
+                .orElseThrow(() -> new ResourceNotFoundException("Devis non trouve."));
         Activite activite = activiteRepo.findById(dto.getActiviteId())
-                .orElseThrow(() -> new RuntimeException("Activité non trouvée"));
-        da.setActivite(activite);
+                .orElseThrow(() -> new ResourceNotFoundException("Activite non trouvee."));
 
-        return da;
+        DevisActivite devisActivite = new DevisActivite();
+        devisActivite.setId(dto.getId());
+        devisActivite.setQuantite(dto.getQuantite());
+        devisActivite.setDevis(devis);
+        devisActivite.setActivite(activite);
+        return devisActivite;
     }
 
     public DevisActiviteDTO create(DevisActiviteDTO dto) {
-        DevisActivite saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 
     public List<DevisActiviteDTO> getByDevis(Long devisId) {
-        return repo.findByDevis_IdDevis(devisId)
-                .stream()
+        return repo.findByDevis_IdDevis(devisId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }

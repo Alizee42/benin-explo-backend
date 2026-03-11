@@ -2,6 +2,7 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CategorieActiviteDTO;
 import com.beninexplo.backend.entity.CategorieActivite;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CategorieActiviteRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,58 +18,37 @@ public class CategorieActiviteService {
         this.repo = repo;
     }
 
-    // ----------------------------------------------------------
-    // MAPPER ENTITY → DTO
-    // ----------------------------------------------------------
-    private CategorieActiviteDTO toDTO(CategorieActivite entity) {
-        if (entity == null) return null;
-
+    private CategorieActiviteDTO toDTO(CategorieActivite categorie) {
         return new CategorieActiviteDTO(
-                entity.getIdCategorie(),
-                entity.getNom(),
-                entity.getDescription()
+                categorie.getIdCategorie(),
+                categorie.getNom(),
+                categorie.getDescription()
         );
     }
 
-    // ----------------------------------------------------------
-    // MAPPER DTO → ENTITY
-    // ----------------------------------------------------------
-    private CategorieActivite fromDTO(CategorieActiviteDTO dto) {
-        if (dto == null) return null;
-
-        CategorieActivite c = new CategorieActivite();
-        c.setIdCategorie(dto.getId());
-        c.setNom(dto.getNom());
-        c.setDescription(dto.getDescription());
-        return c;
-    }
-
-    // ----------------------------------------------------------
-    // MÉTHODES CRUD
-    // ----------------------------------------------------------
-
     public List<CategorieActiviteDTO> getAll() {
-        return repo.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public CategorieActiviteDTO get(Long id) {
         return repo.findById(id)
                 .map(this::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Categorie d'activite introuvable."));
     }
 
     public CategorieActiviteDTO create(CategorieActiviteDTO dto) {
-        CategorieActivite saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        CategorieActivite categorie = new CategorieActivite();
+        categorie.setNom(dto.getNom());
+        categorie.setDescription(dto.getDescription());
+        return toDTO(repo.save(categorie));
     }
 
     public CategorieActiviteDTO update(Long id, CategorieActiviteDTO dto) {
-        dto.setId(id);
-        CategorieActivite saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        CategorieActivite existing = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categorie d'activite introuvable."));
+        existing.setNom(dto.getNom());
+        existing.setDescription(dto.getDescription());
+        return toDTO(repo.save(existing));
     }
 
     public void delete(Long id) {

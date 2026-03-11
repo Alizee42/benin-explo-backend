@@ -2,13 +2,22 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ActiviteDTO;
 import com.beninexplo.backend.service.ActiviteService;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/activites")
-@CrossOrigin(origins = "*") // à adapter selon ton front
 public class ActiviteController {
 
     private final ActiviteService service;
@@ -28,37 +37,26 @@ public class ActiviteController {
     }
 
     @PostMapping
-    public ActiviteDTO create(@RequestBody ActiviteDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<ActiviteDTO> create(@Valid @RequestBody ActiviteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ActiviteDTO update(@PathVariable Long id, @RequestBody ActiviteDTO dto) {
+    public ActiviteDTO update(@PathVariable Long id, @Valid @RequestBody ActiviteDTO dto) {
         return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    // ---------------------------------------
-    // ENDPOINTS OPTIMISÉS POUR FORMULAIRES
-    // ---------------------------------------
-
-    /**
-     * Récupère toutes les activités d'une zone
-     * Optimisé pour le formulaire de création de circuit
-     */
     @GetMapping("/zone/{zoneId}")
     public List<ActiviteDTO> getByZone(@PathVariable Long zoneId) {
         return service.getByZone(zoneId);
     }
 
-    /**
-     * Récupère toutes les activités d'une ville
-     * Plus précis que le filtrage par zone
-     */
     @GetMapping("/ville/{villeId}")
     public List<ActiviteDTO> getByVille(@PathVariable Long villeId) {
         return service.getByVille(villeId);

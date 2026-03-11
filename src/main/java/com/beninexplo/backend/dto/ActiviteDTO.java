@@ -1,30 +1,44 @@
 package com.beninexplo.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ActiviteDTO {
 
     private Long id;
+
+    @NotBlank(message = "Le nom de l'activite est obligatoire.")
+    @Size(max = 255, message = "Le nom de l'activite ne doit pas depasser 255 caracteres.")
     private String nom;
+
+    @NotBlank(message = "La description de l'activite est obligatoire.")
+    @Size(max = 5000, message = "La description de l'activite ne doit pas depasser 5000 caracteres.")
     private String description;
-    
-    // Informations de localisation
+
+    @Positive(message = "La ville doit etre un identifiant positif.")
     private Long villeId;
+
     private String villeNom;
     private Long zoneId;
     private String zoneNom;
 
+    @PositiveOrZero(message = "La duree interne doit etre positive ou nulle.")
     private Integer dureeInterne;
+
+    @PositiveOrZero(message = "Le poids doit etre positif ou nul.")
     private Integer poids;
+
+    @Size(max = 100, message = "La difficulte ne doit pas depasser 100 caracteres.")
     private String difficulte;
 
+    @Positive(message = "L'image principale doit etre un identifiant positif.")
     private Long imagePrincipaleId;
-    private String imagePrincipaleUrl;
 
-    // ----------------------------------------------------
-    // CONSTRUCTEURS
-    // ----------------------------------------------------
+    private String imagePrincipaleUrl;
 
     public ActiviteDTO() {
     }
@@ -55,96 +69,38 @@ public class ActiviteDTO {
         this.imagePrincipaleUrl = imagePrincipaleUrl;
     }
 
-    // ----------------------------------------------------
-    // GETTERS / SETTERS
-    // ----------------------------------------------------
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getNom() {
-        return nom;
-    }
+    public Long getVilleId() { return villeId; }
+    public void setVilleId(Long villeId) { this.villeId = villeId; }
 
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getVilleNom() { return villeNom; }
+    public void setVilleNom(String villeNom) { this.villeNom = villeNom; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Long getZoneId() { return zoneId; }
+    public void setZoneId(Long zoneId) { this.zoneId = zoneId; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getZoneNom() { return zoneNom; }
+    public void setZoneNom(String zoneNom) { this.zoneNom = zoneNom; }
 
-    public Long getVilleId() { 
-        return villeId; 
-    }
-    
-    public void setVilleId(Long villeId) { 
-        this.villeId = villeId; 
-    }
-    
-    public String getVilleNom() { 
-        return villeNom; 
-    }
-    
-    public void setVilleNom(String villeNom) { 
-        this.villeNom = villeNom; 
-    }
-    
-    public Long getZoneId() {
-        return zoneId;
-    }
+    public Integer getDureeInterne() { return dureeInterne; }
+    public void setDureeInterne(Integer dureeInterne) { this.dureeInterne = dureeInterne; }
 
-    public void setZoneId(Long zoneId) {
-        this.zoneId = zoneId;
-    }
-    
-    public String getZoneNom() {
-        return zoneNom;
-    }
+    public Integer getPoids() { return poids; }
+    public void setPoids(Integer poids) { this.poids = poids; }
 
-    public void setZoneNom(String zoneNom) {
-        this.zoneNom = zoneNom;
-    }
+    public String getDifficulte() { return difficulte; }
+    public void setDifficulte(String difficulte) { this.difficulte = difficulte; }
 
-    public Integer getDureeInterne() {
-        return dureeInterne;
-    }
-
-    public void setDureeInterne(Integer dureeInterne) {
-        this.dureeInterne = dureeInterne;
-    }
-    public Integer getPoids() {
-        return poids;
-    }
-
-    public void setPoids(Integer poids) {
-        this.poids = poids;
-    }
-
-    public String getDifficulte() {
-        return difficulte;
-    }
-
-    public void setDifficulte(String difficulte) {
-        this.difficulte = difficulte;
-    }
-
-    public Long getImagePrincipaleId() {
-        return imagePrincipaleId;
-    }
-
-    public void setImagePrincipaleId(Long imagePrincipaleId) {
-        this.imagePrincipaleId = imagePrincipaleId;
-    }
+    public Long getImagePrincipaleId() { return imagePrincipaleId; }
+    public void setImagePrincipaleId(Long imagePrincipaleId) { this.imagePrincipaleId = imagePrincipaleId; }
 
     public String getImagePrincipaleUrl() { return imagePrincipaleUrl; }
     public void setImagePrincipaleUrl(String imagePrincipaleUrl) { this.imagePrincipaleUrl = imagePrincipaleUrl; }

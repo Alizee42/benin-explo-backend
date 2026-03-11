@@ -1,29 +1,32 @@
 package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.UtilisateurDTO;
-import com.beninexplo.backend.service.UtilisateurService;
 import com.beninexplo.backend.repository.UtilisateurRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import com.beninexplo.backend.service.UtilisateurService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/utilisateurs")
-@CrossOrigin("*")
 public class UtilisateurController {
 
-    @Autowired
-    private UtilisateurService utilisateurService;
+    private final UtilisateurService utilisateurService;
+    private final UtilisateurRepository utilisateurRepository;
 
-    @Autowired
-    private UtilisateurRepository utilisateurRepository;
+    public UtilisateurController(UtilisateurService utilisateurService,
+                                 UtilisateurRepository utilisateurRepository) {
+        this.utilisateurService = utilisateurService;
+        this.utilisateurRepository = utilisateurRepository;
+    }
 
-    /* ----------------------------------------------------
-       🟦 1) LISTE DE TOUS LES UTILISATEURS (ADMIN ONLY)
-    ---------------------------------------------------- */
     @GetMapping
     public List<UtilisateurDTO> getAllUsers() {
         return utilisateurRepository.findAll()
@@ -32,28 +35,19 @@ public class UtilisateurController {
                 .collect(Collectors.toList());
     }
 
-    /* ----------------------------------------------------
-       🟩 2) RÉCUPÉRATION PAR ID
-    ---------------------------------------------------- */
     @GetMapping("/{id}")
     public UtilisateurDTO getById(@PathVariable Long id) {
         return utilisateurService.getUserById(id);
     }
 
-    /* ----------------------------------------------------
-       🟧 3) AJOUT DU RÔLE PARTICIPANT (ADMIN)
-    ---------------------------------------------------- */
     @PostMapping("/{id}/add-participant")
     public UtilisateurDTO addParticipantRole(@PathVariable Long id) {
         return utilisateurService.assignParticipantRole(id);
     }
 
-    /* ----------------------------------------------------
-       🟥 4) SUPPRESSION D’UN UTILISATEUR (ADMIN)
-    ---------------------------------------------------- */
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         utilisateurRepository.deleteById(id);
-        return "Utilisateur supprimé avec succès.";
+        return ResponseEntity.noContent().build();
     }
 }

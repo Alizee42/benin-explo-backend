@@ -4,7 +4,7 @@ import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.repository.UtilisateurRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -16,28 +16,49 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
-    @Autowired
-    private UtilisateurRepository utilisateurRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Value("${app.bootstrap.admin.enabled:false}")
+    private boolean adminBootstrapEnabled;
+
+    @Value("${app.bootstrap.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.bootstrap.admin.password:}")
+    private String adminPassword;
+
+    public DataInitializer(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
+        this.utilisateurRepository = utilisateurRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
-    public void run(String... args) throws Exception {
-        // Créer un administrateur par défaut si aucun n'existe
-        if (utilisateurRepository.findByEmail("admin@beninexplo.com").isEmpty()) {
-            Utilisateur admin = new Utilisateur();
-            admin.setNom("Admin");
-            admin.setPrenom("BeninExplo");
-            admin.setEmail("admin@beninexplo.com");
-            admin.setMotDePasse(passwordEncoder.encode("admin123"));
-            admin.setRole("ADMIN");
-            admin.setDateCreation(LocalDateTime.now());
-
-            utilisateurRepository.save(admin);
-            log.info("✅ Administrateur par défaut créé : admin@beninexplo.com / admin123");
-        } else {
-            log.info("Administrateur par défaut déjà existant.");
+    public void run(String... args) {
+        if (!adminBootstrapEnabled) {
+            log.info("Bootstrap administrateur desactive.");
+            return;
         }
+
+        if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
+            log.warn("Bootstrap administrateur ignore: email ou mot de passe absent.");
+            return;
+        }
+
+        if (utilisateurRepository.findByEmail(adminEmail).isPresent()) {
+            log.info("Bootstrap administrateur ignore: compte {} deja present.", adminEmail);
+            return;
+        }
+
+        Utilisateur admin = new Utilisateur();
+        admin.setNom("Admin");
+        admin.setPrenom("BeninExplo");
+        admin.setEmail(adminEmail);
+        admin.setMotDePasse(passwordEncoder.encode(adminPassword));
+        admin.setRole("ADMIN");
+        admin.setDateCreation(LocalDateTime.now());
+
+        utilisateurRepository.save(admin);
+        log.info("Administrateur bootstrap cree pour {}", adminEmail);
     }
 }

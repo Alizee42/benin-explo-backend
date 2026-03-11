@@ -3,6 +3,8 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.ReservationHebergementDTO;
 import com.beninexplo.backend.entity.Hebergement;
 import com.beninexplo.backend.entity.ReservationHebergement;
+import com.beninexplo.backend.exception.BadRequestException;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.HebergementRepository;
 import com.beninexplo.backend.repository.ReservationHebergementRepository;
 import org.springframework.stereotype.Service;
@@ -49,7 +51,7 @@ public class ReservationHebergementService {
 
     private ReservationHebergement fromDTO(ReservationHebergementDTO dto) {
         Hebergement hebergement = hebergementRepo.findById(dto.getHebergementId())
-                .orElseThrow(() -> new RuntimeException("Hebergement non trouve"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve"));
 
         ReservationHebergement reservation = new ReservationHebergement(
                 hebergement,
@@ -80,13 +82,13 @@ public class ReservationHebergementService {
     public ReservationHebergementDTO getById(Long id) {
         return reservationRepo.findById(id)
                 .map(this::toDTO)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation non trouvee"));
     }
 
     public ReservationHebergementDTO create(ReservationHebergementDTO dto) {
         validateStayDatesForCreate(dto.getDateArrivee(), dto.getDateDepart());
         if (!isAvailable(dto.getHebergementId(), dto.getDateArrivee(), dto.getDateDepart())) {
-            throw new RuntimeException("L'hebergement n'est pas disponible pour ces dates");
+            throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
         ReservationHebergement saved = reservationRepo.save(fromDTO(dto));
         notificationService.sendCreationConfirmation(saved);
@@ -95,13 +97,13 @@ public class ReservationHebergementService {
 
     public ReservationHebergementDTO update(Long id, ReservationHebergementDTO dto) {
         ReservationHebergement existing = reservationRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reservation non trouvee"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation non trouvee"));
 
         validateStayDatesForUpdate(dto.getDateArrivee(), dto.getDateDepart());
         boolean datesChanged = !existing.getDateArrivee().equals(dto.getDateArrivee())
                 || !existing.getDateDepart().equals(dto.getDateDepart());
         if (datesChanged && !isAvailableForUpdate(existing, dto.getDateArrivee(), dto.getDateDepart())) {
-            throw new RuntimeException("L'hebergement n'est pas disponible pour ces dates");
+            throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
 
         String previousStatus = normalizeStatus(existing.getStatut());
@@ -178,21 +180,20 @@ public class ReservationHebergementService {
     private void validateStayDatesForCreate(LocalDate dateArrivee, LocalDate dateDepart) {
         validateStayDatesForUpdate(dateArrivee, dateDepart);
         if (dateArrivee.isBefore(LocalDate.now())) {
-            throw new RuntimeException("La date d'arrivee ne peut pas etre dans le passe");
+            throw new BadRequestException("La date d'arrivee ne peut pas etre dans le passe");
         }
     }
 
     private void validateStayDatesForUpdate(LocalDate dateArrivee, LocalDate dateDepart) {
         if (dateArrivee == null || dateDepart == null) {
-            throw new RuntimeException("Les dates d'arrivee et de depart sont obligatoires");
+            throw new BadRequestException("Les dates d'arrivee et de depart sont obligatoires");
         }
         if (!dateDepart.isAfter(dateArrivee)) {
-            throw new RuntimeException("La date de depart doit etre strictement apres la date d'arrivee");
+            throw new BadRequestException("La date de depart doit etre strictement apres la date d'arrivee");
         }
     }
 
     private boolean hasOverlap(LocalDate startA, LocalDate endA, LocalDate startB, LocalDate endB) {
-        // Intervals [start, end): checkout same day as new checkin is allowed.
         return startA.isBefore(endB) && endA.isAfter(startB);
     }
 

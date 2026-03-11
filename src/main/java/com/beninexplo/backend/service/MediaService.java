@@ -1,13 +1,20 @@
 package com.beninexplo.backend.service;
 
-
-import org.springframework.stereotype.Service;
-
 import com.beninexplo.backend.dto.MediaDTO;
 import com.beninexplo.backend.entity.Media;
+import com.beninexplo.backend.exception.BadRequestException;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.MediaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,24 +26,22 @@ public class MediaService {
         this.repo = repo;
     }
 
-    private MediaDTO toDTO(Media m) {
+    private MediaDTO toDTO(Media media) {
         return new MediaDTO(
-                m.getIdMedia(),
-                m.getUrl(),
-                m.getType(),
-                m.getDescription()
+                media.getIdMedia(),
+                media.getUrl(),
+                media.getType(),
+                media.getDescription()
         );
     }
 
     private Media fromDTO(MediaDTO dto) {
-        Media m = new Media();
-
-        m.setIdMedia(dto.getId());
-        m.setUrl(dto.getUrl());
-        m.setType(dto.getType());
-        m.setDescription(dto.getDescription());
-
-        return m;
+        Media media = new Media();
+        media.setIdMedia(dto.getId());
+        media.setUrl(dto.getUrl());
+        media.setType(dto.getType());
+        media.setDescription(dto.getDescription());
+        return media;
     }
 
     public List<MediaDTO> getAll() {
@@ -44,22 +49,22 @@ public class MediaService {
     }
 
     public MediaDTO get(Long id) {
-        return repo.findById(id).map(this::toDTO).orElse(null);
+        return repo.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Media non trouve."));
     }
 
     public MediaDTO create(MediaDTO dto) {
-        Media saved = repo.save(fromDTO(dto));
-        return toDTO(saved);
+        return toDTO(repo.save(fromDTO(dto)));
     }
 
     public MediaDTO update(Long id, MediaDTO dto) {
         Media existing = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Media non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Media non trouve."));
 
         existing.setUrl(dto.getUrl());
         existing.setType(dto.getType());
         existing.setDescription(dto.getDescription());
-
         return toDTO(repo.save(existing));
     }
 
@@ -67,30 +72,34 @@ public class MediaService {
         repo.deleteById(id);
     }
 
-    public MediaDTO uploadImage(org.springframework.web.multipart.MultipartFile file) throws Exception {
-        // Générer un nom de fichier unique
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename != null && originalFilename.contains(".")
-            ? originalFilename.substring(originalFilename.lastIndexOf("."))
-            : ".jpg";
-        String uniqueFilename = java.util.UUID.randomUUID().toString() + extension;
-
-        // Créer le répertoire uploads s'il n'existe pas
-        java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads");
-        if (!java.nio.file.Files.exists(uploadDir)) {
-            java.nio.file.Files.createDirectories(uploadDir);
+    public MediaDTO uploadImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Le fichier image est obligatoire.");
         }
 
-        // Sauvegarder le fichier
-        java.nio.file.Path filePath = uploadDir.resolve(uniqueFilename);
-        java.nio.file.Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new BadRequestException("Seuls les fichiers image sont autorises.");
+        }
 
-        // Créer l'entité Media
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+        String uniqueFilename = UUID.randomUUID() + extension;
+
+        Path uploadDir = Paths.get("uploads");
+        try {
+            Files.createDirectories(uploadDir);
+            Files.copy(file.getInputStream(), uploadDir.resolve(uniqueFilename), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new IllegalStateException("Impossible de sauvegarder le fichier image.", e);
+        }
+
         Media media = new Media();
         media.setUrl("/uploads/" + uniqueFilename);
         media.setType("image");
         media.setDescription(originalFilename);
-
         return toDTO(repo.save(media));
     }
 }

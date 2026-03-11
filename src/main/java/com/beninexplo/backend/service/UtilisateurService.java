@@ -1,13 +1,18 @@
 package com.beninexplo.backend.service;
 
-import com.beninexplo.backend.dto.*;
+import com.beninexplo.backend.dto.LoginRequestDTO;
+import com.beninexplo.backend.dto.LoginResponseDTO;
+import com.beninexplo.backend.dto.UtilisateurCreateDTO;
+import com.beninexplo.backend.dto.UtilisateurDTO;
 import com.beninexplo.backend.entity.Utilisateur;
+import com.beninexplo.backend.exception.BadRequestException;
+import com.beninexplo.backend.exception.ConflictException;
+import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.UtilisateurRepository;
 import com.beninexplo.backend.security.jwt.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,58 +23,49 @@ public class UtilisateurService {
 
     private static final Logger log = LoggerFactory.getLogger(UtilisateurService.class);
 
-    @Autowired
-    private UtilisateurRepository utilisateurRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    /* ----------------------------------------------------
-       🟦 1) CRÉATION UTILISATEUR (REGISTER → USER)
-    ---------------------------------------------------- */
-    public UtilisateurDTO createUser(UtilisateurCreateDTO dto) {
-
-        if (utilisateurRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Cet email est déjà utilisé.");
-        }
-
-        Utilisateur u = new Utilisateur();
-        u.setNom(dto.getNom());
-        u.setPrenom(dto.getPrenom());
-        u.setEmail(dto.getEmail());
-        u.setTelephone(dto.getTelephone());
-        u.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        u.setRole("USER");
-        u.setDateCreation(LocalDateTime.now());
-
-        utilisateurRepository.save(u);
-
-        return toDTO(u);
+    public UtilisateurService(UtilisateurRepository utilisateurRepository,
+                              JwtUtil jwtUtil,
+                              PasswordEncoder passwordEncoder) {
+        this.utilisateurRepository = utilisateurRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /* ----------------------------------------------------
-       🟩 2) LOGIN (EMAIL + MOT DE PASSE)
-    ---------------------------------------------------- */
+    public UtilisateurDTO createUser(UtilisateurCreateDTO dto) {
+        if (utilisateurRepository.existsByEmail(dto.getEmail())) {
+            throw new ConflictException("Cet email est deja utilise.");
+        }
+
+        Utilisateur user = new Utilisateur();
+        user.setNom(dto.getNom());
+        user.setPrenom(dto.getPrenom());
+        user.setEmail(dto.getEmail());
+        user.setTelephone(dto.getTelephone());
+        user.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
+        user.setRole("USER");
+        user.setDateCreation(LocalDateTime.now());
+
+        utilisateurRepository.save(user);
+        return toDTO(user);
+    }
+
     public LoginResponseDTO login(LoginRequestDTO dto) {
         log.info("Tentative de connexion pour email: {}", dto.getEmail());
 
         Utilisateur user = utilisateurRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
-
-        log.debug("Utilisateur trouvé: {} avec rôle: {}", user.getEmail(), user.getRole());
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
 
         if (!passwordEncoder.matches(dto.getMotDePasse(), user.getMotDePasse())) {
-            log.warn("Échec d'authentification pour: {}", dto.getEmail());
-            throw new RuntimeException("Mot de passe incorrect.");
+            log.warn("Echec d'authentification pour: {}", dto.getEmail());
+            throw new BadRequestException("Mot de passe incorrect.");
         }
 
-        log.debug("Authentification réussie pour: {}", user.getEmail());
-
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-
-        log.info("Token JWT généré pour: {}", user.getEmail());
+        log.info("Connexion reussie pour: {}", user.getEmail());
 
         return new LoginResponseDTO(
                 token,
@@ -81,75 +77,55 @@ public class UtilisateurService {
         );
     }
 
-    /* ----------------------------------------------------
-       🟧 3) CRÉATION AUTOMATIQUE PARTICIPANT (TOMBOLA)
-    ---------------------------------------------------- */
     public UtilisateurDTO createParticipantAuto(String email) {
-
         Optional<Utilisateur> existing = utilisateurRepository.findByEmail(email);
 
         if (existing.isPresent()) {
-            Utilisateur u = existing.get();
-
-            // Si déjà participant, rien à faire
-            if (!u.getRole().contains("PARTICIPANT")) {
-                u.setRole("PARTICIPANT");
-                utilisateurRepository.save(u);
+            Utilisateur user = existing.get();
+            if (!user.getRole().contains("PARTICIPANT")) {
+                user.setRole("PARTICIPANT");
+                utilisateurRepository.save(user);
             }
-
-            return toDTO(u);
+            return toDTO(user);
         }
 
-        // Sinon → créer un compte auto
-        Utilisateur p = new Utilisateur();
-        p.setNom("Participant");
-        p.setPrenom("Tombola");
-        p.setEmail(email);
-        p.setTelephone(null);
-        p.setMotDePasse(passwordEncoder.encode("participant123"));
-        p.setRole("PARTICIPANT");
-        p.setDateCreation(LocalDateTime.now());
+        Utilisateur participant = new Utilisateur();
+        participant.setNom("Participant");
+        participant.setPrenom("Tombola");
+        participant.setEmail(email);
+        participant.setTelephone(null);
+        participant.setMotDePasse(passwordEncoder.encode("participant123"));
+        participant.setRole("PARTICIPANT");
+        participant.setDateCreation(LocalDateTime.now());
 
-        utilisateurRepository.save(p);
-
-        return toDTO(p);
+        utilisateurRepository.save(participant);
+        return toDTO(participant);
     }
 
-    /* ----------------------------------------------------
-       🟪 4) AJOUTER LE RÔLE PARTICIPANT À UN USER EXISTANT
-    ---------------------------------------------------- */
     public UtilisateurDTO assignParticipantRole(Long id) {
+        Utilisateur user = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
 
-        Utilisateur u = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
+        user.setRole("PARTICIPANT");
+        utilisateurRepository.save(user);
 
-        u.setRole("PARTICIPANT");
-        utilisateurRepository.save(u);
-
-        return toDTO(u);
+        return toDTO(user);
     }
 
-    /* ----------------------------------------------------
-       🟨 5) CONVERSION ENTITY → DTO
-    ---------------------------------------------------- */
-    public UtilisateurDTO toDTO(Utilisateur u) {
+    public UtilisateurDTO toDTO(Utilisateur user) {
         return new UtilisateurDTO(
-                u.getId(),
-                u.getNom(),
-                u.getPrenom(),
-                u.getEmail(),
-                u.getTelephone(),
-                u.getRole()
+                user.getId(),
+                user.getNom(),
+                user.getPrenom(),
+                user.getEmail(),
+                user.getTelephone(),
+                user.getRole()
         );
     }
 
-    /* ----------------------------------------------------
-       🟩 6) RÉCUPÉRATION UTILISATEUR PAR ID
-    ---------------------------------------------------- */
     public UtilisateurDTO getUserById(Long id) {
-        Utilisateur u = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
-        return toDTO(u);
+        Utilisateur user = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+        return toDTO(user);
     }
 }
-

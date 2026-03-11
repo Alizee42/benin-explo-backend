@@ -3,6 +3,7 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.entity.ReservationHebergement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -21,8 +22,8 @@ public class ReservationHebergementNotificationService {
     @Value("${reservation.notifications.mail.from:no-reply@beninexplo.com}")
     private String fromAddress;
 
-    public ReservationHebergementNotificationService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public ReservationHebergementNotificationService(ObjectProvider<JavaMailSender> mailSenderProvider) {
+        this.mailSender = mailSenderProvider.getIfAvailable();
     }
 
     public void sendCreationConfirmation(ReservationHebergement reservation) {
@@ -56,6 +57,11 @@ public class ReservationHebergementNotificationService {
     private void sendReservationEmail(ReservationHebergement reservation, String subject, String body) {
         if (!mailEnabled) {
             log.info("Notification email desactivee. Reservation id={}, sujet={}", reservation.getIdReservation(), subject);
+            return;
+        }
+
+        if (mailSender == null) {
+            log.warn("JavaMailSender indisponible. Notification email ignoree pour reservation id={}", reservation.getIdReservation());
             return;
         }
 

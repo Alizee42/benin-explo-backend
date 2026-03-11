@@ -2,13 +2,22 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ActualiteDTO;
 import com.beninexplo.backend.service.ActualiteService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/admin/actualites")
-@CrossOrigin("*")
 public class ActualiteController {
 
     private final ActualiteService service;
@@ -28,17 +37,18 @@ public class ActualiteController {
     }
 
     @PostMapping
-    public ActualiteDTO create(@RequestBody ActualiteDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<ActualiteDTO> create(@Valid @RequestBody ActualiteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    public ActualiteDTO update(@PathVariable Long id, @RequestBody ActualiteDTO dto) {
+    public ActualiteDTO update(@PathVariable Long id, @Valid @RequestBody ActualiteDTO dto) {
         return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
