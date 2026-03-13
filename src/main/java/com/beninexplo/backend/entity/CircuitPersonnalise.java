@@ -1,8 +1,10 @@
 package com.beninexplo.backend.entity;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class CircuitPersonnalise {
     @Column(length = 5000)
     private String messageClient;
 
-    // Paramètres du circuit
+    // Parametres du circuit
     private int nombreJours;
     private int nombrePersonnes;
     private LocalDate dateCreation;
@@ -31,15 +33,29 @@ public class CircuitPersonnalise {
 
     // Options
     private boolean avecHebergement;
-    private String typeHebergement; // standard, confort, luxe
+    private String typeHebergement;
+
+    @ManyToOne
+    @JoinColumn(name = "hebergement_id")
+    private Hebergement hebergement;
+
+    private LocalDate dateArriveeHebergement;
+    private LocalDate dateDepartHebergement;
     private boolean avecTransport;
-    private String typeTransport; // voiture, minibus, etc.
+    private String typeTransport;
     private boolean avecGuide;
     private boolean avecChauffeur;
     private boolean pensionComplete;
 
     // Prix
+    private BigDecimal prixActivitesEstime;
+    private BigDecimal prixHebergementEstime;
+    private BigDecimal prixTransportEstime;
+    private BigDecimal prixGuideEstime;
+    private BigDecimal prixChauffeurEstime;
+    private BigDecimal prixPensionCompleteEstime;
     private BigDecimal prixEstime;
+    private String devisePrixEstime;
     private BigDecimal prixFinal;
 
     // Statut du traitement
@@ -51,97 +67,70 @@ public class CircuitPersonnalise {
     @OrderBy("numeroJour ASC")
     private List<CircuitPersonnaliseJour> jours = new ArrayList<>();
 
-    // Si accepté, peut être lié à un circuit créé par l'admin
+    // Si accepte, peut etre lie a un circuit cree par l'admin
     @OneToOne
     @JoinColumn(name = "circuit_cree_id")
     private Circuit circuitCree;
 
-    // ----------------------------------------------------
-    // ENUM STATUT
-    // ----------------------------------------------------
     public enum StatutDemande {
-        EN_ATTENTE,    // Nouvelle demande
-        EN_TRAITEMENT, // Admin en train de traiter
-        ACCEPTE,       // Devis accepté par le client
-        REFUSE,        // Refusé ou annulé
-        TERMINE        // Circuit effectué
+        EN_ATTENTE,
+        EN_TRAITEMENT,
+        ACCEPTE,
+        REFUSE,
+        TERMINE
     }
 
-    // ----------------------------------------------------
-    // CONSTRUCTEURS
-    // ----------------------------------------------------
     public CircuitPersonnalise() {
         this.dateCreation = LocalDate.now();
     }
 
-    // ----------------------------------------------------
-    // MÉTHODES UTILITAIRES
-    // ----------------------------------------------------
-
-    /**
-     * Ajoute un jour au circuit
-     */
     public void addJour(CircuitPersonnaliseJour jour) {
         jours.add(jour);
         jour.setCircuitPersonnalise(this);
     }
 
-    /**
-     * Supprime un jour du circuit
-     */
     public void removeJour(CircuitPersonnaliseJour jour) {
         jours.remove(jour);
         jour.setCircuitPersonnalise(null);
     }
 
-    /**
-     * Calcule un prix estimé basé sur les options
-     */
     public BigDecimal calculerPrixEstime() {
-        BigDecimal base = BigDecimal.valueOf(50000); // 50k XOF par personne par jour
-        BigDecimal total = base.multiply(BigDecimal.valueOf(nombrePersonnes))
-                               .multiply(BigDecimal.valueOf(nombreJours));
-
-        // Ajustements selon options
-        if (avecHebergement) {
-            BigDecimal hebergement = switch (typeHebergement != null ? typeHebergement : "standard") {
-                case "luxe" -> BigDecimal.valueOf(100000);
-                case "confort" -> BigDecimal.valueOf(50000);
-                default -> BigDecimal.valueOf(25000);
-            };
-            total = total.add(hebergement.multiply(BigDecimal.valueOf(nombreJours)));
-        }
-
-        if (avecTransport) {
-            BigDecimal transport = BigDecimal.valueOf(30000).multiply(BigDecimal.valueOf(nombreJours));
-            total = total.add(transport);
-        }
-
-        if (avecGuide) {
-            total = total.add(BigDecimal.valueOf(25000).multiply(BigDecimal.valueOf(nombreJours)));
-        }
-
-        if (pensionComplete) {
-            total = total.add(BigDecimal.valueOf(15000).multiply(BigDecimal.valueOf(nombrePersonnes))
-                                                       .multiply(BigDecimal.valueOf(nombreJours)));
-        }
-
-        return total;
+        return defaultAmount(prixActivitesEstime)
+                .add(defaultAmount(prixHebergementEstime))
+                .add(defaultAmount(prixTransportEstime))
+                .add(defaultAmount(prixGuideEstime))
+                .add(defaultAmount(prixChauffeurEstime))
+                .add(defaultAmount(prixPensionCompleteEstime));
     }
 
     @PrePersist
-    private void onCreate() {
+    @PreUpdate
+    private void refreshComputedFields() {
         if (dateCreation == null) {
             dateCreation = LocalDate.now();
         }
-        if (prixEstime == null) {
-            prixEstime = calculerPrixEstime();
+        prixActivitesEstime = defaultAmount(prixActivitesEstime);
+        prixHebergementEstime = defaultAmount(prixHebergementEstime);
+        prixTransportEstime = defaultAmount(prixTransportEstime);
+        prixGuideEstime = defaultAmount(prixGuideEstime);
+        prixChauffeurEstime = defaultAmount(prixChauffeurEstime);
+        prixPensionCompleteEstime = defaultAmount(prixPensionCompleteEstime);
+        if (devisePrixEstime == null || devisePrixEstime.isBlank()) {
+            devisePrixEstime = "EUR";
         }
+        prixEstime = calculerPrixEstime();
     }
 
-    // ----------------------------------------------------
-    // GETTERS / SETTERS
-    // ----------------------------------------------------
+    private BigDecimal defaultAmount(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    public int getNombreNuitsHebergement() {
+        if (dateArriveeHebergement == null || dateDepartHebergement == null || !dateDepartHebergement.isAfter(dateArriveeHebergement)) {
+            return 0;
+        }
+        return (int) ChronoUnit.DAYS.between(dateArriveeHebergement, dateDepartHebergement);
+    }
 
     public Long getId() {
         return id;
@@ -239,6 +228,30 @@ public class CircuitPersonnalise {
         this.typeHebergement = typeHebergement;
     }
 
+    public Hebergement getHebergement() {
+        return hebergement;
+    }
+
+    public void setHebergement(Hebergement hebergement) {
+        this.hebergement = hebergement;
+    }
+
+    public LocalDate getDateArriveeHebergement() {
+        return dateArriveeHebergement;
+    }
+
+    public void setDateArriveeHebergement(LocalDate dateArriveeHebergement) {
+        this.dateArriveeHebergement = dateArriveeHebergement;
+    }
+
+    public LocalDate getDateDepartHebergement() {
+        return dateDepartHebergement;
+    }
+
+    public void setDateDepartHebergement(LocalDate dateDepartHebergement) {
+        this.dateDepartHebergement = dateDepartHebergement;
+    }
+
     public boolean isAvecTransport() {
         return avecTransport;
     }
@@ -285,6 +298,62 @@ public class CircuitPersonnalise {
 
     public void setPrixEstime(BigDecimal prixEstime) {
         this.prixEstime = prixEstime;
+    }
+
+    public BigDecimal getPrixActivitesEstime() {
+        return prixActivitesEstime;
+    }
+
+    public void setPrixActivitesEstime(BigDecimal prixActivitesEstime) {
+        this.prixActivitesEstime = prixActivitesEstime;
+    }
+
+    public BigDecimal getPrixHebergementEstime() {
+        return prixHebergementEstime;
+    }
+
+    public void setPrixHebergementEstime(BigDecimal prixHebergementEstime) {
+        this.prixHebergementEstime = prixHebergementEstime;
+    }
+
+    public BigDecimal getPrixTransportEstime() {
+        return prixTransportEstime;
+    }
+
+    public void setPrixTransportEstime(BigDecimal prixTransportEstime) {
+        this.prixTransportEstime = prixTransportEstime;
+    }
+
+    public BigDecimal getPrixGuideEstime() {
+        return prixGuideEstime;
+    }
+
+    public void setPrixGuideEstime(BigDecimal prixGuideEstime) {
+        this.prixGuideEstime = prixGuideEstime;
+    }
+
+    public BigDecimal getPrixChauffeurEstime() {
+        return prixChauffeurEstime;
+    }
+
+    public void setPrixChauffeurEstime(BigDecimal prixChauffeurEstime) {
+        this.prixChauffeurEstime = prixChauffeurEstime;
+    }
+
+    public BigDecimal getPrixPensionCompleteEstime() {
+        return prixPensionCompleteEstime;
+    }
+
+    public void setPrixPensionCompleteEstime(BigDecimal prixPensionCompleteEstime) {
+        this.prixPensionCompleteEstime = prixPensionCompleteEstime;
+    }
+
+    public String getDevisePrixEstime() {
+        return devisePrixEstime;
+    }
+
+    public void setDevisePrixEstime(String devisePrixEstime) {
+        this.devisePrixEstime = devisePrixEstime;
     }
 
     public BigDecimal getPrixFinal() {

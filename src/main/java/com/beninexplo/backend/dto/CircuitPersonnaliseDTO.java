@@ -25,6 +25,13 @@ public class CircuitPersonnaliseDTO {
     // Options
     private boolean avecHebergement;
     private String typeHebergement;
+    private Long hebergementId;
+    private String hebergementNom;
+    private String hebergementLocalisation;
+    private Double hebergementPrixParNuit;
+    private LocalDate dateArriveeHebergement;
+    private LocalDate dateDepartHebergement;
+    private Integer nombreNuitsHebergement;
     private boolean avecTransport;
     private String typeTransport;
     private boolean avecGuide;
@@ -32,7 +39,14 @@ public class CircuitPersonnaliseDTO {
     private boolean pensionComplete;
     
     // Prix
+    private BigDecimal prixActivitesEstime;
+    private BigDecimal prixHebergementEstime;
+    private BigDecimal prixTransportEstime;
+    private BigDecimal prixGuideEstime;
+    private BigDecimal prixChauffeurEstime;
+    private BigDecimal prixPensionCompleteEstime;
     private BigDecimal prixEstime;
+    private String devisePrixEstime;
     private BigDecimal prixFinal;
     
     // Statut
@@ -145,6 +159,27 @@ public class CircuitPersonnaliseDTO {
     
     public String getTypeHebergement() { return typeHebergement; }
     public void setTypeHebergement(String typeHebergement) { this.typeHebergement = typeHebergement; }
+
+    public Long getHebergementId() { return hebergementId; }
+    public void setHebergementId(Long hebergementId) { this.hebergementId = hebergementId; }
+
+    public String getHebergementNom() { return hebergementNom; }
+    public void setHebergementNom(String hebergementNom) { this.hebergementNom = hebergementNom; }
+
+    public String getHebergementLocalisation() { return hebergementLocalisation; }
+    public void setHebergementLocalisation(String hebergementLocalisation) { this.hebergementLocalisation = hebergementLocalisation; }
+
+    public Double getHebergementPrixParNuit() { return hebergementPrixParNuit; }
+    public void setHebergementPrixParNuit(Double hebergementPrixParNuit) { this.hebergementPrixParNuit = hebergementPrixParNuit; }
+
+    public LocalDate getDateArriveeHebergement() { return dateArriveeHebergement; }
+    public void setDateArriveeHebergement(LocalDate dateArriveeHebergement) { this.dateArriveeHebergement = dateArriveeHebergement; }
+
+    public LocalDate getDateDepartHebergement() { return dateDepartHebergement; }
+    public void setDateDepartHebergement(LocalDate dateDepartHebergement) { this.dateDepartHebergement = dateDepartHebergement; }
+
+    public Integer getNombreNuitsHebergement() { return nombreNuitsHebergement; }
+    public void setNombreNuitsHebergement(Integer nombreNuitsHebergement) { this.nombreNuitsHebergement = nombreNuitsHebergement; }
     
     public boolean isAvecTransport() { return avecTransport; }
     public void setAvecTransport(boolean avecTransport) { this.avecTransport = avecTransport; }
@@ -161,8 +196,29 @@ public class CircuitPersonnaliseDTO {
     public boolean isPensionComplete() { return pensionComplete; }
     public void setPensionComplete(boolean pensionComplete) { this.pensionComplete = pensionComplete; }
     
+    public BigDecimal getPrixActivitesEstime() { return prixActivitesEstime; }
+    public void setPrixActivitesEstime(BigDecimal prixActivitesEstime) { this.prixActivitesEstime = prixActivitesEstime; }
+
+    public BigDecimal getPrixHebergementEstime() { return prixHebergementEstime; }
+    public void setPrixHebergementEstime(BigDecimal prixHebergementEstime) { this.prixHebergementEstime = prixHebergementEstime; }
+
+    public BigDecimal getPrixTransportEstime() { return prixTransportEstime; }
+    public void setPrixTransportEstime(BigDecimal prixTransportEstime) { this.prixTransportEstime = prixTransportEstime; }
+
+    public BigDecimal getPrixGuideEstime() { return prixGuideEstime; }
+    public void setPrixGuideEstime(BigDecimal prixGuideEstime) { this.prixGuideEstime = prixGuideEstime; }
+
+    public BigDecimal getPrixChauffeurEstime() { return prixChauffeurEstime; }
+    public void setPrixChauffeurEstime(BigDecimal prixChauffeurEstime) { this.prixChauffeurEstime = prixChauffeurEstime; }
+
+    public BigDecimal getPrixPensionCompleteEstime() { return prixPensionCompleteEstime; }
+    public void setPrixPensionCompleteEstime(BigDecimal prixPensionCompleteEstime) { this.prixPensionCompleteEstime = prixPensionCompleteEstime; }
+
     public BigDecimal getPrixEstime() { return prixEstime; }
     public void setPrixEstime(BigDecimal prixEstime) { this.prixEstime = prixEstime; }
+
+    public String getDevisePrixEstime() { return devisePrixEstime; }
+    public void setDevisePrixEstime(String devisePrixEstime) { this.devisePrixEstime = devisePrixEstime; }
     
     public BigDecimal getPrixFinal() { return prixFinal; }
     public void setPrixFinal(BigDecimal prixFinal) { this.prixFinal = prixFinal; }

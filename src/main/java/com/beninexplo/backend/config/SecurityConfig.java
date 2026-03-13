@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/hebergements/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/parametres-site/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tarifs-circuit-personnalise/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/villes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/zones/**").permitAll()
 
@@ -108,6 +109,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/parametres-site/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/parametres-site/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/tarifs-circuit-personnalise/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/tarifs-circuit-personnalise/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/villes/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/villes/**").hasRole("ADMIN")
