@@ -44,9 +44,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String email = jwtUtil.extractEmail(token);
                 String role = jwtUtil.extractRole(token);
 
-                // Autorité Spring (ROLE_USER, ROLE_ADMIN, ROLE_PARTICIPANT)
+                String normalizedRole = role != null && role.startsWith("ROLE_")
+                        ? role
+                        : "ROLE_" + role;
+
                 SimpleGrantedAuthority authority =
-                        new SimpleGrantedAuthority("ROLE_" + role);
+                        new SimpleGrantedAuthority(normalizedRole);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(

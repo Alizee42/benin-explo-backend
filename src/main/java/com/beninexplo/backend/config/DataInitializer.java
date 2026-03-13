@@ -45,8 +45,17 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        if (utilisateurRepository.findByEmail(adminEmail).isPresent()) {
-            log.info("Bootstrap administrateur ignore: compte {} deja present.", adminEmail);
+        Utilisateur existingAdmin = utilisateurRepository.findByEmail(adminEmail).orElse(null);
+        if (existingAdmin != null) {
+            existingAdmin.setNom("Admin");
+            existingAdmin.setPrenom("BeninExplo");
+            existingAdmin.setMotDePasse(passwordEncoder.encode(adminPassword));
+            existingAdmin.setRole("ADMIN");
+            if (existingAdmin.getDateCreation() == null) {
+                existingAdmin.setDateCreation(LocalDateTime.now());
+            }
+            utilisateurRepository.save(existingAdmin);
+            log.info("Bootstrap administrateur mis a jour pour {}", adminEmail);
             return;
         }
 
