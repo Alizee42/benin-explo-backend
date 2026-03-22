@@ -13,11 +13,17 @@ import com.beninexplo.backend.security.jwt.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class UtilisateurService {
 
@@ -94,7 +100,10 @@ public class UtilisateurService {
         participant.setPrenom("Tombola");
         participant.setEmail(email);
         participant.setTelephone(null);
-        participant.setMotDePasse(passwordEncoder.encode("participant123"));
+        byte[] randomBytes = new byte[24];
+        new SecureRandom().nextBytes(randomBytes);
+        String randomPassword = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+        participant.setMotDePasse(passwordEncoder.encode(randomPassword));
         participant.setRole("PARTICIPANT");
         participant.setDateCreation(LocalDateTime.now());
 
@@ -127,5 +136,19 @@ public class UtilisateurService {
         Utilisateur user = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
         return toDTO(user);
+    }
+
+    public List<UtilisateurDTO> getAllUsers() {
+        return utilisateurRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteUser(Long id) {
+        if (!utilisateurRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Utilisateur introuvable.");
+        }
+        utilisateurRepository.deleteById(id);
     }
 }

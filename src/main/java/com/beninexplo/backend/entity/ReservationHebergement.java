@@ -1,6 +1,7 @@
 package com.beninexplo.backend.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -28,7 +29,7 @@ public class ReservationHebergement {
     private int nombreNuits;
     private int nombrePersonnes;
 
-    private double prixTotal;
+    private BigDecimal prixTotal;
     private String statut; // CONFIRME, ANNULE, EN_ATTENTE
 
     @Column(length = 1000)
@@ -58,7 +59,7 @@ public class ReservationHebergement {
 
         // Calcul automatique du nombre de nuits et du prix total
         this.nombreNuits = (int) java.time.temporal.ChronoUnit.DAYS.between(dateArrivee, dateDepart);
-        this.prixTotal = this.nombreNuits * hebergement.getPrixParNuit();
+        this.prixTotal = BigDecimal.valueOf(this.nombreNuits).multiply(hebergement.getPrixParNuit());
     }
 
     /* ----------------------------------------------------
@@ -94,8 +95,8 @@ public class ReservationHebergement {
     public int getNombrePersonnes() { return nombrePersonnes; }
     public void setNombrePersonnes(int nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
 
-    public double getPrixTotal() { return prixTotal; }
-    public void setPrixTotal(double prixTotal) { this.prixTotal = prixTotal; }
+    public BigDecimal getPrixTotal() { return prixTotal; }
+    public void setPrixTotal(BigDecimal prixTotal) { this.prixTotal = prixTotal; }
 
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }

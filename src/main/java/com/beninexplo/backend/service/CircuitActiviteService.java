@@ -8,11 +8,13 @@ import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActiviteRepository;
 import com.beninexplo.backend.repository.CircuitActiviteRepository;
 import com.beninexplo.backend.repository.CircuitRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class CircuitActiviteService {
 

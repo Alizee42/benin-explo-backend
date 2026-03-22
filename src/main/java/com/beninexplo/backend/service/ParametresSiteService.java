@@ -4,11 +4,15 @@ import com.beninexplo.backend.dto.ParametresSiteDTO;
 import com.beninexplo.backend.entity.ParametresSite;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ParametresSiteRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class ParametresSiteService {
 
@@ -36,6 +40,7 @@ public class ParametresSiteService {
         return parametresSite;
     }
 
+    @Cacheable("parametres-site")
     public List<ParametresSiteDTO> getAll() {
         return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
@@ -46,6 +51,7 @@ public class ParametresSiteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Parametres du site introuvables."));
     }
 
+    @CacheEvict(value = "parametres-site", allEntries = true)
     public ParametresSiteDTO saveOrUpdate(ParametresSiteDTO dto) {
         return toDTO(repo.save(fromDTO(dto)));
     }

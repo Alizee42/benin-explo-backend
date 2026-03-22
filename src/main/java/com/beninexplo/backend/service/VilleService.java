@@ -6,11 +6,15 @@ import com.beninexplo.backend.entity.Zone;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class VilleService {
 
@@ -45,6 +49,7 @@ public class VilleService {
         return ville;
     }
 
+    @Cacheable("villes")
     public List<VilleDTO> getAll() {
         return villeRepo.findAllByOrderByNomAsc().stream()
                 .map(this::toDTO)
@@ -57,12 +62,14 @@ public class VilleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ville introuvable."));
     }
 
+    @CacheEvict(value = "villes", allEntries = true)
     public VilleDTO create(VilleDTO dto) {
         Ville ville = toEntity(dto);
         ville.setIdVille(null);
         return toDTO(villeRepo.save(ville));
     }
 
+    @CacheEvict(value = "villes", allEntries = true)
     public VilleDTO update(Long id, VilleDTO dto) {
         Ville existing = villeRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ville introuvable."));
@@ -79,6 +86,7 @@ public class VilleService {
         return toDTO(villeRepo.save(existing));
     }
 
+    @CacheEvict(value = "villes", allEntries = true)
     public void delete(Long id) {
         villeRepo.deleteById(id);
     }

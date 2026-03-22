@@ -2,6 +2,7 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.CircuitPersonnaliseDTO;
 import com.beninexplo.backend.service.CircuitPersonnaliseService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,7 +30,7 @@ public class CircuitPersonnaliseController {
     }
 
     @PostMapping
-    public ResponseEntity<CircuitPersonnaliseDTO> create(@RequestBody CircuitPersonnaliseDTO dto) {
+    public ResponseEntity<CircuitPersonnaliseDTO> create(@Valid @RequestBody CircuitPersonnaliseDTO dto) {
         CircuitPersonnaliseDTO created = service.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

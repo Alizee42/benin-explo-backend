@@ -7,13 +7,16 @@ import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.HebergementRepository;
 import com.beninexplo.backend.repository.ReservationHebergementRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class ReservationHebergementService {
 
@@ -119,7 +122,7 @@ public class ReservationHebergementService {
 
         int nights = (int) ChronoUnit.DAYS.between(dto.getDateArrivee(), dto.getDateDepart());
         existing.setNombreNuits(nights);
-        existing.setPrixTotal(nights * existing.getHebergement().getPrixParNuit());
+        existing.setPrixTotal(BigDecimal.valueOf(nights).multiply(existing.getHebergement().getPrixParNuit()));
 
         ReservationHebergement saved = reservationRepo.save(existing);
         if (!previousStatus.equals(normalizeStatus(saved.getStatut()))) {

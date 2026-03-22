@@ -10,11 +10,13 @@ import com.beninexplo.backend.repository.ActiviteRepository;
 import com.beninexplo.backend.repository.MediaRepository;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class ActiviteService {
 

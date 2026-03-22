@@ -4,11 +4,13 @@ import com.beninexplo.backend.dto.CategorieActiviteDTO;
 import com.beninexplo.backend.entity.CategorieActivite;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CategorieActiviteRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class CategorieActiviteService {
 

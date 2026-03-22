@@ -28,7 +28,7 @@ public class CircuitPersonnaliseDTO {
     private Long hebergementId;
     private String hebergementNom;
     private String hebergementLocalisation;
-    private Double hebergementPrixParNuit;
+    private BigDecimal hebergementPrixParNuit;
     private LocalDate dateArriveeHebergement;
     private LocalDate dateDepartHebergement;
     private Integer nombreNuitsHebergement;
@@ -169,8 +169,8 @@ public class CircuitPersonnaliseDTO {
     public String getHebergementLocalisation() { return hebergementLocalisation; }
     public void setHebergementLocalisation(String hebergementLocalisation) { this.hebergementLocalisation = hebergementLocalisation; }
 
-    public Double getHebergementPrixParNuit() { return hebergementPrixParNuit; }
-    public void setHebergementPrixParNuit(Double hebergementPrixParNuit) { this.hebergementPrixParNuit = hebergementPrixParNuit; }
+    public BigDecimal getHebergementPrixParNuit() { return hebergementPrixParNuit; }
+    public void setHebergementPrixParNuit(BigDecimal hebergementPrixParNuit) { this.hebergementPrixParNuit = hebergementPrixParNuit; }
 
     public LocalDate getDateArriveeHebergement() { return dateArriveeHebergement; }
     public void setDateArriveeHebergement(LocalDate dateArriveeHebergement) { this.dateArriveeHebergement = dateArriveeHebergement; }

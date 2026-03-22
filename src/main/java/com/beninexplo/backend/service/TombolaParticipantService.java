@@ -7,10 +7,12 @@ import com.beninexplo.backend.exception.ConflictException;
 import com.beninexplo.backend.repository.TombolaParticipantRepository;
 import com.beninexplo.backend.repository.UtilisateurRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Transactional
 @Service
 public class TombolaParticipantService {
 

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
@@ -34,7 +35,7 @@ public class HebergementDTO {
     private String description;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Le prix par nuit doit etre superieur a zero.")
-    private double prixParNuit;
+    private BigDecimal prixParNuit;
 
     @Size(max = 20, message = "La liste d'images ne doit pas contenir plus de 20 elements.")
     private List<@NotBlank(message = "Une URL d'image ne peut pas etre vide.")
@@ -44,7 +45,7 @@ public class HebergementDTO {
     }
 
     public HebergementDTO(Long id, String nom, String type, String localisation,
-                          String quartier, String description, double prixParNuit, List<String> imageUrls) {
+                          String quartier, String description, BigDecimal prixParNuit, List<String> imageUrls) {
         this.id = id;
         this.nom = nom;
         this.type = type;
@@ -73,8 +74,8 @@ public class HebergementDTO {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public double getPrixParNuit() { return prixParNuit; }
-    public void setPrixParNuit(double prixParNuit) { this.prixParNuit = prixParNuit; }
+    public BigDecimal getPrixParNuit() { return prixParNuit; }
+    public void setPrixParNuit(BigDecimal prixParNuit) { this.prixParNuit = prixParNuit; }
 
     public List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }

@@ -3,6 +3,7 @@ package com.beninexplo.backend.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -11,18 +12,17 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Clé secrète (générée, longue, correcte)
-    private static final String SECRET_KEY = 
-            "6D597133743677397A24432646294A404E635266556A586E3272357538782F41";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     // Durée de validité du token : 24h
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000;
 
     /* ----------------------------------------------------
-       🟦 EXTRACTION DE LA CLÉ SIGNATURE
+       EXTRACTION DE LA CLÉ SIGNATURE
     ---------------------------------------------------- */
     private Key getSigningKey() {
-        byte[] bytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] bytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(bytes);
     }
 
