@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "parametres_site")
 
-public class ParametresSite {
+public class ParametresSite extends AuditableEntity {
 
     /* ---------------- ATTRIBUTS ---------------- */
 

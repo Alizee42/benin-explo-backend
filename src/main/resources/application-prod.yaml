@@ -1,0 +1,22 @@
+image:
+  storage:
+    location: ${UPLOADS_DIR}
+
+reservation:
+  notifications:
+    mail:
+      enabled: ${RESERVATION_MAIL_ENABLED:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    org.springframework: WARN
+    org.hibernate.SQL: WARN

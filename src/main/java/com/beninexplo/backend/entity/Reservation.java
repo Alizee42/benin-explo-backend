@@ -6,7 +6,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "reservations")
 
-public class Reservation {
+public class Reservation extends AuditableEntity {
 
     /* ---------------- ATTRIBUTS ---------------- */
 

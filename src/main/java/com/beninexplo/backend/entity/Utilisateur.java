@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "utilisateurs")
-public class Utilisateur {
+public class Utilisateur extends AuditableEntity {
 
     /* ----------------------------------------------------
        🟦 ATTRIBUTS

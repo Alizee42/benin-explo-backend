@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "circuits_personnalises")
-public class CircuitPersonnalise {
+public class CircuitPersonnalise extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

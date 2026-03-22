@@ -149,7 +149,9 @@ public class SecurityConfig {
                 "http://127.0.0.1:4200"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
+        ));
         configuration.setExposedHeaders(Arrays.asList("Content-Disposition", "Location"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
