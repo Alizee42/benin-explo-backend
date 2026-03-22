@@ -11,4 +11,3 @@ CREATE INDEX IF NOT EXISTS idx_circuit_activites_circuit_id ON public.circuit_ac
 CREATE INDEX IF NOT EXISTS idx_circuit_activites_activite_id ON public.circuit_activites (activite_id);
 CREATE INDEX IF NOT EXISTS idx_villes_zone_id ON public.villes (zone_id);
 CREATE INDEX IF NOT EXISTS idx_activites_ville_id ON public.activites (ville_id);
-CREATE INDEX IF NOT EXISTS idx_medias_circuit_id ON public.medias (circuit_id);
