@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "devis")  // ✅ TABLE CORRECTE
-public class Devis {
+public class Devis extends AuditableEntity {
 
     /* ----------------------------------------------------
        🟦 ATTRIBUTS

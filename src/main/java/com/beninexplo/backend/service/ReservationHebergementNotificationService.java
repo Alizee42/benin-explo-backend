@@ -7,6 +7,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +27,7 @@ public class ReservationHebergementNotificationService {
         this.mailSender = mailSenderProvider.getIfAvailable();
     }
 
+    @Async
     public void sendCreationConfirmation(ReservationHebergement reservation) {
         sendReservationEmail(
                 reservation,
@@ -41,6 +43,7 @@ public class ReservationHebergementNotificationService {
         );
     }
 
+    @Async
     public void sendStatusUpdate(ReservationHebergement reservation) {
         sendReservationEmail(
                 reservation,

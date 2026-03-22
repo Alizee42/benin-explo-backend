@@ -11,7 +11,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "hebergements")
-public class Hebergement {
+public class Hebergement extends AuditableEntity {
 
     /* ----------------------------------------------------
        🟦 ATTRIBUTS

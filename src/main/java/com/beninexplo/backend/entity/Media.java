@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "medias")
 
-public class Media {
+public class Media extends AuditableEntity {
 
     /* ----------------------------------------------------
        🟦 ATTRIBUTS

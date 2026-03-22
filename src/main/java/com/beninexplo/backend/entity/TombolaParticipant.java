@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 @Entity
 
 @Table(name = "tombola_participants")
-public class TombolaParticipant {
+public class TombolaParticipant extends AuditableEntity {
 
     /* ----------------------------------------------------
        🟦 ATTRIBUTS
