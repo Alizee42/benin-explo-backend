@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/tombola/**").hasRole("PARTICIPANT")
 
+                        .requestMatchers(HttpMethod.GET, "/api/circuits-personnalises").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/circuits-personnalises/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/circuits-personnalises/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/circuits-personnalises/**").hasRole("ADMIN")
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/reservations/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/reservations-hebergement/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/reservations-hebergement/**").hasRole("ADMIN")
