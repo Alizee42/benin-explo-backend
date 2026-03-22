@@ -10,7 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Transactional
 @Service
@@ -36,7 +38,9 @@ public class TombolaParticipantService {
             utilisateur.setNom(nom != null ? nom : "Participant");
             utilisateur.setPrenom(prenom != null ? prenom : "Tombola");
             utilisateur.setEmail(email);
-            utilisateur.setMotDePasse(passwordEncoder.encode("participant123"));
+            byte[] random = new byte[24];
+            new SecureRandom().nextBytes(random);
+            utilisateur.setMotDePasse(passwordEncoder.encode(Base64.getEncoder().encodeToString(random)));
             utilisateur.setRole("PARTICIPANT");
             utilisateur.setDateCreation(LocalDateTime.now());
             utilisateurRepository.save(utilisateur);
