@@ -1,5 +1,6 @@
 package com.beninexplo.backend.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -28,7 +29,7 @@ public class Hebergement {
     @Column(length = 5000)
     private String description;
 
-    private double prixParNuit;
+    private BigDecimal prixParNuit;
 
     @Column(columnDefinition = "TEXT")
     private String imageUrls; // JSON array of image URLs
@@ -39,7 +40,7 @@ public class Hebergement {
     public Hebergement() {}
 
     public Hebergement(Long idHebergement, String nom, String type, String localisation, String quartier,
-                       String description, double prixParNuit) {
+                       String description, BigDecimal prixParNuit) {
         this.idHebergement = idHebergement;
         this.nom = nom;
         this.type = type;
@@ -70,8 +71,8 @@ public class Hebergement {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public double getPrixParNuit() { return prixParNuit; }
-    public void setPrixParNuit(double prixParNuit) { this.prixParNuit = prixParNuit; }
+    public BigDecimal getPrixParNuit() { return prixParNuit; }
+    public void setPrixParNuit(BigDecimal prixParNuit) { this.prixParNuit = prixParNuit; }
 
     public List<String> getImageUrls() {
         if (imageUrls == null || imageUrls.trim().isEmpty()) {

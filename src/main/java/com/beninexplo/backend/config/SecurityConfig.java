@@ -109,8 +109,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/parametres-site/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/parametres-site/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/parametres-site/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/tarifs-circuit-personnalise/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/tarifs-circuit-personnalise/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/tarifs-circuit-personnalise/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/villes/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/villes/**").hasRole("ADMIN")

@@ -3,10 +3,12 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.TarifsCircuitPersonnaliseDTO;
 import com.beninexplo.backend.entity.TarifsCircuitPersonnalise;
 import com.beninexplo.backend.repository.TarifsCircuitPersonnaliseRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+@Transactional
 @Service
 public class TarifsCircuitPersonnaliseService {
 

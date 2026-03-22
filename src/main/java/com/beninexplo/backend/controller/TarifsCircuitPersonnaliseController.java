@@ -2,6 +2,7 @@ package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.TarifsCircuitPersonnaliseDTO;
 import com.beninexplo.backend.service.TarifsCircuitPersonnaliseService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,13 +29,13 @@ public class TarifsCircuitPersonnaliseController {
     }
 
     @PostMapping
-    public ResponseEntity<TarifsCircuitPersonnaliseDTO> create(@RequestBody TarifsCircuitPersonnaliseDTO dto) {
+    public ResponseEntity<TarifsCircuitPersonnaliseDTO> create(@Valid @RequestBody TarifsCircuitPersonnaliseDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.saveOrUpdate(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TarifsCircuitPersonnaliseDTO> update(@PathVariable Long id,
-                                                               @RequestBody TarifsCircuitPersonnaliseDTO dto) {
+                                                               @Valid @RequestBody TarifsCircuitPersonnaliseDTO dto) {
         dto.setId(id);
         return ResponseEntity.ok(service.saveOrUpdate(dto));
     }

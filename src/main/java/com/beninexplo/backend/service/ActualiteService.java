@@ -8,12 +8,14 @@ import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActualiteRepository;
 import com.beninexplo.backend.repository.MediaRepository;
 import com.beninexplo.backend.repository.UtilisateurRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class ActualiteService {
 

@@ -273,7 +273,7 @@ public class CircuitPersonnaliseService {
             return BigDecimal.ZERO;
         }
 
-        return BigDecimal.valueOf(entity.getHebergement().getPrixParNuit())
+        return entity.getHebergement().getPrixParNuit()
                 .multiply(BigDecimal.valueOf(nombreNuits));
     }
 

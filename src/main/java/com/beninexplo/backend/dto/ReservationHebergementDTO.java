@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
@@ -50,7 +51,7 @@ public class ReservationHebergementDTO {
     @Positive(message = "Le nombre de personnes doit etre superieur a zero.")
     private int nombrePersonnes;
 
-    private double prixTotal;
+    private BigDecimal prixTotal;
     private String statut;
 
     @Size(max = 1000, message = "Les commentaires ne doivent pas depasser 1000 caracteres.")
@@ -64,7 +65,7 @@ public class ReservationHebergementDTO {
     public ReservationHebergementDTO(Long id, Long hebergementId, String hebergementNom,
                                      String nomClient, String prenomClient, String emailClient,
                                      String telephoneClient, LocalDate dateArrivee, LocalDate dateDepart,
-                                     int nombreNuits, int nombrePersonnes, double prixTotal,
+                                     int nombreNuits, int nombrePersonnes, BigDecimal prixTotal,
                                      String statut, String commentaires, LocalDate dateCreation) {
         this.id = id;
         this.hebergementId = hebergementId;
@@ -121,8 +122,8 @@ public class ReservationHebergementDTO {
     public int getNombrePersonnes() { return nombrePersonnes; }
     public void setNombrePersonnes(int nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
 
-    public double getPrixTotal() { return prixTotal; }
-    public void setPrixTotal(double prixTotal) { this.prixTotal = prixTotal; }
+    public BigDecimal getPrixTotal() { return prixTotal; }
+    public void setPrixTotal(BigDecimal prixTotal) { this.prixTotal = prixTotal; }
 
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
