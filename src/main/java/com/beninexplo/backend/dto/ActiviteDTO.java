@@ -1,5 +1,6 @@
 package com.beninexplo.backend.dto;
 
+import com.beninexplo.backend.entity.TypeActivite;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -14,6 +15,8 @@ public class ActiviteDTO {
     @NotBlank(message = "Le nom de l'activite est obligatoire.")
     @Size(max = 255, message = "Le nom de l'activite ne doit pas depasser 255 caracteres.")
     private String nom;
+
+    private TypeActivite type;
 
     @NotBlank(message = "La description de l'activite est obligatoire.")
     @Size(max = 5000, message = "La description de l'activite ne doit pas depasser 5000 caracteres.")
@@ -35,6 +38,9 @@ public class ActiviteDTO {
     @Size(max = 100, message = "La difficulte ne doit pas depasser 100 caracteres.")
     private String difficulte;
 
+    private Long categorieId;
+    private String categorieNom;
+
     @Positive(message = "L'image principale doit etre un identifiant positif.")
     private Long imagePrincipaleId;
 
@@ -45,6 +51,7 @@ public class ActiviteDTO {
 
     public ActiviteDTO(Long id,
                        String nom,
+                       TypeActivite type,
                        String description,
                        Long villeId,
                        String villeNom,
@@ -57,6 +64,7 @@ public class ActiviteDTO {
                        String imagePrincipaleUrl) {
         this.id = id;
         this.nom = nom;
+        this.type = type;
         this.description = description;
         this.villeId = villeId;
         this.villeNom = villeNom;
@@ -74,6 +82,9 @@ public class ActiviteDTO {
 
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
+
+    public TypeActivite getType() { return type; }
+    public void setType(TypeActivite type) { this.type = type; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -98,6 +109,12 @@ public class ActiviteDTO {
 
     public String getDifficulte() { return difficulte; }
     public void setDifficulte(String difficulte) { this.difficulte = difficulte; }
+
+    public Long getCategorieId() { return categorieId; }
+    public void setCategorieId(Long categorieId) { this.categorieId = categorieId; }
+
+    public String getCategorieNom() { return categorieNom; }
+    public void setCategorieNom(String categorieNom) { this.categorieNom = categorieNom; }
 
     public Long getImagePrincipaleId() { return imagePrincipaleId; }
     public void setImagePrincipaleId(Long imagePrincipaleId) { this.imagePrincipaleId = imagePrincipaleId; }

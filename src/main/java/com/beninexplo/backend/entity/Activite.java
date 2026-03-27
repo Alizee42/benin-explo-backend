@@ -6,11 +6,17 @@ import jakarta.persistence.*;
 @Table(name = "activites")
 public class Activite extends AuditableEntity {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idActivite;
 
     private String nom;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'ACTIVITE'")
+    private TypeActivite type = TypeActivite.ACTIVITE;
 
     @Column(length = 5000)
     private String description;
@@ -33,6 +39,10 @@ public class Activite extends AuditableEntity {
     @JoinColumn(name = "image_principale_id")
     private Media imagePrincipale;
 
+    @ManyToOne
+    @JoinColumn(name = "categorie_id")
+    private CategorieActivite categorie;
+
     // ----------------------------------------------------
     // CONSTRUCTEURS
     // ----------------------------------------------------
@@ -42,6 +52,7 @@ public class Activite extends AuditableEntity {
 
     public Activite(Long idActivite,
                     String nom,
+                    TypeActivite type,
                     String description,
                     Ville ville,
                     Integer dureeInterne,
@@ -50,6 +61,7 @@ public class Activite extends AuditableEntity {
                     Media imagePrincipale) {
         this.idActivite = idActivite;
         this.nom = nom;
+        this.type = type;
         this.description = description;
         this.ville = ville;
         this.dureeInterne = dureeInterne;
@@ -107,6 +119,14 @@ public class Activite extends AuditableEntity {
         this.nom = nom;
     }
 
+    public TypeActivite getType() {
+        return type;
+    }
+
+    public void setType(TypeActivite type) {
+        this.type = type;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -152,6 +172,14 @@ public class Activite extends AuditableEntity {
 
     public void setImagePrincipale(Media imagePrincipale) {
         this.imagePrincipale = imagePrincipale;
+    }
+
+    public CategorieActivite getCategorie() {
+        return categorie;
+    }
+
+    public void setCategorie(CategorieActivite categorie) {
+        this.categorie = categorie;
     }
 }
 
