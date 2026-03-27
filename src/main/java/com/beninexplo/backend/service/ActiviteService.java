@@ -2,11 +2,13 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ActiviteDTO;
 import com.beninexplo.backend.entity.Activite;
+import com.beninexplo.backend.entity.CategorieActivite;
 import com.beninexplo.backend.entity.Media;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActiviteRepository;
+import com.beninexplo.backend.repository.CategorieActiviteRepository;
 import com.beninexplo.backend.repository.MediaRepository;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
@@ -24,21 +26,25 @@ public class ActiviteService {
     private final ZoneRepository zoneRepo;
     private final MediaRepository mediaRepo;
     private final VilleRepository villeRepo;
+    private final CategorieActiviteRepository categorieRepo;
 
     public ActiviteService(ActiviteRepository activiteRepo,
                            ZoneRepository zoneRepo,
                            MediaRepository mediaRepo,
-                           VilleRepository villeRepo) {
+                           VilleRepository villeRepo,
+                           CategorieActiviteRepository categorieRepo) {
         this.activiteRepo = activiteRepo;
         this.zoneRepo = zoneRepo;
         this.mediaRepo = mediaRepo;
         this.villeRepo = villeRepo;
+        this.categorieRepo = categorieRepo;
     }
 
     private ActiviteDTO toDTO(Activite entity) {
         ActiviteDTO dto = new ActiviteDTO();
         dto.setId(entity.getIdActivite());
         dto.setNom(entity.getNom());
+        dto.setType(entity.getType());
         dto.setDescription(entity.getDescription());
 
         if (entity.getVille() != null) {
@@ -55,6 +61,11 @@ public class ActiviteService {
         dto.setPoids(entity.getPoids());
         dto.setDifficulte(entity.getDifficulte());
 
+        if (entity.getCategorie() != null) {
+            dto.setCategorieId(entity.getCategorie().getIdCategorie());
+            dto.setCategorieNom(entity.getCategorie().getNom());
+        }
+
         if (entity.getImagePrincipale() != null) {
             dto.setImagePrincipaleId(entity.getImagePrincipale().getIdMedia());
             dto.setImagePrincipaleUrl(entity.getImagePrincipale().getUrl());
@@ -65,6 +76,7 @@ public class ActiviteService {
 
     private Activite fromDTO(ActiviteDTO dto, Activite entity) {
         entity.setNom(dto.getNom());
+        entity.setType(dto.getType());
         entity.setDescription(dto.getDescription());
 
         if (dto.getVilleId() == null || dto.getVilleId() <= 0) {
@@ -77,6 +89,14 @@ public class ActiviteService {
         entity.setDureeInterne(dto.getDureeInterne());
         entity.setPoids(dto.getPoids());
         entity.setDifficulte(dto.getDifficulte());
+
+        if (dto.getCategorieId() != null && dto.getCategorieId() > 0) {
+            CategorieActivite categorie = categorieRepo.findById(dto.getCategorieId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categorie introuvable."));
+            entity.setCategorie(categorie);
+        } else {
+            entity.setCategorie(null);
+        }
 
         if (dto.getImagePrincipaleId() != null && dto.getImagePrincipaleId() > 0) {
             Media media = mediaRepo.findById(dto.getImagePrincipaleId())
