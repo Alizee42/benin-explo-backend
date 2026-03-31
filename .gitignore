@@ -40,3 +40,6 @@ src/uploads/
 
 # Local backend runtime logs
 backend-*.log
+
+# Local Maven cache used during sandboxed test runs
+.m2/
