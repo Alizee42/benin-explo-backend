@@ -7,6 +7,13 @@ reservation:
     mail:
       enabled: ${RESERVATION_MAIL_ENABLED:true}
 
+app:
+  bootstrap:
+    admin:
+      enabled: ${APP_BOOTSTRAP_ADMIN_ENABLED:true}
+      email: ${APP_BOOTSTRAP_ADMIN_EMAIL:}
+      password: ${APP_BOOTSTRAP_ADMIN_PASSWORD:}
+
 management:
   endpoints:
     web:
