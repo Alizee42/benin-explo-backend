@@ -1,6 +1,7 @@
 package com.beninexplo.backend.config;
 
 import com.beninexplo.backend.security.jwt.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,9 +23,14 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+        private final java.util.List<String> allowedOriginPatterns;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        public SecurityConfig(
+                        JwtAuthFilter jwtAuthFilter,
+                        @Value("${app.cors.allowed-origin-patterns}") java.util.List<String> allowedOriginPatterns
+        ) {
         this.jwtAuthFilter = jwtAuthFilter;
+                this.allowedOriginPatterns = allowedOriginPatterns;
     }
 
     @Bean
@@ -151,10 +157,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "http://127.0.0.1:4200"
-        ));
+        configuration.setAllowedOriginPatterns(allowedOriginPatterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
