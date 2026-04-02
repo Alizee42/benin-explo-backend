@@ -29,6 +29,7 @@ public class ReservationHebergement extends AuditableEntity {
     private int nombreNuits;
     private int nombrePersonnes;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal prixTotal;
     private String statut; // CONFIRME, ANNULE, EN_ATTENTE
 
