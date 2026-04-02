@@ -29,6 +29,7 @@ public class Hebergement extends AuditableEntity {
     @Column(length = 5000)
     private String description;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal prixParNuit;
 
     @Column(columnDefinition = "TEXT")
