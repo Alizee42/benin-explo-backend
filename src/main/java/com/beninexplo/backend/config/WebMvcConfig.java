@@ -12,6 +12,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${image.storage.location}")
     private String imageStorageLocation;
 
+    @Value("${app.cors.allowed-origin-patterns}")
+    private java.util.List<String> allowedOriginPatterns;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Map /images/** to the filesystem location configured (expects file:...)
@@ -26,8 +29,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:4200")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+            .allowedOriginPatterns(allowedOriginPatterns.toArray(String[]::new))
+            .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+            .allowedHeaders("*")
+            .allowCredentials(true);
+
+        registry.addMapping("/auth/**")
+            .allowedOriginPatterns(allowedOriginPatterns.toArray(String[]::new))
+            .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+            .allowedHeaders("*")
+            .allowCredentials(true);
     }
 }
