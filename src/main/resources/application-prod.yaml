@@ -15,6 +15,15 @@ utilisateur:
     mail:
       enabled: ${UTILISATEUR_MAIL_ENABLED:${RESERVATION_MAIL_ENABLED:true}}
 
+paypal:
+  enabled: ${PAYPAL_ENABLED:false}
+  sandbox: ${PAYPAL_SANDBOX:true}
+  client-id: ${PAYPAL_CLIENT_ID:}
+  client-secret: ${PAYPAL_CLIENT_SECRET:}
+  currency: ${PAYPAL_CURRENCY:EUR}
+  brand-name: ${PAYPAL_BRAND_NAME:Benin Explo}
+  locale: ${PAYPAL_LOCALE:fr-FR}
+
 app:
   bootstrap:
     admin:

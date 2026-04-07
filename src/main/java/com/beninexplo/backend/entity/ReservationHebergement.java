@@ -23,6 +23,9 @@ public class ReservationHebergement extends AuditableEntity {
     @JoinColumn(name = "utilisateur_id")
     private Utilisateur utilisateur;
 
+    @OneToOne(mappedBy = "reservationHebergement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PaiementReservationHebergement paiement;
+
     private String nomClient;
     private String prenomClient;
     private String emailClient;
@@ -78,6 +81,9 @@ public class ReservationHebergement extends AuditableEntity {
 
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
+
+    public PaiementReservationHebergement getPaiement() { return paiement; }
+    public void setPaiement(PaiementReservationHebergement paiement) { this.paiement = paiement; }
 
     public String getNomClient() { return nomClient; }
     public void setNomClient(String nomClient) { this.nomClient = nomClient; }

@@ -11,18 +11,29 @@ import java.util.List;
 @Repository
 public interface ReservationHebergementRepository extends JpaRepository<ReservationHebergement, Long> {
 
-    @EntityGraph(attributePaths = {"hebergement"})
+    @Override
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
+    List<ReservationHebergement> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
+    java.util.Optional<ReservationHebergement> findById(Long id);
+
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
     List<ReservationHebergement> findByHebergementIdHebergement(Long hebergementId);
 
-    @EntityGraph(attributePaths = {"hebergement"})
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
     List<ReservationHebergement> findByStatut(String statut);
 
-    @EntityGraph(attributePaths = {"hebergement"})
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
     List<ReservationHebergement> findByDateArriveeBetween(LocalDate startDate, LocalDate endDate);
 
-    @EntityGraph(attributePaths = {"hebergement"})
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
     List<ReservationHebergement> findByEmailClient(String emailClient);
 
-    @EntityGraph(attributePaths = {"hebergement", "utilisateur"})
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
     List<ReservationHebergement> findByUtilisateurIdOrderByDateCreationDesc(Long utilisateurId);
+
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur", "paiement"})
+    java.util.Optional<ReservationHebergement> findByIdReservationAndUtilisateurId(Long idReservation, Long utilisateurId);
 }

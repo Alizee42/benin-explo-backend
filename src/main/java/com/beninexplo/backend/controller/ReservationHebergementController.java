@@ -40,6 +40,11 @@ public class ReservationHebergementController {
         return ResponseEntity.ok(reservationService.getMine());
     }
 
+    @GetMapping("/me/{id}")
+    public ResponseEntity<ReservationHebergementDTO> getMineById(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.getMineById(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReservationHebergementDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.getById(id));

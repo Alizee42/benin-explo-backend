@@ -71,6 +71,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/devis-activites").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/reservations-hebergement").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/paiements/hebergement/paypal/config").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/paiements/hebergement/paypal/create-order").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/paiements/hebergement/paypal/capture-order").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/disponibilite").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/indisponibilites/**").permitAll()
 
@@ -94,6 +97,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/me/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/reservations-hebergement/**").hasRole("ADMIN")

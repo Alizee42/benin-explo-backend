@@ -3,11 +3,13 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.ReservationHebergementDTO;
 import com.beninexplo.backend.dto.ReservationHebergementIndisponibiliteDTO;
 import com.beninexplo.backend.entity.Hebergement;
+import com.beninexplo.backend.entity.PaiementReservationHebergement;
 import com.beninexplo.backend.entity.ReservationHebergement;
 import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.HebergementRepository;
+import com.beninexplo.backend.repository.PaiementReservationHebergementRepository;
 import com.beninexplo.backend.repository.ReservationHebergementRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -24,15 +26,18 @@ public class ReservationHebergementService {
 
     private final ReservationHebergementRepository reservationRepo;
     private final HebergementRepository hebergementRepo;
+    private final PaiementReservationHebergementRepository paymentRepository;
     private final ReservationHebergementNotificationService notificationService;
     private final AuthenticatedUserService authenticatedUserService;
 
     public ReservationHebergementService(ReservationHebergementRepository reservationRepo,
                                          HebergementRepository hebergementRepo,
+                                         PaiementReservationHebergementRepository paymentRepository,
                                          ReservationHebergementNotificationService notificationService,
                                          AuthenticatedUserService authenticatedUserService) {
         this.reservationRepo = reservationRepo;
         this.hebergementRepo = hebergementRepo;
+        this.paymentRepository = paymentRepository;
         this.notificationService = notificationService;
         this.authenticatedUserService = authenticatedUserService;
     }
@@ -57,6 +62,15 @@ public class ReservationHebergementService {
         );
         if (reservation.getUtilisateur() != null) {
             dto.setUtilisateurId(reservation.getUtilisateur().getId());
+        }
+        PaiementReservationHebergement payment = reservation.getPaiement();
+        if (payment != null) {
+            dto.setStatutPaiement(payment.getStatut());
+            dto.setMontantPaye(payment.getMontant());
+            dto.setDevisePaiement(payment.getDevise());
+            dto.setPaypalOrderId(payment.getPaypalOrderId());
+            dto.setPaypalCaptureId(payment.getPaypalCaptureId());
+            dto.setDatePaiement(payment.getDatePaiement());
         }
         return dto;
     }
@@ -111,6 +125,7 @@ public class ReservationHebergementService {
             throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
         ReservationHebergement saved = reservationRepo.save(fromDTO(dto, currentUser));
+        ensurePaymentPlaceholder(saved);
         notificationService.sendCreationConfirmation(saved);
         return toDTO(saved);
     }
@@ -142,6 +157,7 @@ public class ReservationHebergementService {
         int nights = (int) ChronoUnit.DAYS.between(dto.getDateArrivee(), dto.getDateDepart());
         existing.setNombreNuits(nights);
         existing.setPrixTotal(BigDecimal.valueOf(nights).multiply(existing.getHebergement().getPrixParNuit()));
+        syncPaymentAmount(existing);
 
         ReservationHebergement saved = reservationRepo.save(existing);
         if (!previousStatus.equals(normalizeStatus(saved.getStatut()))) {
@@ -202,6 +218,13 @@ public class ReservationHebergementService {
         return reservationRepo.findByUtilisateurIdOrderByDateCreationDesc(currentUser.getId()).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public ReservationHebergementDTO getMineById(Long id) {
+        Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
+        return reservationRepo.findByIdReservationAndUtilisateurId(id, currentUser.getId())
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation non trouvee pour ce compte."));
     }
 
     private boolean isAvailableForUpdate(ReservationHebergement existing, LocalDate dateArrivee, LocalDate dateDepart) {
@@ -266,5 +289,39 @@ public class ReservationHebergementService {
             return fallbackValue.trim();
         }
         throw new BadRequestException(errorMessage);
+    }
+
+    private void ensurePaymentPlaceholder(ReservationHebergement reservation) {
+        if (reservation.getPrixTotal() == null || reservation.getPrixTotal().signum() <= 0) {
+            return;
+        }
+        if (paymentRepository.findByReservationHebergementIdReservation(reservation.getIdReservation()).isPresent()) {
+            return;
+        }
+
+        PaiementReservationHebergement payment = new PaiementReservationHebergement();
+        payment.setReservationHebergement(reservation);
+        payment.setProvider("PAYPAL");
+        payment.setStatut("A_PAYER");
+        payment.setMontant(reservation.getPrixTotal());
+        payment.setDevise("EUR");
+        paymentRepository.save(payment);
+        reservation.setPaiement(payment);
+    }
+
+    private void syncPaymentAmount(ReservationHebergement reservation) {
+        PaiementReservationHebergement payment = reservation.getPaiement();
+        if (payment == null) {
+            ensurePaymentPlaceholder(reservation);
+            return;
+        }
+        String paymentStatus = payment.getStatut() == null ? "" : payment.getStatut().trim().toUpperCase();
+        if (!"PAYE".equals(paymentStatus) && !"REMBOURSE".equals(paymentStatus)) {
+            payment.setMontant(reservation.getPrixTotal());
+            if (payment.getDevise() == null || payment.getDevise().isBlank()) {
+                payment.setDevise("EUR");
+            }
+            paymentRepository.save(payment);
+        }
     }
 }
