@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class HebergementDTO {
     @Size(max = 5000, message = "La description de l'hebergement ne doit pas depasser 5000 caracteres.")
     private String description;
 
+    @NotNull(message = "Le prix par nuit est obligatoire.")
     @DecimalMin(value = "0.0", inclusive = false, message = "Le prix par nuit doit etre superieur a zero.")
     private BigDecimal prixParNuit;
 

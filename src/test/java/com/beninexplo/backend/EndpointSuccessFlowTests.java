@@ -283,6 +283,40 @@ class EndpointSuccessFlowTests {
                 .andExpect(jsonPath("$.nombrePersonnes").value(3));
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminCanExposeOnlyBookedRangesForPublicCalendarSuccessfully() throws Exception {
+        LocalDate bookedStart = LocalDate.now().plusDays(28);
+        LocalDate bookedEnd = LocalDate.now().plusDays(31);
+        long hebergementId = createTestHebergement();
+
+        String createPayload = """
+                {
+                  "hebergementId": %d,
+                  "nomClient": "Client",
+                  "prenomClient": "Visible",
+                  "emailClient": "visible.%d@example.com",
+                  "telephoneClient": "+22901020307",
+                  "dateArrivee": "%s",
+                  "dateDepart": "%s",
+                  "nombrePersonnes": 2,
+                  "commentaires": "Calendrier public"
+                }
+                """.formatted(hebergementId, System.nanoTime(), bookedStart, bookedEnd);
+
+        mockMvc.perform(post("/api/reservations-hebergement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createPayload))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/reservations-hebergement/indisponibilites/{hebergementId}", hebergementId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].dateArrivee").value(bookedStart.toString()))
+                .andExpect(jsonPath("$[0].dateDepart").value(bookedEnd.toString()))
+                .andExpect(jsonPath("$[0].nomClient").doesNotExist())
+                .andExpect(jsonPath("$[0].emailClient").doesNotExist());
+    }
+
     private long firstIdFromArray(String endpoint) throws Exception {
         MvcResult result = mockMvc.perform(get(endpoint))
                 .andExpect(status().isOk())

@@ -41,6 +41,12 @@ class SecurityEndpointAccessTests {
     }
 
     @Test
+    void anonymousCanReadHebergementBookedRanges() throws Exception {
+        mockMvc.perform(get("/api/reservations-hebergement/indisponibilites/{hebergementId}", 1))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void anonymousCannotReadProtectedOperationalEndpoints() throws Exception {
         mockMvc.perform(get("/api/reservations"))
                 .andExpect(status().isForbidden());

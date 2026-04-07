@@ -85,7 +85,9 @@ public class HebergementService {
         existing.setQuartier(dto.getQuartier());
         existing.setDescription(dto.getDescription());
         existing.setPrixParNuit(dto.getPrixParNuit());
-        existing.setImageUrls(dto.getImageUrls());
+        if (dto.getImageUrls() != null) {
+            existing.setImageUrls(dto.getImageUrls());
+        }
 
         return toDTO(repo.save(existing));
     }

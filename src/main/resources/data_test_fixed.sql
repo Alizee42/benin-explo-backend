@@ -110,7 +110,7 @@ INSERT INTO hebergements (
     'Cotonou',
     'Haie Vive',
     'Hebergement de reference pour les tests.',
-    72.5,
+    72.50,
     '[\"/assets/images/test-hebergement.jpg\"]'
 );
 
