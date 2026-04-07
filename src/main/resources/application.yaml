@@ -3,6 +3,8 @@ server:
 
 # Application properties
 spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/benin_explo}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
@@ -57,6 +59,14 @@ reservation:
     mail:
       enabled: ${RESERVATION_MAIL_ENABLED:false}
       from: ${RESERVATION_MAIL_FROM:no-reply@beninexplo.com}
+    hebergement:
+      mail:
+        enabled: ${HEBERGEMENT_RESERVATION_MAIL_ENABLED:${RESERVATION_MAIL_ENABLED:false}}
+
+utilisateur:
+  notifications:
+    mail:
+      enabled: ${UTILISATEUR_MAIL_ENABLED:${RESERVATION_MAIL_ENABLED:false}}
 
 management:
   endpoints:

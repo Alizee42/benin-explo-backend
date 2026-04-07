@@ -22,4 +22,7 @@ public interface ReservationHebergementRepository extends JpaRepository<Reservat
 
     @EntityGraph(attributePaths = {"hebergement"})
     List<ReservationHebergement> findByEmailClient(String emailClient);
+
+    @EntityGraph(attributePaths = {"hebergement", "utilisateur"})
+    List<ReservationHebergement> findByUtilisateurIdOrderByDateCreationDesc(Long utilisateurId);
 }

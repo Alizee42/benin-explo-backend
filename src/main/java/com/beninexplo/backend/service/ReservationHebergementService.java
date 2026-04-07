@@ -1,8 +1,10 @@
 package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ReservationHebergementDTO;
+import com.beninexplo.backend.dto.ReservationHebergementIndisponibiliteDTO;
 import com.beninexplo.backend.entity.Hebergement;
 import com.beninexplo.backend.entity.ReservationHebergement;
+import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.HebergementRepository;
@@ -23,17 +25,20 @@ public class ReservationHebergementService {
     private final ReservationHebergementRepository reservationRepo;
     private final HebergementRepository hebergementRepo;
     private final ReservationHebergementNotificationService notificationService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public ReservationHebergementService(ReservationHebergementRepository reservationRepo,
                                          HebergementRepository hebergementRepo,
-                                         ReservationHebergementNotificationService notificationService) {
+                                         ReservationHebergementNotificationService notificationService,
+                                         AuthenticatedUserService authenticatedUserService) {
         this.reservationRepo = reservationRepo;
         this.hebergementRepo = hebergementRepo;
         this.notificationService = notificationService;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     private ReservationHebergementDTO toDTO(ReservationHebergement reservation) {
-        return new ReservationHebergementDTO(
+        ReservationHebergementDTO dto = new ReservationHebergementDTO(
                 reservation.getIdReservation(),
                 reservation.getHebergement().getIdHebergement(),
                 reservation.getHebergement().getNom(),
@@ -50,18 +55,28 @@ public class ReservationHebergementService {
                 reservation.getCommentaires(),
                 reservation.getDateCreation()
         );
+        if (reservation.getUtilisateur() != null) {
+            dto.setUtilisateurId(reservation.getUtilisateur().getId());
+        }
+        return dto;
     }
 
-    private ReservationHebergement fromDTO(ReservationHebergementDTO dto) {
+    private ReservationHebergement fromDTO(ReservationHebergementDTO dto, Utilisateur utilisateur) {
         Hebergement hebergement = hebergementRepo.findById(dto.getHebergementId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve"));
 
         ReservationHebergement reservation = new ReservationHebergement(
                 hebergement,
-                dto.getNomClient(),
-                dto.getPrenomClient(),
-                dto.getEmailClient(),
-                dto.getTelephoneClient(),
+                resolveRequiredText(dto.getNomClient(), utilisateur != null ? utilisateur.getNom() : null,
+                        "Le nom du client est obligatoire."),
+                resolveRequiredText(dto.getPrenomClient(), utilisateur != null ? utilisateur.getPrenom() : null,
+                        "Le prenom du client est obligatoire."),
+                utilisateur == null
+                        ? resolveRequiredText(dto.getEmailClient(), null, "L'email du client est obligatoire.")
+                        : resolveRequiredText(utilisateur.getEmail(), dto.getEmailClient(),
+                        "L'email du compte est obligatoire."),
+                resolveRequiredText(dto.getTelephoneClient(), utilisateur != null ? utilisateur.getTelephone() : null,
+                        "Le telephone du client est obligatoire."),
                 dto.getDateArrivee(),
                 dto.getDateDepart(),
                 dto.getNombrePersonnes(),
@@ -72,6 +87,7 @@ public class ReservationHebergementService {
             reservation.setIdReservation(dto.getId());
         }
         reservation.setStatut(normalizeStatus(dto.getStatut()));
+        reservation.setUtilisateur(utilisateur);
 
         return reservation;
     }
@@ -89,11 +105,12 @@ public class ReservationHebergementService {
     }
 
     public ReservationHebergementDTO create(ReservationHebergementDTO dto) {
+        Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
         validateStayDatesForCreate(dto.getDateArrivee(), dto.getDateDepart());
         if (!isAvailable(dto.getHebergementId(), dto.getDateArrivee(), dto.getDateDepart())) {
             throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
-        ReservationHebergement saved = reservationRepo.save(fromDTO(dto));
+        ReservationHebergement saved = reservationRepo.save(fromDTO(dto, currentUser));
         notificationService.sendCreationConfirmation(saved);
         return toDTO(saved);
     }
@@ -112,7 +129,9 @@ public class ReservationHebergementService {
         String previousStatus = normalizeStatus(existing.getStatut());
         existing.setNomClient(dto.getNomClient());
         existing.setPrenomClient(dto.getPrenomClient());
-        existing.setEmailClient(dto.getEmailClient());
+        existing.setEmailClient(existing.getUtilisateur() != null
+                ? existing.getUtilisateur().getEmail()
+                : dto.getEmailClient());
         existing.setTelephoneClient(dto.getTelephoneClient());
         existing.setDateArrivee(dto.getDateArrivee());
         existing.setDateDepart(dto.getDateDepart());
@@ -156,8 +175,31 @@ public class ReservationHebergementService {
                 .collect(Collectors.toList());
     }
 
+    public List<ReservationHebergementIndisponibiliteDTO> getBookedRangesByHebergement(Long hebergementId) {
+        return reservationRepo.findByHebergementIdHebergement(hebergementId).stream()
+                .filter(reservation -> !isCancelledStatus(reservation.getStatut()))
+                .map(reservation -> new ReservationHebergementIndisponibiliteDTO(
+                        reservation.getDateArrivee(),
+                        reservation.getDateDepart()
+                ))
+                .collect(Collectors.toList());
+    }
+
     public List<ReservationHebergementDTO> getByStatut(String statut) {
         return reservationRepo.findByStatut(normalizeStatus(statut)).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ReservationHebergementDTO> getByEmail(String email) {
+        return reservationRepo.findByEmailClient(email).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ReservationHebergementDTO> getMine() {
+        Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
+        return reservationRepo.findByUtilisateurIdOrderByDateCreationDesc(currentUser.getId()).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -214,5 +256,15 @@ public class ReservationHebergementService {
             return "ANNULEE";
         }
         return normalized;
+    }
+
+    private String resolveRequiredText(String preferredValue, String fallbackValue, String errorMessage) {
+        if (preferredValue != null && !preferredValue.trim().isEmpty()) {
+            return preferredValue.trim();
+        }
+        if (fallbackValue != null && !fallbackValue.trim().isEmpty()) {
+            return fallbackValue.trim();
+        }
+        throw new BadRequestException(errorMessage);
     }
 }

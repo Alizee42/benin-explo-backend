@@ -39,6 +39,14 @@ public class ReservationRequestDTO {
     @Positive(message = "Le circuit doit etre un identifiant positif.")
     private Long circuitId;
 
+    private String statut;
+
+    @Positive(message = "Le nombre de personnes doit etre positif.")
+    private Integer nombrePersonnes;
+
+    @Size(max = 1000, message = "Les commentaires ne doivent pas depasser 1000 caracteres.")
+    private String commentaires;
+
     public ReservationRequestDTO() {
     }
 
@@ -92,11 +100,15 @@ public class ReservationRequestDTO {
         this.dateReservation = dateReservation;
     }
 
-    public Long getCircuitId() {
-        return circuitId;
-    }
+    public Long getCircuitId() { return circuitId; }
+    public void setCircuitId(Long circuitId) { this.circuitId = circuitId; }
 
-    public void setCircuitId(Long circuitId) {
-        this.circuitId = circuitId;
-    }
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+
+    public Integer getNombrePersonnes() { return nombrePersonnes; }
+    public void setNombrePersonnes(Integer nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
+
+    public String getCommentaires() { return commentaires; }
+    public void setCommentaires(String commentaires) { this.commentaires = commentaires; }
 }

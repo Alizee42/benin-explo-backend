@@ -53,6 +53,7 @@ public class ReservationHebergementDTO {
 
     private BigDecimal prixTotal;
     private String statut;
+    private Long utilisateurId;
 
     @Size(max = 1000, message = "Les commentaires ne doivent pas depasser 1000 caracteres.")
     private String commentaires;
@@ -127,6 +128,9 @@ public class ReservationHebergementDTO {
 
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
+
+    public Long getUtilisateurId() { return utilisateurId; }
+    public void setUtilisateurId(Long utilisateurId) { this.utilisateurId = utilisateurId; }
 
     public String getCommentaires() { return commentaires; }
     public void setCommentaires(String commentaires) { this.commentaires = commentaires; }

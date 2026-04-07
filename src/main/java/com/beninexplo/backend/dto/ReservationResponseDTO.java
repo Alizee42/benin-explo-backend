@@ -15,6 +15,11 @@ public class ReservationResponseDTO {
     private String telephone;
     private LocalDate dateReservation;
     private Long circuitId;
+    private String circuitNom;
+    private String statut;
+    private Integer nombrePersonnes;
+    private Long utilisateurId;
+    private String commentaires;
 
     /* ---------------- CONSTRUCTEURS ---------------- */
 
@@ -53,4 +58,19 @@ public class ReservationResponseDTO {
 
     public Long getCircuitId() { return circuitId; }
     public void setCircuitId(Long circuitId) { this.circuitId = circuitId; }
+
+    public String getCircuitNom() { return circuitNom; }
+    public void setCircuitNom(String circuitNom) { this.circuitNom = circuitNom; }
+
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+
+    public Integer getNombrePersonnes() { return nombrePersonnes; }
+    public void setNombrePersonnes(Integer nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
+
+    public Long getUtilisateurId() { return utilisateurId; }
+    public void setUtilisateurId(Long utilisateurId) { this.utilisateurId = utilisateurId; }
+
+    public String getCommentaires() { return commentaires; }
+    public void setCommentaires(String commentaires) { this.commentaires = commentaires; }
 }

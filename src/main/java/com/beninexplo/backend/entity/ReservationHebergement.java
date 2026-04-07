@@ -19,6 +19,10 @@ public class ReservationHebergement extends AuditableEntity {
     @JoinColumn(name = "id_hebergement")
     private Hebergement hebergement;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "utilisateur_id")
+    private Utilisateur utilisateur;
+
     private String nomClient;
     private String prenomClient;
     private String emailClient;
@@ -71,6 +75,9 @@ public class ReservationHebergement extends AuditableEntity {
 
     public Hebergement getHebergement() { return hebergement; }
     public void setHebergement(Hebergement hebergement) { this.hebergement = hebergement; }
+
+    public Utilisateur getUtilisateur() { return utilisateur; }
+    public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
 
     public String getNomClient() { return nomClient; }
     public void setNomClient(String nomClient) { this.nomClient = nomClient; }

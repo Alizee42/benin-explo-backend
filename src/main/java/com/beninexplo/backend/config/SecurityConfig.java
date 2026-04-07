@@ -69,9 +69,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/circuits-personnalises").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/devis").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/devis-activites").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/reservations-hebergement").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reservations").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/reservations-hebergement").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/disponibilite").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/indisponibilites/**").permitAll()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
@@ -87,9 +88,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/devis-activites/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/devis-activites/**").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/reservations/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/reservations-hebergement/**").hasRole("ADMIN")

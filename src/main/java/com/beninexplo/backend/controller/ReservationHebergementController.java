@@ -1,6 +1,7 @@
 package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.ReservationHebergementDTO;
+import com.beninexplo.backend.dto.ReservationHebergementIndisponibiliteDTO;
 import com.beninexplo.backend.service.ReservationHebergementService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,6 +35,11 @@ public class ReservationHebergementController {
         return ResponseEntity.ok(reservationService.getAll());
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<ReservationHebergementDTO>> getMine() {
+        return ResponseEntity.ok(reservationService.getMine());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReservationHebergementDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.getById(id));
@@ -61,9 +67,20 @@ public class ReservationHebergementController {
         return ResponseEntity.ok(reservationService.getByHebergement(hebergementId));
     }
 
+    @GetMapping("/indisponibilites/{hebergementId}")
+    public ResponseEntity<List<ReservationHebergementIndisponibiliteDTO>> getBookedRangesByHebergement(
+            @PathVariable Long hebergementId) {
+        return ResponseEntity.ok(reservationService.getBookedRangesByHebergement(hebergementId));
+    }
+
     @GetMapping("/statut/{statut}")
     public ResponseEntity<List<ReservationHebergementDTO>> getByStatut(@PathVariable String statut) {
         return ResponseEntity.ok(reservationService.getByStatut(statut));
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<List<ReservationHebergementDTO>> getByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(reservationService.getByEmail(email));
     }
 
     @GetMapping("/disponibilite")

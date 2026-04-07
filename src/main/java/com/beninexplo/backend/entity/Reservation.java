@@ -21,9 +21,17 @@ public class Reservation extends AuditableEntity {
 
     private LocalDate dateReservation;
 
+    private String statut = "EN_ATTENTE";
+    private Integer nombrePersonnes = 1;
+    private String commentaires;
+
     @ManyToOne
     @JoinColumn(name = "circuit_id")
     private Circuit circuit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "utilisateur_id")
+    private Utilisateur utilisateur;
 
     /* ---------------- CONSTRUCTEURS ---------------- */
 
@@ -61,6 +69,18 @@ public class Reservation extends AuditableEntity {
     public LocalDate getDateReservation() { return dateReservation; }
     public void setDateReservation(LocalDate dateReservation) { this.dateReservation = dateReservation; }
 
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
+
+    public Integer getNombrePersonnes() { return nombrePersonnes; }
+    public void setNombrePersonnes(Integer nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
+
+    public String getCommentaires() { return commentaires; }
+    public void setCommentaires(String commentaires) { this.commentaires = commentaires; }
+
     public Circuit getCircuit() { return circuit; }
     public void setCircuit(Circuit circuit) { this.circuit = circuit; }
+
+    public Utilisateur getUtilisateur() { return utilisateur; }
+    public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
 }

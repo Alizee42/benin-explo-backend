@@ -32,13 +32,16 @@ public class UtilisateurService {
     private final UtilisateurRepository utilisateurRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final UtilisateurNotificationService utilisateurNotificationService;
 
     public UtilisateurService(UtilisateurRepository utilisateurRepository,
                               JwtUtil jwtUtil,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              UtilisateurNotificationService utilisateurNotificationService) {
         this.utilisateurRepository = utilisateurRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.utilisateurNotificationService = utilisateurNotificationService;
     }
 
     public UtilisateurDTO createUser(UtilisateurCreateDTO dto) {
@@ -56,6 +59,7 @@ public class UtilisateurService {
         user.setDateCreation(LocalDateTime.now());
 
         utilisateurRepository.save(user);
+        utilisateurNotificationService.sendWelcomeEmail(user);
         return toDTO(user);
     }
 
@@ -79,6 +83,7 @@ public class UtilisateurService {
                 user.getNom(),
                 user.getPrenom(),
                 user.getEmail(),
+                user.getTelephone(),
                 user.getRole()
         );
     }

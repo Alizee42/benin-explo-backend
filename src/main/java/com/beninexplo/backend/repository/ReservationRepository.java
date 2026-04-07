@@ -10,4 +10,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @EntityGraph(attributePaths = {"circuit"})
     List<Reservation> findAll();
+
+    @EntityGraph(attributePaths = {"circuit", "utilisateur"})
+    List<Reservation> findByUtilisateurIdOrderByDateReservationDesc(Long utilisateurId);
 }

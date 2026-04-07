@@ -6,6 +6,14 @@ reservation:
   notifications:
     mail:
       enabled: ${RESERVATION_MAIL_ENABLED:true}
+    hebergement:
+      mail:
+        enabled: ${HEBERGEMENT_RESERVATION_MAIL_ENABLED:${RESERVATION_MAIL_ENABLED:true}}
+
+utilisateur:
+  notifications:
+    mail:
+      enabled: ${UTILISATEUR_MAIL_ENABLED:${RESERVATION_MAIL_ENABLED:true}}
 
 app:
   bootstrap:
