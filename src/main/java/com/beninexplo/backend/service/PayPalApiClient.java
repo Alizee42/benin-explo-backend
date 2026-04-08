@@ -97,6 +97,50 @@ public class PayPalApiClient {
         return sendJsonRequest("/v2/checkout/orders/" + orderId + "/capture", "POST", objectMapper.createObjectNode(), requestId);
     }
 
+    public boolean verifyWebhookSignature(String authAlgo, String certUrl, String transmissionId,
+                                          String transmissionSig, String transmissionTime,
+                                          String webhookId, String rawBody) {
+        ensurePayPalReady();
+        try {
+            ObjectNode body = objectMapper.createObjectNode();
+            body.put("auth_algo", authAlgo);
+            body.put("cert_url", certUrl);
+            body.put("transmission_id", transmissionId);
+            body.put("transmission_sig", transmissionSig);
+            body.put("transmission_time", transmissionTime);
+            body.put("webhook_id", webhookId);
+            body.set("webhook_event", objectMapper.readTree(rawBody));
+
+            String requestId = transmissionId;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(payPalProperties.getBaseUrl() + "/v1/notifications/verify-webhook-signature"))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Authorization", "Bearer " + getAccessToken())
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("PayPal-Request-Id", requestId)
+                    .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                log.warn("PayPal webhook signature check returned status={}, body={}", response.statusCode(), truncate(response.body()));
+                return false;
+            }
+            JsonNode result = objectMapper.readTree(response.body());
+            boolean verified = "SUCCESS".equalsIgnoreCase(result.path("verification_status").asText(""));
+            log.info("PayPal webhook signature verification: transmissionId={}, status={}", transmissionId, result.path("verification_status").asText(""));
+            return verified;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            log.error("PayPal webhook signature check interrupted", ex);
+            return false;
+        } catch (IOException ex) {
+            log.error("PayPal webhook signature check failed", ex);
+            return false;
+        }
+    }
+
     private JsonNode sendJsonRequest(String path, String method, JsonNode body, String requestId) {
         try {
             log.info("PayPal request start: method={}, path={}, requestId={}, sandbox={}, currency={}, locale={}, body={}",

@@ -18,6 +18,7 @@ public class PayPalProperties {
     private String currency = "EUR";
     private String brandName = "Benin Explo";
     private String locale = "fr-FR";
+    private String webhookId;
 
     public boolean isEnabled() {
         return enabled;
@@ -88,6 +89,14 @@ public class PayPalProperties {
         return sandbox
                 ? "https://api-m.sandbox.paypal.com"
                 : "https://api-m.paypal.com";
+    }
+
+    public String getWebhookId() {
+        return webhookId;
+    }
+
+    public void setWebhookId(String webhookId) {
+        this.webhookId = webhookId;
     }
 
     public boolean isReady() {

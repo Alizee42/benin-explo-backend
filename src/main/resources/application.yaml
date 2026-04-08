@@ -76,6 +76,7 @@ paypal:
   currency: ${PAYPAL_CURRENCY:EUR}
   brand-name: ${PAYPAL_BRAND_NAME:Benin Explo}
   locale: ${PAYPAL_LOCALE:fr-FR}
+  webhook-id: ${PAYPAL_WEBHOOK_ID:}
 
 management:
   endpoints:

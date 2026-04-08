@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/paiements/hebergement/paypal/config").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/paiements/hebergement/paypal/create-order").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/paiements/hebergement/paypal/capture-order").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/webhooks/paypal").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/disponibilite").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservations-hebergement/indisponibilites/**").permitAll()
 

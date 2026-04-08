@@ -14,4 +14,6 @@ public interface PaiementReservationHebergementRepository extends JpaRepository<
     Optional<PaiementReservationHebergement> findByReservationHebergementIdReservation(Long reservationId);
 
     Optional<PaiementReservationHebergement> findByPaypalOrderId(String paypalOrderId);
+
+    Optional<PaiementReservationHebergement> findByPaypalCaptureId(String paypalCaptureId);
 }
