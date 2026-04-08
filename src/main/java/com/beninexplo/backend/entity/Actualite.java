@@ -16,6 +16,9 @@ public class Actualite extends AuditableEntity {
     @Column(length = 10000)
     private String contenu;
 
+    @Column(length = 600)
+    private String resume;
+
     private LocalDateTime datePublication;
 
     @Column(nullable = false)
@@ -23,6 +26,9 @@ public class Actualite extends AuditableEntity {
 
     @Column(nullable = false)
     private boolean publiee = true;
+
+    @Column(length = 1000)
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "image_principale_id")
@@ -54,6 +60,9 @@ public class Actualite extends AuditableEntity {
     public String getContenu() { return contenu; }
     public void setContenu(String contenu) { this.contenu = contenu; }
 
+    public String getResume() { return resume; }
+    public void setResume(String resume) { this.resume = resume; }
+
     public LocalDateTime getDatePublication() { return datePublication; }
     public void setDatePublication(LocalDateTime datePublication) { this.datePublication = datePublication; }
 
@@ -62,6 +71,9 @@ public class Actualite extends AuditableEntity {
 
     public boolean isPubliee() { return publiee; }
     public void setPubliee(boolean publiee) { this.publiee = publiee; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Media getImagePrincipale() { return imagePrincipale; }
     public void setImagePrincipale(Media imagePrincipale) { this.imagePrincipale = imagePrincipale; }

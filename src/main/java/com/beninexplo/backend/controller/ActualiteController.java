@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/actualites")
+@RequestMapping({"/api/admin/actualites", "/admin/actualites"})
 public class ActualiteController {
 
     private final ActualiteService service;
@@ -28,12 +28,12 @@ public class ActualiteController {
 
     @GetMapping
     public List<ActualiteDTO> getAll() {
-        return service.getAll();
+        return service.getAllAdmin();
     }
 
     @GetMapping("/{id}")
     public ActualiteDTO get(@PathVariable Long id) {
-        return service.get(id);
+        return service.getAdmin(id);
     }
 
     @PostMapping

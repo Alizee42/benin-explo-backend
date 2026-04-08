@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/circuits/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hebergements/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/actualites/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/parametres-site/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tarifs-circuit-personnalise/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/villes/**").permitAll()
@@ -140,6 +141,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/media/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/media/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/media/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/admin/actualites/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/admin/actualites/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/admin/actualites/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/actualites/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/parametres-site/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/parametres-site/**").hasRole("ADMIN")

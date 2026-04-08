@@ -32,24 +32,38 @@ public class ActualiteService {
     }
 
     private ActualiteDTO toDTO(Actualite actualite) {
+        String imageUrl = actualite.getImagePrincipale() != null
+                ? actualite.getImagePrincipale().getUrl()
+                : actualite.getImageUrl();
+        String auteurNom = actualite.getAuteur() != null
+                ? (actualite.getAuteur().getPrenom() + " " + actualite.getAuteur().getNom()).trim()
+                : null;
+
         return new ActualiteDTO(
                 actualite.getIdActualite(),
                 actualite.getTitre(),
                 actualite.getContenu(),
+                actualite.getResume(),
                 actualite.getDatePublication() != null ? actualite.getDatePublication().toString() : null,
                 actualite.isALaUne(),
+                actualite.isPubliee(),
                 actualite.getImagePrincipale() != null ? actualite.getImagePrincipale().getIdMedia() : null,
-                actualite.getAuteur() != null ? actualite.getAuteur().getId() : null
+                imageUrl,
+                actualite.getAuteur() != null ? actualite.getAuteur().getId() : null,
+                auteurNom
         );
     }
 
     private void fillEntity(Actualite actualite, ActualiteDTO dto) {
         actualite.setTitre(dto.getTitre());
         actualite.setContenu(dto.getContenu());
-        actualite.setDatePublication(dto.getDatePublication() == null
+        actualite.setResume(dto.getResume() == null || dto.getResume().isBlank() ? null : dto.getResume().trim());
+        actualite.setDatePublication(dto.getDatePublication() == null || dto.getDatePublication().isBlank()
                 ? LocalDateTime.now()
                 : LocalDateTime.parse(dto.getDatePublication()));
         actualite.setALaUne(dto.isALaUne());
+        actualite.setPubliee(dto.isPubliee());
+        actualite.setImageUrl(dto.getImageUrl() == null || dto.getImageUrl().isBlank() ? null : dto.getImageUrl().trim());
 
         if (dto.getImagePrincipaleId() != null) {
             Media media = mediaRepo.findById(dto.getImagePrincipaleId())
@@ -68,12 +82,22 @@ public class ActualiteService {
         }
     }
 
-    public List<ActualiteDTO> getAll() {
-        return repo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    public List<ActualiteDTO> getAllAdmin() {
+        return repo.findAllOrderedForAdmin().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public ActualiteDTO get(Long id) {
+    public ActualiteDTO getAdmin(Long id) {
         return repo.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Actualite introuvable."));
+    }
+
+    public List<ActualiteDTO> getPublished() {
+        return repo.findAllPublishedOrdered().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public ActualiteDTO getPublished(Long id) {
+        return repo.findPublishedById(id)
                 .map(this::toDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Actualite introuvable."));
     }
