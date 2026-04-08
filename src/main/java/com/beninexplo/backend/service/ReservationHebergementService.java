@@ -60,6 +60,7 @@ public class ReservationHebergementService {
                 reservation.getCommentaires(),
                 reservation.getDateCreation()
         );
+        dto.setReferenceReservation(resolveReference(reservation));
         if (reservation.getUtilisateur() != null) {
             dto.setUtilisateurId(reservation.getUtilisateur().getId());
         }
@@ -125,6 +126,7 @@ public class ReservationHebergementService {
             throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
         ReservationHebergement saved = reservationRepo.save(fromDTO(dto, currentUser));
+        saved = ensureReference(saved);
         ensurePaymentPlaceholder(saved);
         notificationService.sendCreationConfirmation(saved);
         return toDTO(saved);
@@ -323,5 +325,28 @@ public class ReservationHebergementService {
             }
             paymentRepository.save(payment);
         }
+    }
+
+    private ReservationHebergement ensureReference(ReservationHebergement reservation) {
+        if (reservation.getReferenceReservation() != null && !reservation.getReferenceReservation().isBlank()) {
+            return reservation;
+        }
+        reservation.setReferenceReservation(buildReference(reservation.getIdReservation()));
+        return reservationRepo.save(reservation);
+    }
+
+    private String resolveReference(ReservationHebergement reservation) {
+        String reference = reservation.getReferenceReservation();
+        if (reference != null && !reference.isBlank()) {
+            return reference;
+        }
+        return buildReference(reservation.getIdReservation());
+    }
+
+    private String buildReference(Long reservationId) {
+        if (reservationId == null) {
+            return null;
+        }
+        return "HEB-" + String.format("%06d", reservationId);
     }
 }

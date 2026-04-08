@@ -28,7 +28,7 @@ public class CircuitPersonnaliseJour {
     private Ville ville;
 
     // Activités sélectionnées pour ce jour
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "circuit_perso_jour_activites",
         joinColumns = @JoinColumn(name = "jour_id"),

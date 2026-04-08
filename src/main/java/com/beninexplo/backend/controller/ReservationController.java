@@ -37,6 +37,11 @@ public class ReservationController {
         return service.getMine();
     }
 
+    @GetMapping("/me/{id}")
+    public ReservationResponseDTO getMineById(@PathVariable Long id) {
+        return service.getMineById(id);
+    }
+
     @GetMapping
     public List<ReservationResponseDTO> getAll() {
         return service.getAll();

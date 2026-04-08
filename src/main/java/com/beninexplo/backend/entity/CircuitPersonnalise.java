@@ -57,13 +57,30 @@ public class CircuitPersonnalise extends AuditableEntity {
     private BigDecimal prixEstime;
     private String devisePrixEstime;
     private BigDecimal prixFinal;
+    @Column(name = "reference_reservation")
+    private String referenceReservation;
 
     // Statut du traitement
     @Enumerated(EnumType.STRING)
     private StatutDemande statut = StatutDemande.EN_ATTENTE;
 
+    @Column(length = 5000)
+    private String commentaireAdmin;
+
+    private LocalDate dateTraitement;
+
+    @Column(length = 5000)
+    private String motifRefus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "utilisateur_id")
+    private Utilisateur utilisateur;
+
+    @OneToOne(mappedBy = "circuitPersonnalise", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PaiementCircuitPersonnalise paiement;
+
     // Relation avec les jours du circuit
-    @OneToMany(mappedBy = "circuitPersonnalise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "circuitPersonnalise", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("numeroJour ASC")
     private List<CircuitPersonnaliseJour> jours = new ArrayList<>();
 
@@ -364,12 +381,60 @@ public class CircuitPersonnalise extends AuditableEntity {
         this.prixFinal = prixFinal;
     }
 
+    public String getReferenceReservation() {
+        return referenceReservation;
+    }
+
+    public void setReferenceReservation(String referenceReservation) {
+        this.referenceReservation = referenceReservation;
+    }
+
     public StatutDemande getStatut() {
         return statut;
     }
 
     public void setStatut(StatutDemande statut) {
         this.statut = statut;
+    }
+
+    public String getCommentaireAdmin() {
+        return commentaireAdmin;
+    }
+
+    public void setCommentaireAdmin(String commentaireAdmin) {
+        this.commentaireAdmin = commentaireAdmin;
+    }
+
+    public LocalDate getDateTraitement() {
+        return dateTraitement;
+    }
+
+    public void setDateTraitement(LocalDate dateTraitement) {
+        this.dateTraitement = dateTraitement;
+    }
+
+    public String getMotifRefus() {
+        return motifRefus;
+    }
+
+    public void setMotifRefus(String motifRefus) {
+        this.motifRefus = motifRefus;
+    }
+
+    public Utilisateur getUtilisateur() {
+        return utilisateur;
+    }
+
+    public void setUtilisateur(Utilisateur utilisateur) {
+        this.utilisateur = utilisateur;
+    }
+
+    public PaiementCircuitPersonnalise getPaiement() {
+        return paiement;
+    }
+
+    public void setPaiement(PaiementCircuitPersonnalise paiement) {
+        this.paiement = paiement;
     }
 
     public List<CircuitPersonnaliseJour> getJours() {

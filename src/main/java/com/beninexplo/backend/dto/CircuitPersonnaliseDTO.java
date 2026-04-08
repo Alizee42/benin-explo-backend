@@ -48,9 +48,20 @@ public class CircuitPersonnaliseDTO {
     private BigDecimal prixEstime;
     private String devisePrixEstime;
     private BigDecimal prixFinal;
+    private String referenceReservation;
     
     // Statut
     private String statut;
+    private Long utilisateurId;
+    private String statutPaiement;
+    private BigDecimal montantPaye;
+    private String devisePaiement;
+    private String paypalOrderId;
+    private String paypalCaptureId;
+    private java.time.LocalDateTime datePaiement;
+    private LocalDate dateTraitement;
+    private String commentaireAdmin;
+    private String motifRefus;
     
     // Jours du circuit
     private List<JourDTO> jours = new ArrayList<>();
@@ -222,9 +233,42 @@ public class CircuitPersonnaliseDTO {
     
     public BigDecimal getPrixFinal() { return prixFinal; }
     public void setPrixFinal(BigDecimal prixFinal) { this.prixFinal = prixFinal; }
+
+    public String getReferenceReservation() { return referenceReservation; }
+    public void setReferenceReservation(String referenceReservation) { this.referenceReservation = referenceReservation; }
     
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
+
+    public Long getUtilisateurId() { return utilisateurId; }
+    public void setUtilisateurId(Long utilisateurId) { this.utilisateurId = utilisateurId; }
+
+    public String getStatutPaiement() { return statutPaiement; }
+    public void setStatutPaiement(String statutPaiement) { this.statutPaiement = statutPaiement; }
+
+    public BigDecimal getMontantPaye() { return montantPaye; }
+    public void setMontantPaye(BigDecimal montantPaye) { this.montantPaye = montantPaye; }
+
+    public String getDevisePaiement() { return devisePaiement; }
+    public void setDevisePaiement(String devisePaiement) { this.devisePaiement = devisePaiement; }
+
+    public String getPaypalOrderId() { return paypalOrderId; }
+    public void setPaypalOrderId(String paypalOrderId) { this.paypalOrderId = paypalOrderId; }
+
+    public String getPaypalCaptureId() { return paypalCaptureId; }
+    public void setPaypalCaptureId(String paypalCaptureId) { this.paypalCaptureId = paypalCaptureId; }
+
+    public java.time.LocalDateTime getDatePaiement() { return datePaiement; }
+    public void setDatePaiement(java.time.LocalDateTime datePaiement) { this.datePaiement = datePaiement; }
+
+    public LocalDate getDateTraitement() { return dateTraitement; }
+    public void setDateTraitement(LocalDate dateTraitement) { this.dateTraitement = dateTraitement; }
+
+    public String getCommentaireAdmin() { return commentaireAdmin; }
+    public void setCommentaireAdmin(String commentaireAdmin) { this.commentaireAdmin = commentaireAdmin; }
+
+    public String getMotifRefus() { return motifRefus; }
+    public void setMotifRefus(String motifRefus) { this.motifRefus = motifRefus; }
     
     public List<JourDTO> getJours() { return jours; }
     public void setJours(List<JourDTO> jours) { this.jours = jours; }

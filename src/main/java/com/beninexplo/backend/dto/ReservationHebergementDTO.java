@@ -23,6 +23,7 @@ public class ReservationHebergementDTO {
     private Long hebergementId;
 
     private String hebergementNom;
+    private String referenceReservation;
 
     @NotBlank(message = "Le nom du client est obligatoire.")
     @Size(max = 100, message = "Le nom du client ne doit pas depasser 100 caracteres.")
@@ -105,6 +106,9 @@ public class ReservationHebergementDTO {
 
     public String getHebergementNom() { return hebergementNom; }
     public void setHebergementNom(String hebergementNom) { this.hebergementNom = hebergementNom; }
+
+    public String getReferenceReservation() { return referenceReservation; }
+    public void setReferenceReservation(String referenceReservation) { this.referenceReservation = referenceReservation; }
 
     public String getNomClient() { return nomClient; }
     public void setNomClient(String nomClient) { this.nomClient = nomClient; }

@@ -43,6 +43,16 @@ public class CircuitPersonnaliseController {
         return ResponseEntity.ok(circuits);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<CircuitPersonnaliseDTO>> getMine() {
+        return ResponseEntity.ok(service.getMine());
+    }
+
+    @GetMapping("/me/{id}")
+    public ResponseEntity<CircuitPersonnaliseDTO> getMineById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getMineById(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CircuitPersonnaliseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
@@ -53,6 +63,8 @@ public class CircuitPersonnaliseController {
                                                                @RequestBody Map<String, Object> updates) {
         String nouveauStatut = (String) updates.get("statut");
         BigDecimal prixFinal = null;
+        String commentaireAdmin = updates.get("commentaireAdmin") instanceof String value ? value : null;
+        String motifRefus = updates.get("motifRefus") instanceof String value ? value : null;
 
         if (updates.containsKey("prixFinal")) {
             Object prixObj = updates.get("prixFinal");
@@ -63,7 +75,7 @@ public class CircuitPersonnaliseController {
             }
         }
 
-        return ResponseEntity.ok(service.updateStatut(id, nouveauStatut, prixFinal));
+        return ResponseEntity.ok(service.updateStatut(id, nouveauStatut, prixFinal, commentaireAdmin, motifRefus));
     }
 
     @DeleteMapping("/{id}")

@@ -1,13 +1,16 @@
 package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CircuitPersonnaliseDTO;
+import com.beninexplo.backend.dto.TarifsCircuitPersonnaliseDTO;
 import com.beninexplo.backend.entity.Activite;
+import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.CircuitPersonnalise;
 import com.beninexplo.backend.entity.CircuitPersonnaliseJour;
 import com.beninexplo.backend.entity.Hebergement;
+import com.beninexplo.backend.entity.PaiementCircuitPersonnalise;
+import com.beninexplo.backend.entity.Utilisateur;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
-import com.beninexplo.backend.dto.TarifsCircuitPersonnaliseDTO;
 import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActiviteRepository;
@@ -18,6 +21,7 @@ import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +41,7 @@ public class CircuitPersonnaliseService {
     private final HebergementRepository hebergementRepository;
     private final ReservationHebergementService reservationHebergementService;
     private final TarifsCircuitPersonnaliseService tarifsCircuitPersonnaliseService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public CircuitPersonnaliseService(CircuitPersonnaliseRepository circuitRepository,
                                       CircuitPersonnaliseJourRepository jourRepository,
@@ -45,7 +50,8 @@ public class CircuitPersonnaliseService {
                                       ActiviteRepository activiteRepository,
                                       HebergementRepository hebergementRepository,
                                       ReservationHebergementService reservationHebergementService,
-                                      TarifsCircuitPersonnaliseService tarifsCircuitPersonnaliseService) {
+                                      TarifsCircuitPersonnaliseService tarifsCircuitPersonnaliseService,
+                                      AuthenticatedUserService authenticatedUserService) {
         this.circuitRepository = circuitRepository;
         this.jourRepository = jourRepository;
         this.zoneRepository = zoneRepository;
@@ -54,16 +60,24 @@ public class CircuitPersonnaliseService {
         this.hebergementRepository = hebergementRepository;
         this.reservationHebergementService = reservationHebergementService;
         this.tarifsCircuitPersonnaliseService = tarifsCircuitPersonnaliseService;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     public CircuitPersonnaliseDTO create(CircuitPersonnaliseDTO dto) {
+        Utilisateur currentUser = authenticatedUserService.getCurrentUserOrNull();
         CircuitPersonnalise entity = new CircuitPersonnalise();
 
-        entity.setNomClient(dto.getNomClient());
-        entity.setPrenomClient(dto.getPrenomClient());
-        entity.setEmailClient(dto.getEmailClient());
-        entity.setTelephoneClient(dto.getTelephoneClient());
-        entity.setMessageClient(dto.getMessageClient());
+        entity.setUtilisateur(currentUser);
+        entity.setNomClient(resolveRequiredText(dto.getNomClient(), currentUser != null ? currentUser.getNom() : null,
+                "Le nom du client est obligatoire."));
+        entity.setPrenomClient(resolveRequiredText(dto.getPrenomClient(), currentUser != null ? currentUser.getPrenom() : null,
+                "Le prenom du client est obligatoire."));
+        entity.setEmailClient(currentUser == null
+                ? resolveRequiredText(dto.getEmailClient(), null, "L'email du client est obligatoire.")
+                : resolveRequiredText(currentUser.getEmail(), dto.getEmailClient(), "L'email du compte est obligatoire."));
+        entity.setTelephoneClient(resolveRequiredText(dto.getTelephoneClient(), currentUser != null ? currentUser.getTelephone() : null,
+                "Le telephone du client est obligatoire."));
+        entity.setMessageClient(blankToNull(dto.getMessageClient()));
         entity.setNombreJours(dto.getNombreJours());
         entity.setNombrePersonnes(dto.getNombrePersonnes());
         entity.setDateVoyageSouhaitee(dto.getDateVoyageSouhaitee());
@@ -116,12 +130,21 @@ public class CircuitPersonnaliseService {
         entity = circuitRepository.findById(entity.getId()).orElseThrow();
         applyPricingBreakdown(entity);
         entity = circuitRepository.save(entity);
+        entity = ensureReference(entity);
 
-        return toDTO(circuitRepository.findById(entity.getId()).orElseThrow());
+        return toDTO(entity);
     }
 
     public List<CircuitPersonnaliseDTO> getAll() {
         return circuitRepository.findAllByOrderByDateCreationDesc()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<CircuitPersonnaliseDTO> getMine() {
+        Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
+        return circuitRepository.findByUtilisateurIdOrEmailClientIgnoreCaseOrderByDateCreationDesc(currentUser.getId(), currentUser.getEmail())
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -133,6 +156,10 @@ public class CircuitPersonnaliseService {
         return toDTO(entity);
     }
 
+    public CircuitPersonnaliseDTO getMineById(Long id) {
+        return toDTO(getOwnedDemande(id));
+    }
+
     public List<CircuitPersonnaliseDTO> getByStatut(String statut) {
         CircuitPersonnalise.StatutDemande statutEnum = CircuitPersonnalise.StatutDemande.valueOf(statut);
         return circuitRepository.findByStatutOrderByDateCreationDesc(statutEnum)
@@ -141,15 +168,39 @@ public class CircuitPersonnaliseService {
                 .collect(Collectors.toList());
     }
 
-    public CircuitPersonnaliseDTO updateStatut(Long id, String nouveauStatut, BigDecimal prixFinal) {
+    public CircuitPersonnaliseDTO updateStatut(Long id,
+                                               String nouveauStatut,
+                                               BigDecimal prixFinal,
+                                               String commentaireAdmin,
+                                               String motifRefus) {
         CircuitPersonnalise entity = circuitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Circuit personnalise non trouve: " + id));
 
         CircuitPersonnalise.StatutDemande statutEnum = CircuitPersonnalise.StatutDemande.valueOf(nouveauStatut);
         entity.setStatut(statutEnum);
+        entity.setDateTraitement(LocalDate.now());
+        entity.setCommentaireAdmin(blankToNull(commentaireAdmin));
 
         if (prixFinal != null) {
             entity.setPrixFinal(prixFinal);
+        }
+
+        if (statutEnum == CircuitPersonnalise.StatutDemande.ACCEPTE) {
+            BigDecimal montantFinal = entity.getPrixFinal();
+            if ((montantFinal == null || montantFinal.signum() <= 0)
+                    && entity.getPrixEstime() != null
+                    && entity.getPrixEstime().signum() > 0) {
+                montantFinal = entity.getPrixEstime();
+            }
+            if (montantFinal == null || montantFinal.signum() <= 0) {
+                throw new BadRequestException("Un prix final valide est requis pour valider ce devis.");
+            }
+            entity.setPrixFinal(montantFinal);
+            entity.setMotifRefus(null);
+        } else if (statutEnum == CircuitPersonnalise.StatutDemande.REFUSE) {
+            entity.setMotifRefus(blankToNull(motifRefus));
+        } else if (motifRefus != null) {
+            entity.setMotifRefus(blankToNull(motifRefus));
         }
 
         entity = circuitRepository.save(entity);
@@ -380,7 +431,26 @@ public class CircuitPersonnaliseService {
         dto.setPrixEstime(entity.getPrixEstime());
         dto.setDevisePrixEstime(entity.getDevisePrixEstime() != null ? entity.getDevisePrixEstime() : "EUR");
         dto.setPrixFinal(entity.getPrixFinal());
+        dto.setReferenceReservation(resolveReference(entity));
         dto.setStatut(entity.getStatut().name());
+        dto.setCommentaireAdmin(entity.getCommentaireAdmin());
+        dto.setDateTraitement(entity.getDateTraitement());
+        dto.setMotifRefus(entity.getMotifRefus());
+        if (entity.getUtilisateur() != null) {
+            dto.setUtilisateurId(entity.getUtilisateur().getId());
+        }
+
+        PaiementCircuitPersonnalise paiement = entity.getPaiement();
+        if (paiement != null) {
+            dto.setStatutPaiement(normalizePaymentStatus(paiement.getStatut()));
+            dto.setMontantPaye(paiement.getMontant());
+            dto.setDevisePaiement(paiement.getDevise());
+            dto.setPaypalOrderId(paiement.getPaypalOrderId());
+            dto.setPaypalCaptureId(paiement.getPaypalCaptureId());
+            dto.setDatePaiement(paiement.getDatePaiement());
+        } else {
+            dto.setStatutPaiement("A_PAYER");
+        }
 
         if (entity.getHebergement() != null) {
             dto.setHebergementId(entity.getHebergement().getIdHebergement());
@@ -432,5 +502,67 @@ public class CircuitPersonnaliseService {
         }
 
         return dto;
+    }
+
+    private CircuitPersonnalise ensureReference(CircuitPersonnalise entity) {
+        if (entity.getId() == null) {
+            return entity;
+        }
+        if (StringUtils.hasText(entity.getReferenceReservation())) {
+            return entity;
+        }
+        entity.setReferenceReservation(buildReference(entity.getId()));
+        return circuitRepository.save(entity);
+    }
+
+    private String resolveReference(CircuitPersonnalise entity) {
+        if (StringUtils.hasText(entity.getReferenceReservation())) {
+            return entity.getReferenceReservation().trim();
+        }
+        if (entity.getId() == null) {
+            return null;
+        }
+        return buildReference(entity.getId());
+    }
+
+    private String buildReference(Long id) {
+        return "CPS-" + String.format("%06d", id);
+    }
+
+    private String normalizePaymentStatus(String status) {
+        if (!StringUtils.hasText(status)) {
+            return "A_PAYER";
+        }
+        return status.trim().toUpperCase();
+    }
+
+    private CircuitPersonnalise getOwnedDemande(Long id) {
+        Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
+        CircuitPersonnalise demande = circuitRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Devis personnalise introuvable."));
+
+        boolean ownedByUserId = demande.getUtilisateur() != null
+                && demande.getUtilisateur().getId() != null
+                && demande.getUtilisateur().getId().equals(currentUser.getId());
+        boolean ownedByEmail = StringUtils.hasText(demande.getEmailClient())
+                && demande.getEmailClient().trim().equalsIgnoreCase(currentUser.getEmail());
+        if (!ownedByUserId && !ownedByEmail) {
+            throw new ResourceNotFoundException("Devis personnalise introuvable pour ce compte.");
+        }
+        return demande;
+    }
+
+    private String resolveRequiredText(String preferredValue, String fallbackValue, String errorMessage) {
+        if (preferredValue != null && !preferredValue.trim().isEmpty()) {
+            return preferredValue.trim();
+        }
+        if (fallbackValue != null && !fallbackValue.trim().isEmpty()) {
+            return fallbackValue.trim();
+        }
+        throw new BadRequestException(errorMessage);
+    }
+
+    private String blankToNull(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 }

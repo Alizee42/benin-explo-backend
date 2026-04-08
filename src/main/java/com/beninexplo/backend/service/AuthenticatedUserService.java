@@ -23,6 +23,15 @@ public class AuthenticatedUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
     }
 
+    public Utilisateur getCurrentUserOrNull() {
+        try {
+            String email = getCurrentUserEmail();
+            return utilisateurRepository.findByEmail(email).orElse(null);
+        } catch (BadRequestException ex) {
+            return null;
+        }
+    }
+
     private String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

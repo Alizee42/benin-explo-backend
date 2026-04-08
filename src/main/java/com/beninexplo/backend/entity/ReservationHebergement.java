@@ -30,6 +30,7 @@ public class ReservationHebergement extends AuditableEntity {
     private String prenomClient;
     private String emailClient;
     private String telephoneClient;
+    private String referenceReservation;
 
     private LocalDate dateArrivee;
     private LocalDate dateDepart;
@@ -96,6 +97,9 @@ public class ReservationHebergement extends AuditableEntity {
 
     public String getTelephoneClient() { return telephoneClient; }
     public void setTelephoneClient(String telephoneClient) { this.telephoneClient = telephoneClient; }
+
+    public String getReferenceReservation() { return referenceReservation; }
+    public void setReferenceReservation(String referenceReservation) { this.referenceReservation = referenceReservation; }
 
     public LocalDate getDateArrivee() { return dateArrivee; }
     public void setDateArrivee(LocalDate dateArrivee) { this.dateArrivee = dateArrivee; }

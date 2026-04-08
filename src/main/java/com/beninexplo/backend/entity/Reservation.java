@@ -24,6 +24,8 @@ public class Reservation extends AuditableEntity {
     private String statut = "EN_ATTENTE";
     private Integer nombrePersonnes = 1;
     private String commentaires;
+    @Column(name = "reference_reservation")
+    private String referenceReservation;
 
     @ManyToOne
     @JoinColumn(name = "circuit_id")
@@ -32,6 +34,9 @@ public class Reservation extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id")
     private Utilisateur utilisateur;
+
+    @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PaiementReservationCircuit paiement;
 
     /* ---------------- CONSTRUCTEURS ---------------- */
 
@@ -78,9 +83,15 @@ public class Reservation extends AuditableEntity {
     public String getCommentaires() { return commentaires; }
     public void setCommentaires(String commentaires) { this.commentaires = commentaires; }
 
+    public String getReferenceReservation() { return referenceReservation; }
+    public void setReferenceReservation(String referenceReservation) { this.referenceReservation = referenceReservation; }
+
     public Circuit getCircuit() { return circuit; }
     public void setCircuit(Circuit circuit) { this.circuit = circuit; }
 
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
+
+    public PaiementReservationCircuit getPaiement() { return paiement; }
+    public void setPaiement(PaiementReservationCircuit paiement) { this.paiement = paiement; }
 }
