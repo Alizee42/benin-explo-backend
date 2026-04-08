@@ -47,7 +47,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/tombola").permitAll()
+                        .requestMatchers("/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/tombola/inscription").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/images/**").permitAll()

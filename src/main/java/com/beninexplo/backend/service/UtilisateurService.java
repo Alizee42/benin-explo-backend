@@ -2,6 +2,7 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.LoginRequestDTO;
 import com.beninexplo.backend.dto.LoginResponseDTO;
+import com.beninexplo.backend.dto.UpdateProfilRequestDTO;
 import com.beninexplo.backend.dto.UtilisateurCreateDTO;
 import com.beninexplo.backend.dto.UtilisateurDTO;
 import com.beninexplo.backend.entity.Utilisateur;
@@ -148,6 +149,24 @@ public class UtilisateurService {
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public UtilisateurDTO updateCurrentUserProfile(String email, UpdateProfilRequestDTO dto) {
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+
+        if (org.springframework.util.StringUtils.hasText(dto.getNom())) {
+            user.setNom(dto.getNom().trim());
+        }
+        if (org.springframework.util.StringUtils.hasText(dto.getPrenom())) {
+            user.setPrenom(dto.getPrenom().trim());
+        }
+        if (dto.getTelephone() != null) {
+            user.setTelephone(dto.getTelephone().isBlank() ? null : dto.getTelephone().trim());
+        }
+
+        utilisateurRepository.save(user);
+        return toDTO(user);
     }
 
     public void deleteUser(Long id) {
