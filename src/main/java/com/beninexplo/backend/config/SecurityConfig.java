@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/villes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/zones/**").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/circuits-personnalises").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/devis").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/devis-activites").permitAll()

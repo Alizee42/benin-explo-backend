@@ -59,6 +59,11 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET:}
   folder: ${CLOUDINARY_FOLDER:benin-explo}
 
+contact:
+  mail:
+    enabled: ${CONTACT_MAIL_ENABLED:false}
+    fallback: ${CONTACT_MAIL_FALLBACK:contact@beninexplo.com}
+
 reservation:
   notifications:
     mail:
