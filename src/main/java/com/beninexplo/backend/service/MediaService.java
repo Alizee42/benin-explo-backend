@@ -5,17 +5,16 @@ import com.beninexplo.backend.entity.Media;
 import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.MediaRepository;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -23,9 +22,14 @@ import java.util.stream.Collectors;
 public class MediaService {
 
     private final MediaRepository repo;
+    private final Cloudinary cloudinary;
 
-    public MediaService(MediaRepository repo) {
+    @Value("${cloudinary.folder:benin-explo}")
+    private String cloudinaryFolder;
+
+    public MediaService(MediaRepository repo, Cloudinary cloudinary) {
         this.repo = repo;
+        this.cloudinary = cloudinary;
     }
 
     private MediaDTO toDTO(Media media) {
@@ -74,6 +78,7 @@ public class MediaService {
         repo.deleteById(id);
     }
 
+    @SuppressWarnings("unchecked")
     public MediaDTO uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Le fichier image est obligatoire.");
@@ -84,24 +89,26 @@ public class MediaService {
             throw new BadRequestException("Seuls les fichiers image sont autorises.");
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : ".jpg";
-        String uniqueFilename = UUID.randomUUID() + extension;
-
-        Path uploadDir = Paths.get("uploads");
         try {
-            Files.createDirectories(uploadDir);
-            Files.copy(file.getInputStream(), uploadDir.resolve(uniqueFilename), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new IllegalStateException("Impossible de sauvegarder le fichier image.", e);
-        }
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder",        cloudinaryFolder,
+                            "resource_type", "image",
+                            "overwrite",     false
+                    )
+            );
 
-        Media media = new Media();
-        media.setUrl("/uploads/" + uniqueFilename);
-        media.setType("image");
-        media.setDescription(originalFilename);
-        return toDTO(repo.save(media));
+            String secureUrl = (String) uploadResult.get("secure_url");
+
+            Media media = new Media();
+            media.setUrl(secureUrl);
+            media.setType("image");
+            media.setDescription(file.getOriginalFilename());
+            return toDTO(repo.save(media));
+
+        } catch (IOException e) {
+            throw new IllegalStateException("Erreur lors de l upload sur Cloudinary.", e);
+        }
     }
 }

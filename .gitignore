@@ -37,6 +37,7 @@ build/
 
 # Ignore uploaded/generated images stored at runtime
 src/uploads/
+uploads/
 
 # Local backend runtime logs
 backend-*.log
