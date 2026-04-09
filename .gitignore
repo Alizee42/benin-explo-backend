@@ -35,6 +35,10 @@ build/
 # macOS
 .DS_Store
 
+# Variables d'environnement locales (ne jamais commiter)
+.env
+.env.local
+
 # Ignore uploaded/generated images stored at runtime
 src/uploads/
 uploads/

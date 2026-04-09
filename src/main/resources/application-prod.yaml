@@ -1,6 +1,6 @@
 image:
   storage:
-    location: ${UPLOADS_DIR}
+    location: ${UPLOADS_DIR:file:uploads/}
 
 reservation:
   notifications:
