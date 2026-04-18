@@ -1,0 +1,1 @@
+ALTER TABLE reservations ADD COLUMN IF NOT EXISTS commentaires VARCHAR(1000);
