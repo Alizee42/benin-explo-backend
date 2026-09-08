@@ -152,6 +152,7 @@ class PayPalPaymentOrchestratorTests {
         @Override public void setPaypalCaptureId(String paypalCaptureId) { this.paypalCaptureId = paypalCaptureId; }
         @Override public void setPaypalPayerId(String paypalPayerId) { this.paypalPayerId = paypalPayerId; }
         @Override public void setPaypalRequestId(String paypalRequestId) { this.paypalRequestId = paypalRequestId; }
+        @Override public LocalDateTime getDatePaiement() { return datePaiement; }
         @Override public void setDatePaiement(LocalDateTime datePaiement) { this.datePaiement = datePaiement; }
         @Override public void setOrderPayload(String orderPayload) { this.orderPayload = orderPayload; }
         @Override public void setCapturePayload(String capturePayload) { this.capturePayload = capturePayload; }

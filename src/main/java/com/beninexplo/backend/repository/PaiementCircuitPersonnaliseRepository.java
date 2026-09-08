@@ -8,4 +8,8 @@ import java.util.Optional;
 public interface PaiementCircuitPersonnaliseRepository extends JpaRepository<PaiementCircuitPersonnalise, Long> {
 
     Optional<PaiementCircuitPersonnalise> findByCircuitPersonnaliseId(Long circuitPersonnaliseId);
+
+    Optional<PaiementCircuitPersonnalise> findByPaypalOrderId(String paypalOrderId);
+
+    Optional<PaiementCircuitPersonnalise> findByPaypalCaptureId(String paypalCaptureId);
 }

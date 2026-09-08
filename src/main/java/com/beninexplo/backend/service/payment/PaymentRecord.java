@@ -34,6 +34,7 @@ public interface PaymentRecord {
 
     void setPaypalRequestId(String paypalRequestId);
 
+    LocalDateTime getDatePaiement();
     void setDatePaiement(LocalDateTime datePaiement);
 
     void setOrderPayload(String orderPayload);
