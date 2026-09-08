@@ -1,0 +1,37 @@
+services:
+  backend:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - uploads:/app/uploads
+    expose:
+      - "8080"
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      - API_DOMAIN=${API_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  uploads:
+  caddy_data:
+  caddy_config:
