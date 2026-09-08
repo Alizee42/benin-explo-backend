@@ -274,29 +274,6 @@ class EndpointSuccessFlowTests {
                 .andExpect(content().string("document de test backend"));
     }
 
-    @Test
-    void publicCanCreateDevisSuccessfully() throws Exception {
-        long circuitId = firstIdFromArray("/api/circuits");
-
-        String payload = """
-                {
-                  "nom": "Doe",
-                  "prenom": "Jane",
-                  "email": "jane.%d@example.com",
-                  "telephone": "+22901020304",
-                  "message": "Je souhaite recevoir un devis detaille pour ce circuit.",
-                  "circuitId": %d
-                }
-                """.formatted(System.nanoTime(), circuitId);
-
-        mockMvc.perform(post("/api/devis")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nom").value("Doe"))
-                .andExpect(jsonPath("$.prenom").value("Jane"))
-                .andExpect(jsonPath("$.circuitId").value(circuitId));
-    }
 
     @Test
     @WithMockUser(username = "reservation.tests@example.com", roles = "ADMIN")

@@ -147,45 +147,6 @@ class SecondaryEndpointSuccessFlowTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void adminCanCreateAndUpdateVehiculeSuccessfully() throws Exception {
-        String suffix = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
-        MvcResult createResult = mockMvc.perform(post("/admin/vehicules")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "marque": "Toyota",
-                                  "modele": "Land Cruiser",
-                                  "matricule": "TEST-%s",
-                                  "annee": 2023,
-                                  "disponible": true
-                                }
-                                """.formatted(suffix)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.marque").value("Toyota"))
-                .andReturn();
-
-        long vehiculeId = readId(createResult, "id");
-
-        mockMvc.perform(put("/admin/vehicules/{id}", vehiculeId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "marque": "Toyota",
-                                  "modele": "Hiace",
-                                  "matricule": "TEST-%s",
-                                  "annee": 2024,
-                                  "disponible": false
-                                }
-                                """.formatted(suffix)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(vehiculeId))
-                .andExpect(jsonPath("$.modele").value("Hiace"))
-                .andExpect(jsonPath("$.disponible").value(false));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
     void adminCanCreateAndUpdateActualiteSuccessfully() throws Exception {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
 
@@ -216,82 +177,6 @@ class SecondaryEndpointSuccessFlowTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(actualiteId))
                 .andExpect(jsonPath("$.titre").value("Actualite " + suffix + " Maj"));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void adminCanCreateAndUpdateCircuitActiviteSuccessfully() throws Exception {
-        long circuitId = firstIdFromArray("/api/circuits", "id");
-        long activiteId = firstIdFromArray("/api/activites", "id");
-
-        MvcResult createResult = mockMvc.perform(post("/api/circuit-activites")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "circuitId": %d,
-                                  "activiteId": %d,
-                                  "ordre": 1,
-                                  "jourIndicatif": 1
-                                }
-                                """.formatted(circuitId, activiteId)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.circuitId").value(circuitId))
-                .andExpect(jsonPath("$.activiteId").value(activiteId))
-                .andReturn();
-
-        long associationId = readId(createResult, "id");
-
-        mockMvc.perform(put("/api/circuit-activites/{id}", associationId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "circuitId": %d,
-                                  "activiteId": %d,
-                                  "ordre": 2,
-                                  "jourIndicatif": 2
-                                }
-                                """.formatted(circuitId, activiteId)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(associationId))
-                .andExpect(jsonPath("$.ordre").value(2))
-                .andExpect(jsonPath("$.jourIndicatif").value(2));
-    }
-
-    @Test
-    void publicCanCreateDevisActiviteSuccessfully() throws Exception {
-        long circuitId = firstIdFromArray("/api/circuits", "id");
-        long activiteId = firstIdFromArray("/api/activites", "id");
-
-        MvcResult devisResult = mockMvc.perform(post("/api/devis")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "nom": "Doe",
-                                  "prenom": "Janet",
-                                  "email": "devis.activite.%d@example.com",
-                                  "telephone": "+22901020310",
-                                  "message": "Je souhaite un devis avec activite complementaire.",
-                                  "circuitId": %d
-                                }
-                                """.formatted(System.nanoTime(), circuitId)))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        long devisId = readId(devisResult, "id");
-
-        mockMvc.perform(post("/api/devis-activites")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "devisId": %d,
-                                  "activiteId": %d,
-                                  "quantite": 3
-                                }
-                                """.formatted(devisId, activiteId)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.devisId").value(devisId))
-                .andExpect(jsonPath("$.activiteId").value(activiteId))
-                .andExpect(jsonPath("$.quantite").value(3));
     }
 
     @Test

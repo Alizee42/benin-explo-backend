@@ -58,7 +58,6 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/activites/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories-activites/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/circuit-activites/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/circuits/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hebergements/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
@@ -70,8 +69,6 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/circuits-personnalises").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/devis").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/devis-activites").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/reservations-hebergement").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/paiements/circuit/paypal/config").authenticated()
@@ -98,11 +95,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/circuits-personnalises/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/circuits-personnalises/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/devis/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/devis/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/devis-activites/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/devis-activites/**").hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.GET, "/api/reservations/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations/me/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/reservations/**").hasRole("ADMIN")
@@ -125,10 +117,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/categories-activites/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/categories-activites/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/categories-activites/**").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/api/circuit-activites/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/circuit-activites/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/circuit-activites/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/circuits/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/circuits/**").hasRole("ADMIN")

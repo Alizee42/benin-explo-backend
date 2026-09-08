@@ -5,8 +5,6 @@ DELETE FROM circuit_personnalise_jours;
 DELETE FROM circuits_personnalises;
 DELETE FROM reservations_hebergement;
 DELETE FROM reservations;
-DELETE FROM devis;
-DELETE FROM circuit_activites;
 DELETE FROM circuits;
 DELETE FROM activites;
 DELETE FROM hebergements;

@@ -104,28 +104,6 @@ class EndpointBusinessRuleTests {
     }
 
     @Test
-    void devisWithUnknownCircuitReturnsStructuredNotFound() throws Exception {
-        String payload = """
-                {
-                  "nom": "Doe",
-                  "prenom": "Jane",
-                  "email": "jane@example.com",
-                  "telephone": "0102030405",
-                  "message": "Besoin d'un devis",
-                  "circuitId": 999999
-                }
-                """;
-
-        mockMvc.perform(post("/api/devis")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.path").value("/api/devis"));
-    }
-
-    @Test
     @WithMockUser(username = "business.rule.tests@example.com", roles = "USER")
     void reservationWithUnknownCircuitReturnsStructuredNotFound() throws Exception {
         // POST /api/reservations exige un utilisateur authentifié (SecurityConfig) ; sans
