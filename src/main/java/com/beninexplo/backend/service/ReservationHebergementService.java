@@ -122,6 +122,13 @@ public class ReservationHebergementService {
     public ReservationHebergementDTO create(ReservationHebergementDTO dto) {
         Utilisateur currentUser = authenticatedUserService.getRequiredCurrentUser();
         validateStayDatesForCreate(dto.getDateArrivee(), dto.getDateDepart());
+
+        // Verrou pessimiste sur l'hébergement : bloque toute création/modification concurrente
+        // de réservation pour ce même hébergement jusqu'à la fin de la transaction, ce qui rend
+        // le contrôle de disponibilité ci-dessous atomique (plus de fenêtre de double-booking).
+        hebergementRepo.findByIdForUpdate(dto.getHebergementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve"));
+
         if (!isAvailable(dto.getHebergementId(), dto.getDateArrivee(), dto.getDateDepart())) {
             throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
         }
@@ -139,8 +146,14 @@ public class ReservationHebergementService {
         validateStayDatesForUpdate(dto.getDateArrivee(), dto.getDateDepart());
         boolean datesChanged = !existing.getDateArrivee().equals(dto.getDateArrivee())
                 || !existing.getDateDepart().equals(dto.getDateDepart());
-        if (datesChanged && !isAvailableForUpdate(existing, dto.getDateArrivee(), dto.getDateDepart())) {
-            throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
+        if (datesChanged) {
+            // Même verrou pessimiste que pour la création, pour rendre le re-contrôle de
+            // disponibilité atomique lors d'un changement de dates.
+            hebergementRepo.findByIdForUpdate(existing.getHebergement().getIdHebergement())
+                    .orElseThrow(() -> new ResourceNotFoundException("Hebergement non trouve"));
+            if (!isAvailableForUpdate(existing, dto.getDateArrivee(), dto.getDateDepart())) {
+                throw new BadRequestException("L'hebergement n'est pas disponible pour ces dates");
+            }
         }
 
         String previousStatus = normalizeStatus(existing.getStatut());
