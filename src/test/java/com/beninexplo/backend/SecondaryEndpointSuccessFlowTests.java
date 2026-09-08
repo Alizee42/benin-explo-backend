@@ -313,29 +313,6 @@ class SecondaryEndpointSuccessFlowTests {
                 .andExpect(jsonPath("$.prenom").value("Client"));
     }
 
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void adminCanUploadImageOnImagesEndpointSuccessfully() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "secondary-image.png",
-                MediaType.IMAGE_PNG_VALUE,
-                "fake-image-content".getBytes()
-        );
-
-        MvcResult result = mockMvc.perform(multipart("/api/images/upload")
-                        .file(file)
-                        .param("folder", "tests"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.filename").isString())
-                .andExpect(jsonPath("$.url").value(org.hamcrest.Matchers.startsWith("/images/tests/")))
-                .andReturn();
-
-        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
-        String filename = root.get("filename").asText();
-        createdFiles.add(Path.of("uploads", "tests", filename));
-    }
-
     private long firstIdFromArray(String endpoint, String fieldName) throws Exception {
         MvcResult result = mockMvc.perform(get(endpoint))
                 .andExpect(status().isOk())

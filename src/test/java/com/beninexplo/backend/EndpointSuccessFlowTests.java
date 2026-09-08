@@ -1,5 +1,10 @@
 package com.beninexplo.backend;
 
+import com.beninexplo.backend.entity.Utilisateur;
+import com.beninexplo.backend.repository.UtilisateurRepository;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.Uploader;
+import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +26,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -35,13 +46,53 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class EndpointSuccessFlowTests {
 
+    /** Signature PNG minimale (89 50 4E 47 0D 0A 1A 0A) exigée par MediaService. */
+    private static final byte[] PNG_MAGIC_BYTES = {
+            (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
+    };
+
+    /** Signature MP4 minimale ('ftyp' box à l'offset 4) exigée par MediaService. */
+    private static final byte[] MP4_MAGIC_BYTES = {
+            0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D
+    };
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
+
+    /**
+     * /api/media/upload délègue à Cloudinary (service tiers) : on mocke le bean pour ne pas
+     * dépendre d'un vrai compte Cloudinary en test. Uploader n'étant pas final, Mockito
+     * (mock-maker-subclass) peut le sous-classer.
+     */
+    @MockitoBean
+    private Cloudinary cloudinary;
+
     private final List<Path> createdFiles = new ArrayList<>();
+
+    /**
+     * getRequiredCurrentUser() (utilisé par les services de réservation) cherche l'utilisateur
+     * authentifié par email en base — @WithMockUser seul ne suffit pas, il faut un utilisateur
+     * réel dont l'email correspond au "username" simulé.
+     */
+    private void ensureMockUserExists(String email) {
+        if (utilisateurRepository.findByEmail(email).isPresent()) {
+            return;
+        }
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setNom("Test");
+        utilisateur.setPrenom("Admin");
+        utilisateur.setEmail(email);
+        utilisateur.setTelephone("+22900000000");
+        utilisateur.setMotDePasse("hash");
+        utilisateur.setRole("ADMIN");
+        utilisateurRepository.save(utilisateur);
+    }
 
     @AfterEach
     void cleanupFiles() throws Exception {
@@ -144,25 +195,69 @@ class EndpointSuccessFlowTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("unchecked")
     void adminCanUploadMediaImageSuccessfully() throws Exception {
+        // /api/media/upload délègue à Cloudinary (MediaService), un service tiers réel qu'on ne
+        // veut pas appeler en test : on mocke le bean Cloudinary pour simuler une réponse d'upload.
+        Uploader uploader = mock(Uploader.class);
+        when(cloudinary.uploader()).thenReturn(uploader);
+        when(uploader.upload(any(byte[].class), anyMap()))
+                .thenReturn(ObjectUtils.asMap("secure_url", "https://res.cloudinary.com/demo/image/upload/media-success.png"));
+
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "media-success.png",
                 MediaType.IMAGE_PNG_VALUE,
-                "fake-image-content".getBytes()
+                PNG_MAGIC_BYTES
         );
 
-        MvcResult result = mockMvc.perform(multipart("/api/media/upload").file(file))
+        mockMvc.perform(multipart("/api/media/upload").file(file))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.type").value("image"))
                 .andExpect(jsonPath("$.description").value("media-success.png"))
-                .andExpect(jsonPath("$.url").isString())
-                .andReturn();
+                .andExpect(jsonPath("$.url").value("https://res.cloudinary.com/demo/image/upload/media-success.png"));
+    }
 
-        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
-        String url = root.get("url").asText();
-        String filename = url.replaceFirst("^/uploads/", "");
-        createdFiles.add(Path.of("uploads", filename));
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @SuppressWarnings("unchecked")
+    void adminCanUploadMediaVideoSuccessfully() throws Exception {
+        // MediaDTO accepte le type "video" ; MediaService doit router vers Cloudinary avec
+        // resource_type=video (et non "image" en dur) et valider les magic bytes MP4/WebM.
+        Uploader uploader = mock(Uploader.class);
+        when(cloudinary.uploader()).thenReturn(uploader);
+        when(uploader.upload(any(byte[].class), anyMap()))
+                .thenReturn(ObjectUtils.asMap("secure_url", "https://res.cloudinary.com/demo/video/upload/media-success.mp4"));
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "media-success.mp4",
+                "video/mp4",
+                MP4_MAGIC_BYTES
+        );
+
+        mockMvc.perform(multipart("/api/media/upload").file(file))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.type").value("video"))
+                .andExpect(jsonPath("$.description").value("media-success.mp4"))
+                .andExpect(jsonPath("$.url").value("https://res.cloudinary.com/demo/video/upload/media-success.mp4"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminUploadingNonImageContentToMediaEndpointIsRejected() throws Exception {
+        // MediaService valide désormais les magic bytes réels du fichier, comme
+        // ImageStorageServiceImpl le faisait déjà pour le stockage local (supprimé) : un
+        // contenu texte déguisé en image/png doit être rejeté avant tout appel à Cloudinary.
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "fake.png",
+                MediaType.IMAGE_PNG_VALUE,
+                "not-really-an-image".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/media/upload").file(file))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -204,7 +299,11 @@ class EndpointSuccessFlowTests {
     }
 
     @Test
-    void publicCanCreateReservationSuccessfully() throws Exception {
+    @WithMockUser(username = "reservation.tests@example.com", roles = "ADMIN")
+    void authenticatedUserCanCreateReservationSuccessfully() throws Exception {
+        // POST /api/reservations exige un utilisateur authentifié (SecurityConfig) :
+        // ReservationService#create() résout le client via l'utilisateur connecté, pas via le payload.
+        ensureMockUserExists("reservation.tests@example.com");
         long circuitId = firstIdFromArray("/api/circuits");
 
         String payload = """
@@ -228,8 +327,9 @@ class EndpointSuccessFlowTests {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "reservation.tests@example.com", roles = "ADMIN")
     void adminCanCreateAndUpdateReservationHebergementSuccessfully() throws Exception {
+        ensureMockUserExists("reservation.tests@example.com");
         LocalDate dateArrivee = LocalDate.now().plusDays(20);
         LocalDate dateDepart = LocalDate.now().plusDays(23);
         long hebergementId = createTestHebergement();
@@ -284,8 +384,9 @@ class EndpointSuccessFlowTests {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "reservation.tests@example.com", roles = "ADMIN")
     void adminCanExposeOnlyBookedRangesForPublicCalendarSuccessfully() throws Exception {
+        ensureMockUserExists("reservation.tests@example.com");
         LocalDate bookedStart = LocalDate.now().plusDays(28);
         LocalDate bookedEnd = LocalDate.now().plusDays(31);
         long hebergementId = createTestHebergement();

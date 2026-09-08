@@ -1,5 +1,7 @@
 package com.beninexplo.backend;
 
+import com.beninexplo.backend.entity.Utilisateur;
+import com.beninexplo.backend.repository.UtilisateurRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -27,6 +31,27 @@ class EndpointBusinessRuleTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
+
+    /**
+     * getRequiredCurrentUser() (utilisé par ReservationService) cherche l'utilisateur
+     * authentifié par email en base — @WithMockUser seul ne suffit pas.
+     */
+    private void ensureMockUserExists(String email) {
+        if (utilisateurRepository.findByEmail(email).isPresent()) {
+            return;
+        }
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setNom("Test");
+        utilisateur.setPrenom("User");
+        utilisateur.setEmail(email);
+        utilisateur.setTelephone("+22900000000");
+        utilisateur.setMotDePasse("hash");
+        utilisateur.setRole("USER");
+        utilisateurRepository.save(utilisateur);
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -101,17 +126,21 @@ class EndpointBusinessRuleTests {
     }
 
     @Test
+    @WithMockUser(username = "business.rule.tests@example.com", roles = "USER")
     void reservationWithUnknownCircuitReturnsStructuredNotFound() throws Exception {
+        // POST /api/reservations exige un utilisateur authentifié (SecurityConfig) ; sans
+        // @WithMockUser la requête est bloquée à 403 avant même d'atteindre la règle métier.
+        ensureMockUserExists("business.rule.tests@example.com");
         String payload = """
                 {
                   "nom": "Doe",
                   "prenom": "John",
                   "email": "john@example.com",
                   "telephone": "0102030405",
-                  "dateReservation": "2026-04-15",
+                  "dateReservation": "%s",
                   "circuitId": 999999
                 }
-                """;
+                """.formatted(LocalDate.now().plusDays(15));
 
         mockMvc.perform(post("/api/reservations")
                         .contentType(MediaType.APPLICATION_JSON)

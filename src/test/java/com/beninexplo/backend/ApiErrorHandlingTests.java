@@ -1,5 +1,7 @@
 package com.beninexplo.backend;
 
+import com.beninexplo.backend.entity.Utilisateur;
+import com.beninexplo.backend.repository.UtilisateurRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,8 +22,33 @@ class ApiErrorHandlingTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
+
+    /**
+     * getRequiredCurrentUser() (utilisé par les services de réservation) cherche l'utilisateur
+     * authentifié par email en base — @WithMockUser seul ne suffit pas.
+     */
+    private void ensureMockUserExists(String email) {
+        if (utilisateurRepository.findByEmail(email).isPresent()) {
+            return;
+        }
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setNom("Test");
+        utilisateur.setPrenom("Admin");
+        utilisateur.setEmail(email);
+        utilisateur.setTelephone("+22900000000");
+        utilisateur.setMotDePasse("hash");
+        utilisateur.setRole("ADMIN");
+        utilisateurRepository.save(utilisateur);
+    }
+
     @Test
+    @WithMockUser(username = "api.error.tests@example.com", roles = "ADMIN")
     void invalidReservationHebergementPayloadReturnsStructuredBadRequest() throws Exception {
+        // POST /api/reservations-hebergement exige un utilisateur authentifié (SecurityConfig) ;
+        // sans @WithMockUser la requête est bloquée à 403 avant même la validation du payload.
+        ensureMockUserExists("api.error.tests@example.com");
         String payload = """
                 {
                   "hebergementId": 1,
