@@ -138,7 +138,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/hebergements/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/hebergements/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/api/images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/media/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/media/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/media/**").hasRole("ADMIN")
