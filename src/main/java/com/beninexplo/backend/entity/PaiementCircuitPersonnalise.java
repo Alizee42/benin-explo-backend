@@ -11,12 +11,14 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
+import com.beninexplo.backend.service.payment.PaymentRecord;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "paiements_circuit_personnalise")
-public class PaiementCircuitPersonnalise extends AuditableEntity {
+public class PaiementCircuitPersonnalise extends AuditableEntity implements PaymentRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
