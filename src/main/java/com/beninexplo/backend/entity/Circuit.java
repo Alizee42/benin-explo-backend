@@ -44,6 +44,10 @@ public class Circuit extends AuditableEntity {
     @Column(columnDefinition = "text")
     private String galerie;
 
+    // Ids des activites associees au circuit, stockes en JSON (TEXT)
+    @Column(columnDefinition = "text")
+    private String activiteIds;
+
     // Programme jour par jour stocké en JSON (TEXT)
     @Column(columnDefinition = "text")
     private String programme;
@@ -59,10 +63,7 @@ public class Circuit extends AuditableEntity {
     @Column(columnDefinition = "text")
     private String nonInclus;
 
-    // Sections tourisme / aventures (listes de chaînes)
-    @Column(columnDefinition = "text")
-    private String tourisme;
-
+    // Section aventures (liste de chaînes)
     @Column(columnDefinition = "text")
     private String aventures;
 
@@ -150,6 +151,9 @@ public class Circuit extends AuditableEntity {
     public String getGalerie() { return galerie; }
     public void setGalerie(String galerie) { this.galerie = galerie; }
 
+    public String getActiviteIds() { return activiteIds; }
+    public void setActiviteIds(String activiteIds) { this.activiteIds = activiteIds; }
+
     public String getProgramme() { return programme; }
     public void setProgramme(String programme) { this.programme = programme; }
 
@@ -161,9 +165,6 @@ public class Circuit extends AuditableEntity {
 
     public String getNonInclus() { return nonInclus; }
     public void setNonInclus(String nonInclus) { this.nonInclus = nonInclus; }
-
-    public String getTourisme() { return tourisme; }
-    public void setTourisme(String tourisme) { this.tourisme = tourisme; }
 
     public String getAventures() { return aventures; }
     public void setAventures(String aventures) { this.aventures = aventures; }

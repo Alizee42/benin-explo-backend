@@ -73,7 +73,6 @@ INSERT INTO circuits (
     points_forts,
     inclus,
     non_inclus,
-    tourisme,
     aventures
 ) VALUES (
     'Circuit decouverte Sud',
@@ -85,7 +84,6 @@ INSERT INTO circuits (
     TRUE,
     (SELECT id_ville FROM villes WHERE nom = 'Cotonou'),
     'https://example.com/circuit-sud.jpg',
-    '[]',
     '[]',
     '[]',
     '[]',
