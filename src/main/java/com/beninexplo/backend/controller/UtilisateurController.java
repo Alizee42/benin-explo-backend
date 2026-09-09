@@ -18,7 +18,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/utilisateurs")
+@RequestMapping("/api/admin/utilisateurs")
 public class UtilisateurController {
 
     private final UtilisateurService utilisateurService;
