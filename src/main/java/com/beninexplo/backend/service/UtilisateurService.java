@@ -169,6 +169,25 @@ public class UtilisateurService {
         return toDTO(user);
     }
 
+    private static final List<String> ASSIGNABLE_ROLES = List.of("USER", "ADMIN", "PARTICIPANT");
+
+    public UtilisateurDTO updateUserRole(Long id, String newRole, String requesterEmail) {
+        if (!ASSIGNABLE_ROLES.contains(newRole)) {
+            throw new BadRequestException("Role invalide.");
+        }
+
+        Utilisateur user = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable."));
+
+        if (user.getEmail().equalsIgnoreCase(requesterEmail)) {
+            throw new BadRequestException("Vous ne pouvez pas modifier votre propre role.");
+        }
+
+        user.setRole(newRole);
+        utilisateurRepository.save(user);
+        return toDTO(user);
+    }
+
     public void deleteUser(Long id) {
         if (!utilisateurRepository.existsById(id)) {
             throw new ResourceNotFoundException("Utilisateur introuvable.");
