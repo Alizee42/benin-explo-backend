@@ -48,6 +48,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/actuator/health").permitAll()
                         .requestMatchers("/auth/register", "/auth/login", "/auth/tombola").permitAll()
                         .requestMatchers("/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/tombola/inscription").permitAll()
