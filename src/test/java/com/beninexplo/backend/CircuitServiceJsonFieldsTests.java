@@ -90,6 +90,21 @@ class CircuitServiceJsonFieldsTests {
     }
 
     @Test
+    void activiteIdsRoundTripsThroughCreateAndReload() {
+        CircuitDTO dto = new CircuitDTO();
+        dto.setTitre("Circuit avec activites associees");
+        dto.setVilleId(anyVilleId());
+        dto.setPrixIndicatif(BigDecimal.valueOf(100));
+        dto.setActiviteIds(List.of(1L, 2L, 3L));
+
+        CircuitDTO created = circuitService.create(dto);
+        CircuitDTO reloaded = circuitService.getById(created.getId());
+
+        assertEquals(List.of(1L, 2L, 3L), reloaded.getActiviteIds(),
+                "Regression du bug trouve en audit : activiteIds n'etait jamais lu/ecrit par le backend");
+    }
+
+    @Test
     void nullJsonFieldsAreReadAsEmptyLists() {
         Circuit circuit = new Circuit();
         circuit.setNom("Circuit sans donnees annexes");
@@ -104,5 +119,6 @@ class CircuitServiceJsonFieldsTests {
         assertTrue(reloaded.getProgramme().isEmpty());
         assertTrue(reloaded.getPointsForts().isEmpty());
         assertTrue(reloaded.getInclus().isEmpty());
+        assertTrue(reloaded.getActiviteIds().isEmpty());
     }
 }

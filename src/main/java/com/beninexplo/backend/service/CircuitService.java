@@ -49,6 +49,7 @@ public class CircuitService {
         dto.setActif(circuit.isActif());
         dto.setImg(circuit.getImg());
         dto.setGalerie(readStringList(circuit.getGalerie()));
+        dto.setActiviteIds(readLongList(circuit.getActiviteIds()));
         dto.setProgramme(readProgramme(circuit.getProgramme()));
         dto.setPointsForts(readPointForts(circuit.getPointsForts()));
         dto.setInclus(readStringList(circuit.getInclus()));
@@ -91,6 +92,7 @@ public class CircuitService {
         circuit.setVille(ville);
         circuit.setImg(dto.getImg());
         circuit.setGalerie(writeJson(dto.getGalerie()));
+        circuit.setActiviteIds(writeJson(dto.getActiviteIds()));
         circuit.setProgramme(writeJson(dto.getProgramme()));
         circuit.setPointsForts(writeJson(dto.getPointsForts()));
         circuit.setInclus(writeJson(dto.getInclus()));
@@ -104,6 +106,17 @@ public class CircuitService {
         }
         try {
             return objectMapper.readValue(json, new TypeReference<List<String>>() { });
+        } catch (JsonProcessingException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<Long> readLongList(String json) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<Long>>() { });
         } catch (JsonProcessingException e) {
             return Collections.emptyList();
         }
