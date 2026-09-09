@@ -138,6 +138,37 @@ class UtilisateurServiceTests {
     }
 
     @Test
+    void updateUserRoleChangesRoleOfAnotherUser() {
+        UtilisateurDTO created = utilisateurService.createUser(createDto("promote.me@example.com"));
+
+        UtilisateurDTO updated = utilisateurService.updateUserRole(created.getId(), "ADMIN", "admin.acting@example.com");
+
+        assertEquals("ADMIN", updated.getRole());
+    }
+
+    @Test
+    void updateUserRoleRejectsInvalidRole() {
+        UtilisateurDTO created = utilisateurService.createUser(createDto("invalid.role@example.com"));
+
+        assertThrows(BadRequestException.class,
+                () -> utilisateurService.updateUserRole(created.getId(), "SUPERUSER", "admin.acting@example.com"));
+    }
+
+    @Test
+    void updateUserRoleRejectsSelfModification() {
+        UtilisateurDTO created = utilisateurService.createUser(createDto("self.promote@example.com"));
+
+        assertThrows(BadRequestException.class,
+                () -> utilisateurService.updateUserRole(created.getId(), "ADMIN", "self.promote@example.com"));
+    }
+
+    @Test
+    void updateUserRoleRejectsUnknownUser() {
+        assertThrows(ResourceNotFoundException.class,
+                () -> utilisateurService.updateUserRole(999999L, "ADMIN", "admin.acting@example.com"));
+    }
+
+    @Test
     void deleteUserRemovesTheAccount() {
         UtilisateurDTO created = utilisateurService.createUser(createDto("to.delete@example.com"));
 
