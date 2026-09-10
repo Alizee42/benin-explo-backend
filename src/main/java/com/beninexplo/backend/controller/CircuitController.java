@@ -1,6 +1,7 @@
 package com.beninexplo.backend.controller;
 
 import com.beninexplo.backend.dto.CircuitDTO;
+import com.beninexplo.backend.dto.PageResponseDTO;
 import com.beninexplo.backend.service.CircuitService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import org.springframework.lang.Nullable;
 
 @RestController
 @RequestMapping("/api/circuits")
@@ -56,6 +59,16 @@ public class CircuitController {
     @GetMapping("/actifs")
     public List<CircuitDTO> getActifs() {
         return service.getActifs();
+    }
+
+    // Variante paginee de /actifs, utilisee par la liste publique des circuits pour eviter
+    // de telecharger le catalogue complet (avec programme/galerie/points forts) a chaque visite.
+    @GetMapping("/actifs/page")
+    public PageResponseDTO<CircuitDTO> getActifsPage(
+            @Nullable @RequestParam(required = false) Long zoneId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        return service.getActifsPage(zoneId, page, size);
     }
 
     @GetMapping("/zone/{zoneId}")

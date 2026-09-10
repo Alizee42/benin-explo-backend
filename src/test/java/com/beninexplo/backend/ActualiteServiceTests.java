@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -101,6 +104,59 @@ class ActualiteServiceTests {
 
         ActualiteDTO updated = actualiteService.update(created.getId(), baseDto(true));
         assertEquals(null, updated.getAuteurId());
+    }
+
+    @Test
+    void actualiteWithFutureDatePublicationIsInvisibleToThePublicViewUntilThatDate() {
+        ActualiteDTO dto = baseDto(true);
+        dto.setDatePublication(LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+        ActualiteDTO created = actualiteService.create(dto);
+
+        assertTrue(actualiteService.getPublished().stream().noneMatch(a -> a.getId().equals(created.getId())),
+                "Une actualite programmee dans le futur ne doit pas apparaitre dans getPublished() avant sa date");
+        assertThrows(ResourceNotFoundException.class, () -> actualiteService.getPublished(created.getId()));
+
+        assertTrue(actualiteService.getAllAdmin().stream().anyMatch(a -> a.getId().equals(created.getId())),
+                "L'admin doit continuer a voir les actualites programmees dans le futur");
+    }
+
+    @Test
+    void publishedListReturnsExcerptButDetailReturnsFullContenu() {
+        ActualiteDTO dto = baseDto(true);
+        dto.setContenu("x".repeat(500));
+        // Date fixee dans le passe proche plutot que laissee a LocalDateTime.now() (defaut de
+        // fillEntity) : evite toute dependance a la precision de troncature du timestamp entre
+        // l'ecriture et la comparaison "datePublication <= now" faite par getPublished().
+        dto.setDatePublication(LocalDateTime.now().minusMinutes(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        ActualiteDTO created = actualiteService.create(dto);
+
+        ActualiteDTO fromList = actualiteService.getPublished().stream()
+                .filter(a -> a.getId().equals(created.getId()))
+                .findFirst()
+                .orElseThrow();
+        ActualiteDTO fromDetail = actualiteService.getPublished(created.getId());
+
+        assertTrue(fromList.getContenu().length() < 500,
+                "La liste publique doit renvoyer un extrait tronque, pas le contenu complet");
+        assertEquals(500, fromDetail.getContenu().length(),
+                "Le detail doit toujours renvoyer le contenu complet");
+    }
+
+    @Test
+    void blankDatePublicationOnUpdateKeepsExistingDateInsteadOfResettingToNow() {
+        ActualiteDTO dto = baseDto(true);
+        dto.setDatePublication(LocalDateTime.now().minusDays(30).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        ActualiteDTO created = actualiteService.create(dto);
+        String originalDate = created.getDatePublication();
+
+        ActualiteDTO patch = baseDto(true);
+        patch.setTitre("Titre modifie");
+        patch.setDatePublication(null);
+        ActualiteDTO updated = actualiteService.update(created.getId(), patch);
+
+        assertEquals(originalDate, updated.getDatePublication(),
+                "Une date de publication vide en modification ne doit pas ecraser silencieusement la date existante");
     }
 
     @Test

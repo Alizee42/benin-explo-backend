@@ -4,6 +4,7 @@ import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.dto.PageResponseDTO;
 import com.beninexplo.backend.exception.BadRequestException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.CircuitRepository;
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -191,6 +194,16 @@ public class CircuitService {
 
     public List<CircuitDTO> getActifs() {
         return circuitRepo.findByActifTrue().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    // Variante paginee de getActifs(), avec filtre zone optionnel. Utilisee par la liste
+    // publique des circuits pour eviter de telecharger le catalogue complet a chaque visite.
+    public PageResponseDTO<CircuitDTO> getActifsPage(Long zoneId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Circuit> result = zoneId != null
+                ? circuitRepo.findByActifTrueAndVille_Zone_IdZone(zoneId, pageRequest)
+                : circuitRepo.findByActifTrue(pageRequest);
+        return PageResponseDTO.from(result.map(this::toDTO));
     }
 
     public List<CircuitDTO> getByZone(Long zoneId) {

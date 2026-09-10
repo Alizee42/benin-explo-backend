@@ -72,6 +72,11 @@ public class CircuitPersonnalise extends AuditableEntity {
     @Column(length = 5000)
     private String motifRefus;
 
+    // Date d'envoi du rappel de paiement (7 jours apres acceptation) : evite de relancer
+    // plusieurs fois le meme client via le job planifie.
+    @Column(name = "date_rappel_paiement_envoye")
+    private java.time.LocalDateTime dateRappelPaiementEnvoye;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id")
     private Utilisateur utilisateur;
@@ -94,7 +99,8 @@ public class CircuitPersonnalise extends AuditableEntity {
         EN_TRAITEMENT,
         ACCEPTE,
         REFUSE,
-        TERMINE
+        TERMINE,
+        EXPIRE
     }
 
     public CircuitPersonnalise() {
@@ -419,6 +425,14 @@ public class CircuitPersonnalise extends AuditableEntity {
 
     public void setMotifRefus(String motifRefus) {
         this.motifRefus = motifRefus;
+    }
+
+    public java.time.LocalDateTime getDateRappelPaiementEnvoye() {
+        return dateRappelPaiementEnvoye;
+    }
+
+    public void setDateRappelPaiementEnvoye(java.time.LocalDateTime dateRappelPaiementEnvoye) {
+        this.dateRappelPaiementEnvoye = dateRappelPaiementEnvoye;
     }
 
     public Utilisateur getUtilisateur() {

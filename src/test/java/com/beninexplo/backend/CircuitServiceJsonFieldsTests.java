@@ -1,6 +1,7 @@
 package com.beninexplo.backend;
 
 import com.beninexplo.backend.dto.CircuitDTO;
+import com.beninexplo.backend.dto.PageResponseDTO;
 import com.beninexplo.backend.entity.Circuit;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.repository.CircuitRepository;
@@ -102,6 +103,33 @@ class CircuitServiceJsonFieldsTests {
 
         assertEquals(List.of(1L, 2L, 3L), reloaded.getActiviteIds(),
                 "Regression du bug trouve en audit : activiteIds n'etait jamais lu/ecrit par le backend");
+    }
+
+    @Test
+    void getActifsPageReturnsOnlyActifsRespectingPageSize() {
+        Ville ville = villeRepository.findById(anyVilleId()).orElseThrow();
+
+        for (int i = 0; i < 3; i++) {
+            Circuit actif = new Circuit();
+            actif.setNom("Circuit actif pagine " + i);
+            actif.setVille(ville);
+            actif.setPrixIndicatif(BigDecimal.valueOf(100));
+            actif.setActif(true);
+            circuitRepository.save(actif);
+        }
+        Circuit inactif = new Circuit();
+        inactif.setNom("Circuit inactif pagine");
+        inactif.setVille(ville);
+        inactif.setPrixIndicatif(BigDecimal.valueOf(100));
+        inactif.setActif(false);
+        circuitRepository.save(inactif);
+
+        PageResponseDTO<CircuitDTO> firstPage = circuitService.getActifsPage(null, 0, 2);
+
+        assertEquals(2, firstPage.getContent().size());
+        assertTrue(firstPage.getTotalElements() >= 3,
+                "Le total doit compter tous les circuits actifs, pas seulement la page courante");
+        assertTrue(firstPage.getContent().stream().allMatch(CircuitDTO::isActif));
     }
 
     @Test

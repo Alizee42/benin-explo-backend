@@ -1,5 +1,6 @@
 package com.beninexplo.backend.service;
 
+import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.dto.CircuitPersonnaliseDTO;
 import com.beninexplo.backend.dto.TarifsCircuitPersonnaliseDTO;
 import com.beninexplo.backend.entity.Activite;
@@ -16,22 +17,31 @@ import com.beninexplo.backend.exception.ResourceNotFoundException;
 import com.beninexplo.backend.repository.ActiviteRepository;
 import com.beninexplo.backend.repository.CircuitPersonnaliseJourRepository;
 import com.beninexplo.backend.repository.CircuitPersonnaliseRepository;
+import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.HebergementRepository;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class CircuitPersonnaliseService {
+
+    private static final Logger log = LoggerFactory.getLogger(CircuitPersonnaliseService.class);
 
     private final CircuitPersonnaliseRepository circuitRepository;
     private final CircuitPersonnaliseJourRepository jourRepository;
@@ -42,6 +52,10 @@ public class CircuitPersonnaliseService {
     private final ReservationHebergementService reservationHebergementService;
     private final TarifsCircuitPersonnaliseService tarifsCircuitPersonnaliseService;
     private final AuthenticatedUserService authenticatedUserService;
+    private final CircuitPersonnaliseNotificationService notificationService;
+    private final CircuitRepository catalogCircuitRepository;
+    private final CircuitService catalogCircuitService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public CircuitPersonnaliseService(CircuitPersonnaliseRepository circuitRepository,
                                       CircuitPersonnaliseJourRepository jourRepository,
@@ -51,7 +65,10 @@ public class CircuitPersonnaliseService {
                                       HebergementRepository hebergementRepository,
                                       ReservationHebergementService reservationHebergementService,
                                       TarifsCircuitPersonnaliseService tarifsCircuitPersonnaliseService,
-                                      AuthenticatedUserService authenticatedUserService) {
+                                      AuthenticatedUserService authenticatedUserService,
+                                      CircuitPersonnaliseNotificationService notificationService,
+                                      CircuitRepository catalogCircuitRepository,
+                                      CircuitService catalogCircuitService) {
         this.circuitRepository = circuitRepository;
         this.jourRepository = jourRepository;
         this.zoneRepository = zoneRepository;
@@ -61,6 +78,9 @@ public class CircuitPersonnaliseService {
         this.reservationHebergementService = reservationHebergementService;
         this.tarifsCircuitPersonnaliseService = tarifsCircuitPersonnaliseService;
         this.authenticatedUserService = authenticatedUserService;
+        this.notificationService = notificationService;
+        this.catalogCircuitRepository = catalogCircuitRepository;
+        this.catalogCircuitService = catalogCircuitService;
     }
 
     public CircuitPersonnaliseDTO create(CircuitPersonnaliseDTO dto) {
@@ -124,10 +144,15 @@ public class CircuitPersonnaliseService {
                 }
 
                 jourRepository.save(jour);
+                // entity.jours est deja initialisee (vide) depuis le save() initial de l'entite :
+                // un simple findById() ne la rechargerait pas depuis la base (identity map
+                // Hibernate). On maintient donc la collection en memoire au fil de la boucle,
+                // necessaire pour applyPricingBreakdown() et toute lecture ulterieure de
+                // entity.getJours() dans le meme appel.
+                entity.getJours().add(jour);
             }
         }
 
-        entity = circuitRepository.findById(entity.getId()).orElseThrow();
         applyPricingBreakdown(entity);
         entity = circuitRepository.save(entity);
         entity = ensureReference(entity);
@@ -158,6 +183,21 @@ public class CircuitPersonnaliseService {
 
     public CircuitPersonnaliseDTO getMineById(Long id) {
         return toDTO(getOwnedDemande(id));
+    }
+
+    /**
+     * Renvoie le Circuit catalogue cree pour une demande personnalisee, avec le meme controle
+     * de propriete que getMineById() (getOwnedDemande leve ResourceNotFoundException si la
+     * demande n'appartient pas a l'utilisateur courant). Le circuit cree est inactif (non
+     * visible sur GET /api/circuits/{id} cote public), donc ce endpoint dedie est le seul moyen
+     * pour le client d'en consulter le contenu une fois son paiement confirme.
+     */
+    public CircuitDTO getMineCircuitCree(Long demandeId) {
+        CircuitPersonnalise demande = getOwnedDemande(demandeId);
+        if (demande.getCircuitCree() == null) {
+            throw new ResourceNotFoundException("Aucun circuit n'a encore ete cree pour cette demande.");
+        }
+        return catalogCircuitService.getById(demande.getCircuitCree().getIdCircuit());
     }
 
     public List<CircuitPersonnaliseDTO> getByStatut(String statut) {
@@ -204,7 +244,140 @@ public class CircuitPersonnaliseService {
         }
 
         entity = circuitRepository.save(entity);
+        notificationService.sendStatutUpdate(entity);
         return toDTO(entity);
+    }
+
+    /**
+     * Cree un Circuit catalogue a partir d'une demande personnalisee, une fois son paiement
+     * effectivement capture (statut PAYE). Bug trouve en audit : circuitCreeId restait toujours
+     * null, setCircuitCree() n'etait appele nulle part. Idempotent : ne recree rien si un
+     * circuit est deja lie a cette demande. Le circuit est cree INACTIF (non visible dans le
+     * catalogue public) : c'est un parcours sur-mesure pour ce client, pas une offre generique
+     * a vendre a d'autres visiteurs au meme prix/programme.
+     */
+    public void createCircuitFromDemandeIfAbsent(Long demandeId) {
+        CircuitPersonnalise entity = circuitRepository.findById(demandeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Circuit personnalise non trouve: " + demandeId));
+
+        if (entity.getCircuitCree() != null) {
+            return;
+        }
+
+        List<CircuitPersonnaliseJour> jours = entity.getJours();
+        Ville ville = jours.stream()
+                .map(CircuitPersonnaliseJour::getVille)
+                .filter(v -> v != null)
+                .findFirst()
+                .orElse(null);
+
+        if (ville == null) {
+            // Le paiement est deja recu a ce stade : ne jamais faire echouer la confirmation de
+            // paiement pour un probleme de creation du circuit catalogue derive. On log pour
+            // traitement manuel par un admin plutot que de bloquer le flux de paiement.
+            log.warn("Impossible de creer le circuit catalogue pour la demande id={} : aucun jour n'a de ville renseignee.", demandeId);
+            return;
+        }
+
+        Circuit circuit = new Circuit();
+        circuit.setNom(buildCircuitNom(entity));
+        circuit.setDescription(buildCircuitDescription(entity));
+        circuit.setDureeIndicative(entity.getNombreJours() + " jour(s)");
+        circuit.setPrixIndicatif(entity.getPrixFinal() != null ? entity.getPrixFinal() : entity.getPrixEstime());
+        circuit.setFormuleProposee("circuit-personnalise");
+        circuit.setActif(false);
+        circuit.setVille(ville);
+        circuit.setProgramme(writeJson(buildProgramme(jours)));
+        circuit.setActiviteIds(writeJson(buildActiviteIds(jours)));
+
+        circuit = catalogCircuitRepository.save(circuit);
+        entity.setCircuitCree(circuit);
+        circuitRepository.save(entity);
+    }
+
+    private String buildCircuitNom(CircuitPersonnalise entity) {
+        return "Circuit personnalise - " + defaultText(entity.getPrenomClient(), "")
+                + " " + defaultText(entity.getNomClient(), "");
+    }
+
+    private String buildCircuitDescription(CircuitPersonnalise entity) {
+        StringBuilder description = new StringBuilder();
+        description.append("Circuit sur mesure cree a partir de la demande personnalisee ")
+                .append(resolveReference(entity)).append(".");
+        if (StringUtils.hasText(entity.getMessageClient())) {
+            description.append(" ").append(entity.getMessageClient().trim());
+        }
+        return description.toString();
+    }
+
+    private List<Map<String, Object>> buildProgramme(List<CircuitPersonnaliseJour> jours) {
+        List<Map<String, Object>> programme = new ArrayList<>();
+        for (CircuitPersonnaliseJour jour : jours) {
+            Map<String, Object> jourMap = new java.util.LinkedHashMap<>();
+            jourMap.put("day", jour.getNumeroJour());
+            jourMap.put("description", StringUtils.hasText(jour.getDescriptionJour()) ? jour.getDescriptionJour() : "");
+            jourMap.put("location", jour.getVille() != null ? jour.getVille().getNom() : null);
+            jourMap.put("activities", jour.getActivites().stream().map(Activite::getIdActivite).collect(Collectors.toList()));
+            programme.add(jourMap);
+        }
+        return programme;
+    }
+
+    private List<Long> buildActiviteIds(List<CircuitPersonnaliseJour> jours) {
+        return jours.stream()
+                .flatMap(jour -> jour.getActivites().stream())
+                .map(Activite::getIdActivite)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private String writeJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Impossible de serialiser les donnees du circuit cree.", e);
+        }
+    }
+
+    private String defaultText(String value, String fallback) {
+        return StringUtils.hasText(value) ? value.trim() : fallback;
+    }
+
+    // Delais du cycle relance/expiration d'un devis accepte non paye. Trouve en audit.
+    private static final int JOURS_AVANT_RAPPEL = 7;
+    private static final int JOURS_AVANT_EXPIRATION = 14;
+
+    /**
+     * Envoie un rappel de paiement (une seule fois par demande) aux devis ACCEPTE non payes
+     * depuis au moins {@value #JOURS_AVANT_RAPPEL} jours. Appele par le job planifie.
+     */
+    public void sendRappelsPaiement() {
+        LocalDate seuil = LocalDate.now().minusDays(JOURS_AVANT_RAPPEL);
+        List<CircuitPersonnalise> aRelancer = circuitRepository.findAccepteNonPayeSansRappelAvant(
+                CircuitPersonnalise.StatutDemande.ACCEPTE, seuil);
+
+        for (CircuitPersonnalise demande : aRelancer) {
+            notificationService.sendPaiementRappel(demande);
+            demande.setDateRappelPaiementEnvoye(java.time.LocalDateTime.now());
+            circuitRepository.save(demande);
+        }
+    }
+
+    /**
+     * Fait expirer les devis ACCEPTE non payes depuis au moins {@value #JOURS_AVANT_EXPIRATION}
+     * jours (statut -> EXPIRE), et notifie le client. Appele par le job planifie. Une fois
+     * expire, le paiement redevient impossible (validatePayable() exige le statut ACCEPTE).
+     */
+    public void expirerDemandesNonPayees() {
+        LocalDate seuil = LocalDate.now().minusDays(JOURS_AVANT_EXPIRATION);
+        List<CircuitPersonnalise> aExpirer = circuitRepository.findAccepteNonPayeAvant(
+                CircuitPersonnalise.StatutDemande.ACCEPTE, seuil);
+
+        for (CircuitPersonnalise demande : aExpirer) {
+            demande.setStatut(CircuitPersonnalise.StatutDemande.EXPIRE);
+            circuitRepository.save(demande);
+            notificationService.sendExpiration(demande);
+        }
     }
 
     public void delete(Long id) {

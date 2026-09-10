@@ -11,6 +11,8 @@ public interface VilleRepository extends JpaRepository<Ville, Long> {
 
     List<Ville> findByZoneIdZone(Long zoneId);
 
+    long countByZoneIdZone(Long zoneId);
+
     List<Ville> findAllByOrderByNomAsc();
 
     java.util.Optional<Ville> findByNomIgnoreCase(String nom);

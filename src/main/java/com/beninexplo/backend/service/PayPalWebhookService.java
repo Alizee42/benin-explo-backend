@@ -31,19 +31,22 @@ public class PayPalWebhookService {
     private final PayPalApiClient payPalApiClient;
     private final PayPalProperties payPalProperties;
     private final ObjectMapper objectMapper;
+    private final CircuitPersonnaliseService circuitPersonnaliseService;
 
     public PayPalWebhookService(PaiementReservationHebergementRepository hebergementPaymentRepository,
                                 PaiementReservationCircuitRepository circuitPaymentRepository,
                                 PaiementCircuitPersonnaliseRepository circuitPersonnalisePaymentRepository,
                                 PayPalApiClient payPalApiClient,
                                 PayPalProperties payPalProperties,
-                                ObjectMapper objectMapper) {
+                                ObjectMapper objectMapper,
+                                CircuitPersonnaliseService circuitPersonnaliseService) {
         this.hebergementPaymentRepository = hebergementPaymentRepository;
         this.circuitPaymentRepository = circuitPaymentRepository;
         this.circuitPersonnalisePaymentRepository = circuitPersonnalisePaymentRepository;
         this.payPalApiClient = payPalApiClient;
         this.payPalProperties = payPalProperties;
         this.objectMapper = objectMapper;
+        this.circuitPersonnaliseService = circuitPersonnaliseService;
     }
 
     /**
@@ -182,6 +185,12 @@ public class PayPalWebhookService {
             circuitPaymentRepository.save(circuit);
         } else if (payment instanceof PaiementCircuitPersonnalise circuitPersonnalise) {
             circuitPersonnalisePaymentRepository.save(circuitPersonnalise);
+            // Meme regle que le flux de capture direct (CircuitPersonnalisePaymentAdapter) :
+            // creer le Circuit catalogue une fois le paiement confirme, y compris quand la
+            // confirmation arrive par webhook plutot que par l'appel capture-order du client.
+            if ("PAYE".equals(circuitPersonnalise.getStatut()) && circuitPersonnalise.getCircuitPersonnalise() != null) {
+                circuitPersonnaliseService.createCircuitFromDemandeIfAbsent(circuitPersonnalise.getCircuitPersonnalise().getId());
+            }
         }
     }
 }
