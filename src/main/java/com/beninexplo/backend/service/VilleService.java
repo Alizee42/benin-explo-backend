@@ -3,7 +3,10 @@ package com.beninexplo.backend.service;
 import com.beninexplo.backend.dto.VilleDTO;
 import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.exception.ConflictException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
+import com.beninexplo.backend.repository.ActiviteRepository;
+import com.beninexplo.backend.repository.CircuitRepository;
 import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 import jakarta.transaction.Transactional;
@@ -11,6 +14,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,10 +24,15 @@ public class VilleService {
 
     private final VilleRepository villeRepo;
     private final ZoneRepository zoneRepo;
+    private final ActiviteRepository activiteRepo;
+    private final CircuitRepository circuitRepo;
 
-    public VilleService(VilleRepository villeRepo, ZoneRepository zoneRepo) {
+    public VilleService(VilleRepository villeRepo, ZoneRepository zoneRepo,
+                        ActiviteRepository activiteRepo, CircuitRepository circuitRepo) {
         this.villeRepo = villeRepo;
         this.zoneRepo = zoneRepo;
+        this.activiteRepo = activiteRepo;
+        this.circuitRepo = circuitRepo;
     }
 
     private VilleDTO toDTO(Ville ville) {
@@ -88,6 +97,24 @@ public class VilleService {
 
     @CacheEvict(value = "villes", allEntries = true)
     public void delete(Long id) {
+        if (!villeRepo.existsById(id)) {
+            throw new ResourceNotFoundException("Ville introuvable.");
+        }
+
+        List<String> usages = new ArrayList<>();
+        long activitesCount = activiteRepo.countByVille_IdVille(id);
+        if (activitesCount > 0) {
+            usages.add(activitesCount + " activite(s)");
+        }
+        long circuitsCount = circuitRepo.countByVille_IdVille(id);
+        if (circuitsCount > 0) {
+            usages.add(circuitsCount + " circuit(s)");
+        }
+        if (!usages.isEmpty()) {
+            throw new ConflictException(
+                    "Cette ville est utilisee par " + String.join(" et ", usages) + ". Retirez-les ou reassignez-les avant de supprimer la ville.");
+        }
+
         villeRepo.deleteById(id);
     }
 

@@ -2,7 +2,9 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.CategorieActiviteDTO;
 import com.beninexplo.backend.entity.CategorieActivite;
+import com.beninexplo.backend.exception.ConflictException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
+import com.beninexplo.backend.repository.ActiviteRepository;
 import com.beninexplo.backend.repository.CategorieActiviteRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -15,9 +17,11 @@ import java.util.stream.Collectors;
 public class CategorieActiviteService {
 
     private final CategorieActiviteRepository repo;
+    private final ActiviteRepository activiteRepo;
 
-    public CategorieActiviteService(CategorieActiviteRepository repo) {
+    public CategorieActiviteService(CategorieActiviteRepository repo, ActiviteRepository activiteRepo) {
         this.repo = repo;
+        this.activiteRepo = activiteRepo;
     }
 
     private CategorieActiviteDTO toDTO(CategorieActivite categorie) {
@@ -54,6 +58,14 @@ public class CategorieActiviteService {
     }
 
     public void delete(Long id) {
+        if (!repo.existsById(id)) {
+            throw new ResourceNotFoundException("Categorie d'activite introuvable.");
+        }
+        long activitesCount = activiteRepo.countByCategorie_IdCategorie(id);
+        if (activitesCount > 0) {
+            throw new ConflictException(
+                    "Cette categorie est utilisee par " + activitesCount + " activite(s). Retirez-les ou reassignez-les avant de supprimer la categorie.");
+        }
         repo.deleteById(id);
     }
 }

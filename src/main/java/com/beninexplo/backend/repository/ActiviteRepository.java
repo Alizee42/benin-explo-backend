@@ -11,4 +11,8 @@ public interface ActiviteRepository extends JpaRepository<Activite, Long> {
     
     // Filtrer les activités par ville directement
     List<Activite> findByVille_IdVille(Long villeId);
+
+    long countByVille_IdVille(Long villeId);
+
+    long countByCategorie_IdCategorie(Long categorieId);
 }

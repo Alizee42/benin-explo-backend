@@ -2,7 +2,9 @@ package com.beninexplo.backend.service;
 
 import com.beninexplo.backend.dto.ZoneDTO;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.exception.ConflictException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
+import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,9 +19,11 @@ import java.util.stream.Collectors;
 public class ZoneService {
 
     private final ZoneRepository zoneRepository;
+    private final VilleRepository villeRepository;
 
-    public ZoneService(ZoneRepository zoneRepository) {
+    public ZoneService(ZoneRepository zoneRepository, VilleRepository villeRepository) {
         this.zoneRepository = zoneRepository;
+        this.villeRepository = villeRepository;
     }
 
     public ZoneDTO toDTO(Zone zone) {
@@ -67,6 +71,14 @@ public class ZoneService {
 
     @CacheEvict(value = "zones", allEntries = true)
     public void deleteZone(Long id) {
+        if (!zoneRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Zone introuvable");
+        }
+        long villesCount = villeRepository.countByZoneIdZone(id);
+        if (villesCount > 0) {
+            throw new ConflictException(
+                    "Cette zone est utilisee par " + villesCount + " ville(s). Retirez-les ou reassignez-les avant de supprimer la zone.");
+        }
         zoneRepository.deleteById(id);
     }
 }

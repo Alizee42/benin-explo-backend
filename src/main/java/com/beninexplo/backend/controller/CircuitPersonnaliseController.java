@@ -1,5 +1,6 @@
 package com.beninexplo.backend.controller;
 
+import com.beninexplo.backend.dto.CircuitDTO;
 import com.beninexplo.backend.dto.CircuitPersonnaliseDTO;
 import com.beninexplo.backend.service.CircuitPersonnaliseService;
 import jakarta.validation.Valid;
@@ -51,6 +52,11 @@ public class CircuitPersonnaliseController {
     @GetMapping("/me/{id}")
     public ResponseEntity<CircuitPersonnaliseDTO> getMineById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getMineById(id));
+    }
+
+    @GetMapping("/me/{id}/circuit-cree")
+    public ResponseEntity<CircuitDTO> getMineCircuitCree(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getMineCircuitCree(id));
     }
 
     @GetMapping("/{id}")

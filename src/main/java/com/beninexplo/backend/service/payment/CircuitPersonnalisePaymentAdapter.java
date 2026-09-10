@@ -125,6 +125,13 @@ public class CircuitPersonnalisePaymentAdapter
     @Override
     public void savePayment(PaiementCircuitPersonnalise payment) {
         paymentRepository.save(payment);
+
+        // Une fois le paiement effectivement capture (PAYE), on cree le Circuit catalogue
+        // correspondant a cette demande - bug trouve en audit : circuitCreeId restait toujours
+        // null. Idempotent (createCircuitFromDemandeIfAbsent ne recree rien si deja fait).
+        if ("PAYE".equalsIgnoreCase(payment.getStatut()) && payment.getCircuitPersonnalise() != null) {
+            circuitPersonnaliseService.createCircuitFromDemandeIfAbsent(payment.getCircuitPersonnalise().getId());
+        }
     }
 
     @Override

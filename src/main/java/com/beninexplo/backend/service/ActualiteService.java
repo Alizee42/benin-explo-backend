@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 @Service
 public class ActualiteService {
 
+    // Taille de l'extrait de contenu renvoye dans la liste publique (au lieu du contenu complet,
+    // jusqu'a 20000 caracteres) : seul un resume court est affiche dans la liste, le contenu
+    // integral n'est utile que sur la page detail. Trouve en audit (gaspillage de bande passante).
+    private static final int CONTENU_EXCERPT_LENGTH = 300;
+
     private final ActualiteRepository repo;
     private final MediaRepository mediaRepo;
     private final UtilisateurRepository utilisateurRepo;
@@ -54,13 +59,19 @@ public class ActualiteService {
         );
     }
 
-    private void fillEntity(Actualite actualite, ActualiteDTO dto) {
+    private void fillEntity(Actualite actualite, ActualiteDTO dto, boolean isCreate) {
         actualite.setTitre(dto.getTitre());
         actualite.setContenu(dto.getContenu());
         actualite.setResume(dto.getResume() == null || dto.getResume().isBlank() ? null : dto.getResume().trim());
-        actualite.setDatePublication(dto.getDatePublication() == null || dto.getDatePublication().isBlank()
-                ? LocalDateTime.now()
-                : LocalDateTime.parse(dto.getDatePublication()));
+
+        if (dto.getDatePublication() != null && !dto.getDatePublication().isBlank()) {
+            actualite.setDatePublication(LocalDateTime.parse(dto.getDatePublication()));
+        } else if (isCreate) {
+            // A la creation, une date vide signifie "publier immediatement".
+            actualite.setDatePublication(LocalDateTime.now());
+        }
+        // En modification, une date vide ne doit pas ecraser silencieusement la date existante
+        // (bug trouve en audit) : on laisse actualite.datePublication inchangee.
         actualite.setALaUne(dto.isALaUne());
         actualite.setPubliee(dto.isPubliee());
         actualite.setImageUrl(dto.getImageUrl() == null || dto.getImageUrl().isBlank() ? null : dto.getImageUrl().trim());
@@ -93,25 +104,40 @@ public class ActualiteService {
     }
 
     public List<ActualiteDTO> getPublished() {
-        return repo.findAllPublishedOrdered().stream().map(this::toDTO).collect(Collectors.toList());
+        // Petite marge de tolerance : une actualite tout juste creee/publiee (datePublication
+        // par defaut = now() au moment du save) ne doit pas risquer d'etre exclue a cause d'un
+        // ecart de precision entre l'horloge Java et le stockage du timestamp en base.
+        LocalDateTime now = LocalDateTime.now().plusSeconds(1);
+        return repo.findAllPublishedOrdered(now).stream()
+                .map(this::toDTO)
+                .map(this::withExcerptContenu)
+                .collect(Collectors.toList());
+    }
+
+    private ActualiteDTO withExcerptContenu(ActualiteDTO dto) {
+        String contenu = dto.getContenu();
+        if (contenu != null && contenu.length() > CONTENU_EXCERPT_LENGTH) {
+            dto.setContenu(contenu.substring(0, CONTENU_EXCERPT_LENGTH).trim() + "...");
+        }
+        return dto;
     }
 
     public ActualiteDTO getPublished(Long id) {
-        return repo.findPublishedById(id)
+        return repo.findPublishedById(id, LocalDateTime.now().plusSeconds(1))
                 .map(this::toDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Actualite introuvable."));
     }
 
     public ActualiteDTO create(ActualiteDTO dto) {
         Actualite actualite = new Actualite();
-        fillEntity(actualite, dto);
+        fillEntity(actualite, dto, true);
         return toDTO(repo.save(actualite));
     }
 
     public ActualiteDTO update(Long id, ActualiteDTO dto) {
         Actualite existing = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Actualite introuvable."));
-        fillEntity(existing, dto);
+        fillEntity(existing, dto, false);
         return toDTO(repo.save(existing));
     }
 

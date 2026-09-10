@@ -1,8 +1,14 @@
 package com.beninexplo.backend;
 
 import com.beninexplo.backend.dto.VilleDTO;
+import com.beninexplo.backend.entity.Activite;
+import com.beninexplo.backend.entity.TypeActivite;
+import com.beninexplo.backend.entity.Ville;
 import com.beninexplo.backend.entity.Zone;
+import com.beninexplo.backend.exception.ConflictException;
 import com.beninexplo.backend.exception.ResourceNotFoundException;
+import com.beninexplo.backend.repository.ActiviteRepository;
+import com.beninexplo.backend.repository.VilleRepository;
 import com.beninexplo.backend.repository.ZoneRepository;
 import com.beninexplo.backend.service.VilleService;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +38,12 @@ class VilleServiceTests {
 
     @Autowired
     private ZoneRepository zoneRepository;
+
+    @Autowired
+    private VilleRepository villeRepository;
+
+    @Autowired
+    private ActiviteRepository activiteRepository;
 
     @Autowired
     private CacheManager cacheManager;
@@ -86,6 +98,37 @@ class VilleServiceTests {
         VilleDTO updated = villeService.update(created.getId(), updateDto);
 
         assertNull(updated.getZoneId(), "Omettre zoneId lors d'une mise a jour doit retirer la zone existante");
+    }
+
+    @Test
+    void deletingVilleReferencedByAnActiviteIsRejectedWithClearMessage() {
+        VilleDTO dto = new VilleDTO();
+        dto.setNom("Ville Avec Activite " + System.nanoTime());
+        dto.setZoneId(anyZone().getIdZone());
+        VilleDTO created = villeService.create(dto);
+
+        Ville ville = villeRepository.findById(created.getId()).orElseThrow();
+        Activite activite = new Activite();
+        activite.setNom("Activite Test");
+        activite.setType(TypeActivite.ACTIVITE);
+        activite.setVille(ville);
+        activiteRepository.save(activite);
+
+        ConflictException ex = assertThrows(ConflictException.class, () -> villeService.delete(created.getId()));
+        assertTrue(ex.getMessage().contains("activite"),
+                "Le message doit indiquer clairement que la ville est utilisee par des activites");
+    }
+
+    @Test
+    void deletingUnreferencedVilleSucceeds() {
+        VilleDTO dto = new VilleDTO();
+        dto.setNom("Ville Sans Reference " + System.nanoTime());
+        dto.setZoneId(anyZone().getIdZone());
+        VilleDTO created = villeService.create(dto);
+
+        villeService.delete(created.getId());
+
+        assertThrows(ResourceNotFoundException.class, () -> villeService.getById(created.getId()));
     }
 
     @Test
